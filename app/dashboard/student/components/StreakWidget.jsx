@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
+import anime from 'animejs';
 
 export default function StreakWidget({ history }) {
   // Calculate current consecutive streak from history
@@ -38,12 +39,27 @@ export default function StreakWidget({ history }) {
     });
   }, [history]);
 
+  // [ANIME.JS] Fire pulse animation for streak > 3
+  const fireRef = useRef(null);
+  useEffect(() => {
+    if (streakCount >= 3 && fireRef.current) {
+      anime({
+        targets: fireRef.current,
+        scale: [1, 1.3, 1],
+        opacity: [0.7, 1, 0.7],
+        duration: 1500,
+        easing: 'easeInOutSine',
+        loop: true
+      });
+    }
+  }, [streakCount]);
+
   return (
     <section className="bg-primary/10 dark:bg-primary/5 p-6 rounded-3xl border border-primary/20">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-bold text-slate-800 dark:text-slate-100">7-Day Streak</h3>
         <div className="flex items-center gap-1 text-primary">
-          <span className="material-symbols-outlined fill-1">local_fire_department</span>
+          <span ref={fireRef} className="material-symbols-outlined fill-1">local_fire_department</span>
           <span className="font-black text-xl">{streakCount}</span>
         </div>
       </div>

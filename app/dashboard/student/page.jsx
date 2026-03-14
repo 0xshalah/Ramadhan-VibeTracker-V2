@@ -9,6 +9,7 @@ import SunnahActivities from './components/SunnahActivities';
 import NextEvent from './components/NextEvent'; 
 import DuaCard from './components/DuaCard';
 import StreakWidget from './components/StreakWidget';
+import XPBurst from './components/XPBurst';
 import Modal from './components/Modal';
 import { auth, db, loginWithGoogle, getUserProgress, getUserProfile, updateUserProgress, getUserWeeklyProgress, getLocalTodayId, logout, messaging, saveNotificationToken } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -44,6 +45,8 @@ export default function StudentDashboard() {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [totalXP, setTotalXP] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [aiInsight, setAiInsight] = useState('');
+  const [xpBurstTrigger, setXpBurstTrigger] = useState(0);
 
   // REFS FOR AVOIDING UNNECESSARY DB WRITES ON LOAD
   const isInitialLoad = useRef(true);
@@ -101,10 +104,31 @@ export default function StudentDashboard() {
       const payload = { tilawah, targetTilawah, sholat, sunnah, earnedXP: sunnahBonusXP };
       
       // Debounce saving
-      const timer = setTimeout(async () => {
+       const timer = setTimeout(async () => {
         try {
           await updateUserProgress(user.uid, todayId, payload);
           setSyncStatus('saved');
+          setXpBurstTrigger(prev => prev + 1);
+          
+          // [AI INSIGHT] Fetch spiritual insight after save
+          try {
+            const sholatCount = Object.values(sholat).filter(Boolean).length;
+            const res = await fetch('/api/insight', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                progressData: {
+                  sholatPct: Math.round((sholatCount / 5) * 100),
+                  tilawah,
+                  targetTilawah,
+                  streak: 0,
+                  sunnahCount: Object.values(sunnah).filter(Boolean).length
+                }
+              })
+            });
+            const data = await res.json();
+            if (data.insight) setAiInsight(data.insight);
+          } catch {} // Silent fail for AI — non-critical
         } catch(e) {
           setSyncStatus('error');
         }
@@ -391,6 +415,22 @@ export default function StudentDashboard() {
 
             <div className="col-span-12 lg:col-span-4 space-y-6">
               <StreakWidget history={streakHistory} />
+              
+              {/* AI SPIRITUAL INSIGHT */}
+              {aiInsight && (
+                <section className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/5 dark:to-purple-500/5 p-6 rounded-3xl border border-indigo-200/30 dark:border-indigo-800/30">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="material-symbols-outlined text-indigo-500 fill-1">psychology</span>
+                    <h3 className="font-bold text-sm text-indigo-600 dark:text-indigo-400">Spiritual Insight</h3>
+                    <span className="text-[10px] bg-indigo-500/10 text-indigo-500 px-2 py-0.5 rounded-full font-bold">AI</span>
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{aiInsight}</p>
+                </section>
+              )}
+
+              {/* XP BURST ANIMATION */}
+              {sunnahBonusXP > 0 && <XPBurst points={sunnahBonusXP} trigger={xpBurstTrigger} />}
+
               <DuaCard prayerTimes={prayerTimes} />
               <NextEvent prayerTimes={prayerTimes} showToast={showToast} onOpenSchedule={() => setIsScheduleOpen(true)} />
             </div>
