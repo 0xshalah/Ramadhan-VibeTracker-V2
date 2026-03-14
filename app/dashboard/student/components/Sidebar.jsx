@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-export default function Sidebar() {
+export default function Sidebar({ user, onLogout }) {
   return (
     <aside className="w-72 bg-white dark:bg-slate-900 border-r border-sage-200 dark:border-slate-800 flex-col hidden lg:flex">
       <div className="p-8 flex items-center gap-3">
@@ -33,13 +33,20 @@ export default function Sidebar() {
       </nav>
       <div className="p-6 border-t border-sage-100 dark:border-slate-800">
         <div className="bg-sage-50 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-sage-200 dark:bg-slate-700 overflow-hidden">
-            <img className="w-full h-full object-cover" alt="Student profile avatar placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhEw5MiBrGI3zJwe9gkH_6518EriKAaivgyZYAnu1MxJQ6yZjMHJypXx8j6tHB3IFot-kXRgAFcQnzeQzO5JF9wnF0vAOHE0lfYt7GA4fEdYqnXcFN2SWof4lm2zmKkEtu6Adn6DD-LvX1vysjW_zydYR8TYMvaHGYsWBt5yy4jFZnsvRms4uXZB_WpH_p76oXoL9ATuymvwlfBsqrvzGsuqE4qnBLf56OFqV14XLMXaSbjIZeRRpOjcX8xfyVpygq4KjxmhXUH_I" />
+          <div className="w-10 h-10 rounded-full bg-sage-200 dark:bg-slate-700 overflow-hidden shrink-0">
+            {user?.photoURL ? (
+              <img className="w-full h-full object-cover" alt="Student profile avatar" src={user.photoURL} />
+            ) : (
+              <span className="material-symbols-outlined w-full h-full flex items-center justify-center text-sage-400">person</span>
+            )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold truncate">Ahmad Fauzi</p>
-            <p className="text-xs text-sage-500 truncate">Grade 11 Student</p>
+            <p className="text-sm font-bold truncate">{user?.displayName || 'Student'}</p>
+            <p className="text-xs text-sage-500 truncate">{user?.email || 'Ramadhan Logger'}</p>
           </div>
+          <button onClick={onLogout} title="Log Out" className="w-8 h-8 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 flex items-center justify-center transition-colors">
+             <span className="material-symbols-outlined text-[18px]">logout</span>
+          </button>
         </div>
       </div>
     </aside>

@@ -12,8 +12,17 @@ export async function POST(request) {
       );
     }
 
+    const secret = process.env.MAYAR_WEBHOOK_SECRET;
+    
+    if (!secret) {
+        console.error('CRITICAL: MAYAR_WEBHOOK_SECRET is not configured.');
+        return NextResponse.json(
+            { error: 'Internal Server Error' },
+            { status: 500 }
+        );
+    }
+
     const text = await request.text();
-    const secret = process.env.MAYAR_WEBHOOK_SECRET || 'test_sprite_fallback_secret';
     
     // Generate HMAC SHA-256 signature
     const expectedSignature = crypto
