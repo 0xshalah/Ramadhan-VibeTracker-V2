@@ -1,3 +1,5 @@
+import React from 'react';
+
 const sunnahItems = [
   { key: "tarawih", label: "Shalat Tarawih", icon: "nightlight_round" },
   { key: "sahur", label: "Sahur Healthy Meal", icon: "set_meal" },
@@ -30,18 +32,14 @@ export default function SunnahActivities({ sunnah, onToggle }) {
               <button
                 onClick={() => onToggle(item.key)}
                 className={`w-10 h-5 rounded-full relative transition-colors cursor-pointer active:scale-95 ${
-                  isActive
-                    ? "bg-primary"
-                    : "bg-sage-200 dark:bg-slate-700"
+                  isActive ? "bg-primary" : "bg-sage-200 dark:bg-slate-700"
                 }`}
               >
+                {/* [FIX] Tailwind Utility Classes for toggle animation instead of inline styles */}
                 <div
-                  className="sunnah-knob absolute top-0.5 w-4 h-4 bg-white rounded-full"
-                  style={{
-                    transform: isActive
-                      ? "translateX(22px)"
-                      : "translateX(2px)",
-                  }}
+                  className={`sunnah-knob absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all duration-300 ease-in-out ${
+                    isActive ? "translate-x-[22px]" : "translate-x-[2px]"
+                  }`}
                 />
               </button>
             </div>
