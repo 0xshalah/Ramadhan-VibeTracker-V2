@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { auth, logout } from '@/lib/firebase';
+import { auth, logout, getUserProfile } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 
@@ -9,9 +9,21 @@ export default function ParentDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      if (!u) router.push('/');
-      setUser(u);
+    const unsubscribe = onAuthStateChanged(auth, async (u) => {
+      if (!u) {
+        router.push('/');
+        return;
+      }
+      
+      // [SECURITY FIX] Role-Based Access Control Enforcer
+      const profile = await getUserProfile(u.uid);
+      
+      if (profile?.role !== 'parent') { 
+        console.warn("Unauthorized access attempt. Redirecting...");
+        router.push('/dashboard/student'); 
+      } else {
+        setUser(u);
+      }
     });
     return () => unsubscribe();
   }, [router]);

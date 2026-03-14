@@ -46,6 +46,7 @@ export default function StudentDashboard() {
   const [totalXP, setTotalXP] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [aiInsight, setAiInsight] = useState('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const [xpBurstTrigger, setXpBurstTrigger] = useState(0);
 
   // REFS FOR AVOIDING UNNECESSARY DB WRITES ON LOAD
@@ -109,26 +110,6 @@ export default function StudentDashboard() {
           await updateUserProgress(user.uid, todayId, payload);
           setSyncStatus('saved');
           setXpBurstTrigger(prev => prev + 1);
-          
-          // [AI INSIGHT] Fetch spiritual insight after save
-          try {
-            const sholatCount = Object.values(sholat).filter(Boolean).length;
-            const res = await fetch('/api/insight', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                progressData: {
-                  sholatPct: Math.round((sholatCount / 5) * 100),
-                  tilawah,
-                  targetTilawah,
-                  streak: 0,
-                  sunnahCount: Object.values(sunnah).filter(Boolean).length
-                }
-              })
-            });
-            const data = await res.json();
-            if (data.insight) setAiInsight(data.insight);
-          } catch {} // Silent fail for AI — non-critical
         } catch(e) {
           setSyncStatus('error');
         }
@@ -136,6 +117,31 @@ export default function StudentDashboard() {
       return () => clearTimeout(timer);
     }
   }, [user, tilawah, targetTilawah, sholat, sunnah, loadingContext]);
+
+  // [AI MANUAL TRIGGER] Insight Engine
+  const handleGenerateInsight = async () => {
+    setIsAiLoading(true);
+    try {
+      const sholatCount = Object.values(sholat).filter(Boolean).length;
+      const res = await fetch('/api/insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          progressData: {
+            sholatPct: Math.round((sholatCount / 5) * 100),
+            tilawah, targetTilawah, streak: streakHistory.length,
+            sunnahCount: Object.values(sunnah).filter(Boolean).length
+          }
+        })
+      });
+      const data = await res.json();
+      if (data.insight) setAiInsight(data.insight);
+    } catch {
+      showToast("AI Insight engine offline.");
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   // PREVENT ACCIDENTAL CLOSE WHEN SAVING
   useEffect(() => {
@@ -152,15 +158,32 @@ export default function StudentDashboard() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [syncStatus, tilawah, targetTilawah, sholat, sunnah, user]);
 
-  // REAL-TIME SADAQAH VERIFIER (TIME-BOUND)
+  // [SECURITY FIX] REAL-TIME SADAQAH VERIFIER (24-Hour Time-Bound)
   useEffect(() => {
     if (user) {
-      const todayId = getLocalTodayId();
       const sadaqahRef = collection(db, 'users', user.uid, 'sadaqah');
-      const q = query(sadaqahRef, where('dateId', '==', todayId), limit(1)); 
+      // Jangan gunakan where dateId, ambil donasi terbaru saja
+      const q = query(sadaqahRef, limit(5)); 
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
-        setVerifiedSadaqah(!snapshot.empty);
+        if (snapshot.empty) {
+          setVerifiedSadaqah(false);
+          return;
+        }
+
+        const now = new Date().getTime();
+        const hasRecentDonation = snapshot.docs.some(doc => {
+          const data = doc.data();
+          if (data.status !== 'SUCCESS') return false;
+          
+          // Cek apakah donasi dilakukan dalam 24 jam terakhir (86400000 ms)
+          const donationTime = data.claimedAt ? new Date(data.claimedAt).getTime() : 
+                              (data.timestamp?.toDate ? data.timestamp.toDate().getTime() : 0);
+                              
+          return (now - donationTime) <= 86400000; 
+        });
+
+        setVerifiedSadaqah(hasRecentDonation);
       });
       return () => unsubscribe();
     }
@@ -305,8 +328,10 @@ export default function StudentDashboard() {
             getFromAPI(position.coords.latitude, position.coords.longitude, false);
           },
           (error) => {
-            console.warn("Geolocation denied or failed. Fallback to default (Batam).", error);
-            getFromAPI(); // Panggil dengan fallback
+            // [FIX] Jangan diam saja, beritahu UI
+            console.warn("GPS Denied.", error);
+            getFromAPI(1.0456, 104.0305, true); // Fallback Batam
+            showToast("⚠️ GPS Ditolak. Menggunakan zona waktu Batam. Mohon izinkan lokasi.");
           }
         );
       } else {
@@ -417,16 +442,24 @@ export default function StudentDashboard() {
               <StreakWidget history={streakHistory} />
               
               {/* AI SPIRITUAL INSIGHT */}
-              {aiInsight && (
-                <section className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/5 dark:to-purple-500/5 p-6 rounded-3xl border border-indigo-200/30 dark:border-indigo-800/30">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="material-symbols-outlined text-indigo-500 fill-1">psychology</span>
-                    <h3 className="font-bold text-sm text-indigo-600 dark:text-indigo-400">Spiritual Insight</h3>
-                    <span className="text-[10px] bg-indigo-500/10 text-indigo-500 px-2 py-0.5 rounded-full font-bold">AI</span>
+              <section className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/5 dark:to-purple-500/5 p-6 rounded-3xl border border-indigo-200/30 dark:border-indigo-800/30">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-indigo-500 fill-1">psychology</span>
+                      <h3 className="font-bold text-sm text-indigo-600 dark:text-indigo-400">Spiritual Insight</h3>
+                    </div>
+                    {!aiInsight && (
+                      <button onClick={handleGenerateInsight} disabled={isAiLoading} className="text-xs bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-full font-bold transition-colors disabled:opacity-50">
+                        {isAiLoading ? 'Analyzing...' : 'Generate'}
+                      </button>
+                    )}
                   </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{aiInsight}</p>
-                </section>
-              )}
+                  {aiInsight ? (
+                    <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{aiInsight}</p>
+                  ) : (
+                    <p className="text-xs text-indigo-400/70 italic">Click generate to receive personalized Ramadhan reflection based on your worship data today.</p>
+                  )}
+              </section>
 
               {/* XP BURST ANIMATION */}
               {sunnahBonusXP > 0 && <XPBurst points={sunnahBonusXP} trigger={xpBurstTrigger} />}
