@@ -31,3 +31,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# [SECURITY] Credential & Secret Files 
+*.json
+!package.json
+!package-lock.json
+!jsconfig.json
+!tsconfig.json
+*.key
+*.pem
+*service-account*
+*serviceAccount*
+*firebase-admin*

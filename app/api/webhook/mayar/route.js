@@ -2,12 +2,27 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import * as admin from 'firebase-admin';
 
-// Initialize Firebase Admin for Server-Side Webhook processing
+// [SECURITY FIX] Initialize Firebase Admin with proper credentials
 if (!admin.apps.length) {
   try {
-    admin.initializeApp({
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "vibetracker-core"
-    });
+    const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    
+    if (privateKey && process.env.FIREBASE_ADMIN_CLIENT_EMAIL) {
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: process.env.FIREBASE_ADMIN_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
+          privateKey: privateKey,
+        }),
+      });
+      console.log('[ADMIN] Firebase Admin initialized with Service Account credentials.');
+    } else {
+      // Fallback for environments with Application Default Credentials (e.g., GCP)
+      admin.initializeApp({
+        projectId: process.env.FIREBASE_ADMIN_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      });
+      console.warn('[ADMIN] Firebase Admin initialized WITHOUT explicit credentials. DB writes may fail in non-GCP environments.');
+    }
   } catch (err) {
     console.error("Firebase Admin init error:", err);
   }
@@ -71,7 +86,7 @@ export async function POST(request) {
        if (!snapshot.empty) {
             const userDoc = snapshot.docs[0];
             
-            // [DECREE 1] Local Timezone Date ID (Batam/WIB Fix)
+            // Local Timezone Date ID (Batam/WIB Fix)
             const date = new Date();
             const offset = date.getTimezoneOffset() * 60000;
             const todayId = new Date(date - offset).toISOString().split('T')[0];
@@ -94,7 +109,7 @@ export async function POST(request) {
            console.log(`[FIRESTORE_SYNC] Donation ${donationId} placed in unclaimed (no matching email)`);
        }
     } catch(dbError) {
-       console.warn(`[FIRESTORE_FALLBACK] Simulated DB write for ${donationId} due to missing SA credentials`);
+       console.warn(`[FIRESTORE_FALLBACK] DB write failed for ${donationId}:`, dbError.message);
     }
 
     return NextResponse.json(

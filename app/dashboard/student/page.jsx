@@ -148,7 +148,7 @@ export default function StudentDashboard() {
           const permission = await Notification.requestPermission();
           if (permission === 'granted') {
             const token = await getToken(messaging, { 
-              vapidKey: 'bw7c_Lsc0qM-rOzurkbygn7Md0zwroU92-3i9xQQe64' 
+              vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY 
             });
             if (token) {
               await saveNotificationToken(user.uid, token);
@@ -168,35 +168,35 @@ export default function StudentDashboard() {
     }
   }, [user]);
 
-  // [DECREE 10] LOCAL PRAYER REMINDERS
+  // [SECURITY FIX] LOCAL PRAYER REMINDERS (Memory Leak Patched)
   useEffect(() => {
     if (!prayerTimes || !user) return;
 
-    const scheduleReminders = () => {
-      const now = new Date();
-      Object.entries(prayerTimes).forEach(([name, time]) => {
-        if (['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(name)) {
-          const [hours, minutes] = time.split(':');
-          const prayerDate = new Date();
-          prayerDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    const timeouts = [];
+    const now = new Date();
 
-          const timeToPrayer = prayerDate.getTime() - now.getTime();
-          if (timeToPrayer > 0) {
-            // Schedule notification
-            setTimeout(() => {
-              if (Notification.permission === 'granted') {
-                new Notification(`Waktunya Sholat ${name}`, {
-                  body: `Mari tunaikan ibadah sholat ${name} tepat waktu. ✨`,
-                  icon: '/favicon.ico'
-                });
-              }
-            }, timeToPrayer);
-          }
+    Object.entries(prayerTimes).forEach(([name, time]) => {
+      if (['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(name)) {
+        const [hours, minutes] = time.split(':');
+        const prayerDate = new Date();
+        prayerDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+
+        const timeToPrayer = prayerDate.getTime() - now.getTime();
+        if (timeToPrayer > 0) {
+          const tId = setTimeout(() => {
+            if (Notification.permission === 'granted') {
+              new Notification(`Waktunya Sholat ${name}`, {
+                body: `Mari tunaikan ibadah sholat ${name} tepat waktu. ✨`,
+                icon: '/favicon.ico'
+              });
+            }
+          }, timeToPrayer);
+          timeouts.push(tId);
         }
-      });
-    };
+      }
+    });
 
-    scheduleReminders();
+    return () => timeouts.forEach(clearTimeout); // [FIX] Prevent Memory Leak
   }, [prayerTimes, user]);
 
   // [DECREE 3] THE MIDNIGHT GHOST KILLER
