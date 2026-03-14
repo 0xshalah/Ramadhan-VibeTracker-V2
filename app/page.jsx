@@ -9,8 +9,15 @@ export default function LandingPage() {
   const handleLogin = async () => {
     setIsLoading(true);
     try {
-      await loginWithGoogle();
-      window.location.href = "/dashboard/student";
+      const loggedUser = await loginWithGoogle();
+      // [RBAC] Smart Redirect "The Sorting Hat"
+      if (loggedUser.role === 'teacher') {
+        window.location.href = "/dashboard/teacher";
+      } else if (loggedUser.role === 'parent') {
+        window.location.href = "/dashboard/parent";
+      } else {
+        window.location.href = "/dashboard/student";
+      }
     } catch (error) {
       console.error("Login failed", error);
       setIsLoading(false);
