@@ -43,6 +43,7 @@ export default function StudentDashboard() {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [totalXP, setTotalXP] = useState(0);
+  const [notifications, setNotifications] = useState([]);
 
   // REFS FOR AVOIDING UNNECESSARY DB WRITES ON LOAD
   const isInitialLoad = useRef(true);
@@ -169,7 +170,14 @@ export default function StudentDashboard() {
 
       const unsubscribe = onMessage(messaging, (payload) => {
         console.log('[FCM] Foreground message received:', payload);
-        showToast(`📢 ${payload.notification.title}: ${payload.notification.body}`);
+        const newNotif = {
+          id: Date.now(),
+          title: payload.notification?.title || 'Notification',
+          body: payload.notification?.body || '',
+          time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+        };
+        setNotifications(prev => [newNotif, ...prev]);
+        showToast(`📢 ${newNotif.title}: ${newNotif.body}`);
       });
       return () => unsubscribe();
     }
@@ -411,13 +419,30 @@ export default function StudentDashboard() {
         onClose={() => setIsNotifOpen(false)} 
         title="Notifications"
       >
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-           <div className="w-16 h-16 bg-sage-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-sage-400 mb-4">
-              <span className="material-symbols-outlined text-3xl">notifications_off</span>
-           </div>
-           <p className="font-bold text-slate-800 dark:text-white">No new notifications</p>
-           <p className="text-sm text-sage-500">We'll alert you when there's an update to your spiritual journey.</p>
-        </div>
+        {notifications.length > 0 ? (
+          <div className="space-y-3 max-h-80 overflow-y-auto">
+            {notifications.map(n => (
+              <div key={n.id} className="flex items-start gap-3 p-4 bg-sage-50 dark:bg-slate-800 rounded-2xl">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-primary text-sm">notifications_active</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-sm text-slate-800 dark:text-white">{n.title}</p>
+                  <p className="text-xs text-sage-500 mt-0.5">{n.body}</p>
+                </div>
+                <span className="text-[10px] text-sage-400 shrink-0">{n.time}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+             <div className="w-16 h-16 bg-sage-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-sage-400 mb-4">
+                <span className="material-symbols-outlined text-3xl">notifications_off</span>
+             </div>
+             <p className="font-bold text-slate-800 dark:text-white">No new notifications</p>
+             <p className="text-sm text-sage-500">Prayer reminders and updates will appear here.</p>
+          </div>
+        )}
       </Modal>
     </>
   );

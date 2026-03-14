@@ -12,7 +12,7 @@ export default function HistoryPage() {
 
   return (
     <div className="flex h-screen bg-background-light dark:bg-background-dark font-display" style={{ fontFamily: 'Lexend, sans-serif' }}>
-      <Sidebar user={user} onLogout={logout} onFeatureUnavailable={() => alert('Phase 2 🚧')} />
+      <Sidebar user={user} onLogout={logout} />
       <main className="flex-1 p-12 flex flex-col items-center justify-center text-center">
         <div className="w-24 h-24 bg-sage-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-sage-400 mb-6">
           <span className="material-symbols-outlined text-4xl">history</span>
