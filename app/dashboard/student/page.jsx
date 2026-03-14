@@ -10,9 +10,10 @@ import NextEvent from './components/NextEvent';
 import DuaCard from './components/DuaCard';
 import StreakWidget from './components/StreakWidget';
 import Modal from './components/Modal';
-import { auth, db, loginWithGoogle, getUserProgress, getUserProfile, updateUserProgress, getUserWeeklyProgress, getLocalTodayId, logout } from '@/lib/firebase';
+import { auth, db, loginWithGoogle, getUserProgress, getUserProfile, updateUserProgress, getUserWeeklyProgress, getLocalTodayId, logout, messaging, saveNotificationToken } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, limit, onSnapshot, where } from 'firebase/firestore';
+import { getToken, onMessage } from 'firebase/messaging';
 
 export default function StudentDashboard() {
   // DB & AUTH STATE
@@ -132,6 +133,71 @@ export default function StudentDashboard() {
       return () => unsubscribe();
     }
   }, [user]);
+
+  // [DECREE 10] WEB PUSH & FCM INITIALIZATION
+  useEffect(() => {
+    if (user && typeof window !== 'undefined' && messaging) {
+      const initMessaging = async () => {
+        try {
+          // [DECREE 10] Explicit Service Worker Registration
+          if ('serviceWorker' in navigator) {
+            const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+            console.log('[FCM] SW registered:', registration.scope);
+          }
+
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            const token = await getToken(messaging, { 
+              vapidKey: 'bw7c_Lsc0qM-rOzurkbygn7Md0zwroU92-3i9xQQe64' 
+            });
+            if (token) {
+              await saveNotificationToken(user.uid, token);
+            }
+          }
+        } catch (error) {
+          console.error("[FCM] Notification setup failed:", error);
+        }
+      };
+      initMessaging();
+
+      const unsubscribe = onMessage(messaging, (payload) => {
+        console.log('[FCM] Foreground message received:', payload);
+        showToast(`📢 ${payload.notification.title}: ${payload.notification.body}`);
+      });
+      return () => unsubscribe();
+    }
+  }, [user]);
+
+  // [DECREE 10] LOCAL PRAYER REMINDERS
+  useEffect(() => {
+    if (!prayerTimes || !user) return;
+
+    const scheduleReminders = () => {
+      const now = new Date();
+      Object.entries(prayerTimes).forEach(([name, time]) => {
+        if (['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(name)) {
+          const [hours, minutes] = time.split(':');
+          const prayerDate = new Date();
+          prayerDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+
+          const timeToPrayer = prayerDate.getTime() - now.getTime();
+          if (timeToPrayer > 0) {
+            // Schedule notification
+            setTimeout(() => {
+              if (Notification.permission === 'granted') {
+                new Notification(`Waktunya Sholat ${name}`, {
+                  body: `Mari tunaikan ibadah sholat ${name} tepat waktu. ✨`,
+                  icon: '/favicon.ico'
+                });
+              }
+            }, timeToPrayer);
+          }
+        }
+      });
+    };
+
+    scheduleReminders();
+  }, [prayerTimes, user]);
 
   // [DECREE 3] THE MIDNIGHT GHOST KILLER
   useEffect(() => {

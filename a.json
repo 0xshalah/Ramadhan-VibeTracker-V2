@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "vibetracker-architect-v2",
+  "private_key_id": "264897c9be7b64d9727989fc03c118e50b650f3b",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDjZR96KGweh2+W\nPcXEyubiuSc8k82oMG3iz/Uk2/9VDRwudDU+E83YRuMJYqRcB7qdfn5x7caBdbd8\nPGslTcZORXSkqSW767xel2/ALvOtZiqAH0ZS9kHrnFUq0n4MtgdUugiI+vw9phcY\nUxUxuWwXAic1cR5/4c3veeGf10dygCyq2mkSZ0LL2kyuodFxRdPwsq2yPv3Cqz/z\nB7SgLBGTvS2ECb9vh7y7B25z3EblZVCykQL8Ya0R+Syl4ggAqH0/yGHhIYBzh6uq\nCyF1T0sUIUyGTz78/H9Ph9j0dd9TAm+F5qIoG8/Xeh3F50PnkPSoY1jqx8ohcMtm\nGifpCOCvAgMBAAECggEARrhGZ9l2drAsVg90GFX6JHzs5Pwas7oMEsQWO5Zn/G2N\nXC0r+dhy5lZ1eY/CChUlRqH2dTw7xjt0CyFHOVzM1b7oHeW1JJKWDN0QFjcD9eOW\nSC5x0o9fxQTjv+Oi7BUYhpMs4F0eYZXsDNaZ+tLt+OHki8xYbfEt+NJxByMOx17b\nSlfHfLwbITY7D/CqP2EfQgIR4RfppjO765+XkxqF40dDOKpyQhM1kbyLW752Y6wE\nI+CMTfrAiHHSVrRbh/cFo758dYO0CysiuqH0it7UDjbN9bGZGEy8WExxp2e+Z2CX\njUaW/kXXW9Y/3HkK6ehEg0rgk4yItQJ1tVxt9Wp7kQKBgQD8iSSpFxk/uLCioPzW\nVMWLfWvNjPloyPCG6IJw2eMN9JA+sJJSnAUd10TgRE6cHyWjRPS1AceniS3WWXLa\nXxQctAl/FFU9QHyhdaFlMOB1AS4no2NrtSONIfRqP//XY4sXdy8tqobB+BMoZhWq\nBdMqEvVX36QoVOF3UkxzDSWPSwKBgQDmg7DAzd4Njvz/QkZTW6lFa/NAd4sHrEQ0\nQ4ZBJz97K9v9RWQLuuYtLws247FPnItKqCg4y8OqG13AwFr0GhMDVx4DezsF5Sfa\noUaAi9UdM4uFZFiV/ReDKKrlMuYLXOCWAW0e+HW1dB5j2Ahe8BhlBztdB0G5Cn3c\nYb/y+69BrQKBgHKUKu0JTOxreMEg9/arGcIzUsE9cEAJw5ACWISpZ2qChxvac1lF\n7tBeRqLWezA8tZABjmG9//9Ur1Zs2T6ZGv/288QTzqTu6F09iM/nwD92HKHhcQ+C\nbTHwsPuwM/1e7dHkwqQelevWCaMvxi6RXADf/y8yikG+WVoRHhypX1xHAoGAFg+E\nWu9Y0PNeQw+Uq2WaTYqHPSQzqghSfq33q0SWTrNj2llJudWpManO6PHhhjz1F7AA\nKW9WynDUCB5glfvo1ekAdlTU0TudFM9ab/Lx8ll8gMeZssEF/wdlU4oLegrpc3Gv\nf8dHfJYgUm3aXzubGhAXHlATeiIG6ZBxTk/H9gECgYBf63kp3WhnP10RCdGwXp2T\nxHEBNcDX0y8+tuy9gyLJ2Jir/HsX47kF+aKoAWra5mUIWg7oC7tmdEMprPE8x4D1\nnAmGVA1jqHp8+htu1MDMKkp0a6SSOXooI3gPB8rc+HiF4HmNozkLabHL4em0BBou\n3oT2sLMYjHFt+LC1ecgykw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@vibetracker-architect-v2.iam.gserviceaccount.com",
+  "client_id": "101194422465146778751",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40vibetracker-architect-v2.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
