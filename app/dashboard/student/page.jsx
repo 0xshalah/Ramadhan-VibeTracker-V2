@@ -10,7 +10,7 @@ import NextEvent from './components/NextEvent';
 import DuaCard from './components/DuaCard';
 import StreakWidget from './components/StreakWidget';
 import Modal from './components/Modal';
-import { auth, db, loginWithGoogle, getUserProgress, updateUserProgress, getUserWeeklyProgress, getLocalTodayId, logout } from '@/lib/firebase';
+import { auth, db, loginWithGoogle, getUserProgress, getUserProfile, updateUserProgress, getUserWeeklyProgress, getLocalTodayId, logout } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, limit, onSnapshot, where } from 'firebase/firestore';
 
@@ -57,6 +57,12 @@ export default function StudentDashboard() {
           if (cloudData.targetTilawah !== undefined) setTargetTilawah(cloudData.targetTilawah);
           if (cloudData.sholat) setSholat(cloudData.sholat);
           if (cloudData.sunnah) setSunnah(cloudData.sunnah);
+        }
+        
+        // [DECREE 2] Fetch Target from Profile (Persistence)
+        const profile = await getUserProfile(currentUser.uid);
+        if (profile && profile.targetTilawah) {
+          setTargetTilawah(profile.targetTilawah);
         }
         
         // Fetch streak history
@@ -127,6 +133,29 @@ export default function StudentDashboard() {
     }
   }, [user]);
 
+  // [DECREE 3] THE MIDNIGHT GHOST KILLER
+  useEffect(() => {
+    if (!user) return;
+    const initialDateId = getLocalTodayId();
+    const interval = setInterval(() => {
+      const currentDateId = getLocalTodayId();
+      if (currentDateId !== initialDateId) {
+        window.location.reload(); 
+      }
+    }, 60000); 
+    return () => clearInterval(interval);
+  }, [user]);
+
+  // [DECREE 5] Modal Body Scroll Lock
+  useEffect(() => {
+    if (isScheduleOpen || isNotifOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isScheduleOpen, isNotifOpen]);
+
   // ALADHAN API INTEGRATION (METHOD=20 [KEMENAG RI] & DYNAMIC GEOLOCATION)
   useEffect(() => {
     async function fetchPrayerTimes() {
@@ -136,10 +165,24 @@ export default function StudentDashboard() {
           const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lng}&method=20`);
           const data = await res.json();
           if (data && data.data) {
-            setPrayerTimes(data.data.timings);
+            const timings = data.data.timings;
+            setPrayerTimes(timings);
+            
             if (data.data.date && data.data.date.hijri) {
                const hijri = data.data.date.hijri;
-               setHijriDate(`${hijri.month.en} ${hijri.year} AH`);
+               
+               // [DECREE 4] Hijriah Pasca-Maghrib Fix
+               const now = new Date();
+               const [maghribH, maghribM] = timings.Maghrib.split(':');
+               const maghribTime = new Date();
+               maghribTime.setHours(parseInt(maghribH, 10), parseInt(maghribM, 10), 0, 0);
+               
+               if (now >= maghribTime) {
+                   const tomorrowHijriDay = parseInt(hijri.day, 10) + 1;
+                   setHijriDate(`${tomorrowHijriDay} ${hijri.month.en} ${hijri.year} AH (Post-Maghrib)`);
+               } else {
+                   setHijriDate(`${hijri.day} ${hijri.month.en} ${hijri.year} AH`);
+               }
             }
           }
           if (isFallback) {
@@ -170,7 +213,9 @@ export default function StudentDashboard() {
   }, []);
 
   // THE LOGIC ENGINE: Pemisahan Core & Bonus Sunnah
-  const tilawahPct = Math.min(Math.round((tilawah / targetTilawah) * 100), 100);
+  const safeTarget = Math.max(1, targetTilawah); // [DECREE 1] Anti-Zero Division
+  const tilawahPct = Math.min(Math.round((tilawah / safeTarget) * 100), 100);
+  
   const prayersDone = Object.values(sholat).filter(v => v).length;
   const sholatPct = (prayersDone / 5) * 100;
   
