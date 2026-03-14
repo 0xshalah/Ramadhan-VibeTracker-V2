@@ -1,0 +1,1287 @@
+<!-- Student Dashboard Desktop -->
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Ramadan Student Tracker</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "sage": {
+                            50: "#f4f7f5",
+                            100: "#e9efeb",
+                            200: "#d2dfd7",
+                            300: "#acc4b6",
+                            400: "#7fa38e",
+                            50: "#61896f",
+                            600: "#4a6b57",
+                            700: "#3d5647",
+                            800: "#32463a",
+                            900: "#2a3a31",
+                        },
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="w-72 bg-white dark:bg-slate-900 border-r border-sage-200 dark:border-slate-800 flex flex-col">
+            <div class="p-8 flex items-center gap-3">
+                <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white">
+                    <span class="material-symbols-outlined">auto_stories</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">RamadanLog</h1>
+                    <p class="text-xs text-sage-500 font-medium">Student Portal</p>
+                </div>
+            </div>
+            <nav class="flex-1 px-4 space-y-2">
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-sage-100 dark:bg-sage-900/30 text-sage-700 dark:text-primary font-semibold"
+                    href="#">
+                    <span class="material-symbols-outlined fill-1">home</span>
+                    <span>Home</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors"
+                    href="#">
+                    <span class="material-symbols-outlined">history</span>
+                    <span>History</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors"
+                    href="#">
+                    <span class="material-symbols-outlined">military_tech</span>
+                    <span>Badges</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors"
+                    href="#">
+                    <span class="material-symbols-outlined">person</span>
+                    <span>Profile</span>
+                </a>
+            </nav>
+            <div class="p-6 border-t border-sage-100 dark:border-slate-800">
+                <div class="bg-sage-50 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-sage-200 dark:bg-slate-700 overflow-hidden">
+                        <img class="w-full h-full object-cover" data-alt="Student profile avatar placeholder"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhEw5MiBrGI3zJwe9gkH_6518EriKAaivgyZYAnu1MxJQ6yZjMHJypXx8j6tHB3IFot-kXRgAFcQnzeQzO5JF9wnF0vAOHE0lfYt7GA4fEdYqnXcFN2SWof4lm2zmKkEtu6Adn6DD-LvX1vysjW_zydYR8TYMvaHGYsWBt5yy4jFZnsvRms4uXZB_WpH_p76oXoL9ATuymvwlfBsqrvzGsuqE4qnBLf56OFqV14XLMXaSbjIZeRRpOjcX8xfyVpygq4KjxmhXUH_I" />
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold truncate">Ahmad Fauzi</p>
+                        <p class="text-xs text-sage-500 truncate">Grade 11 Student</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto scroll-smooth">
+            <!-- Header Section -->
+            <header class="p-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                <div class="space-y-1">
+                    <h2 class="text-3xl font-black text-slate-900 dark:text-slate-50 tracking-tight">Assalamu'alaikum,
+                        Ahmad!</h2>
+                    <div class="flex items-center gap-2 text-sage-600 dark:text-sage-400">
+                        <span class="material-symbols-outlined text-sm">calendar_today</span>
+                        <p class="text-sm font-medium">Tuesday, 12 March 2024 | <span class="text-primary font-bold">1
+                                Ramadan 1445 AH</span></p>
+                    </div>
+                </div>
+                <div
+                    class="flex items-center gap-6 bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-sage-100 dark:border-slate-800">
+                    <div class="relative flex items-center justify-center">
+                        <svg class="w-16 h-16 transform -rotate-90">
+                            <circle class="text-sage-100 dark:text-slate-800" cx="32" cy="32" fill="transparent" r="28"
+                                stroke="currentColor" stroke-width="6"></circle>
+                            <circle id="progress-circle" class="text-primary" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor"
+                                stroke-dasharray="175.9" stroke-dashoffset="61.5" stroke-width="6"></circle>
+                        </svg>
+                        <span id="progress-percent" class="absolute text-sm font-bold">65%</span>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-sage-500 uppercase tracking-wider">Today's Worship</p>
+                        <p id="progress-message" class="text-lg font-bold text-slate-800 dark:text-slate-100">Almost there!</p>
+                    </div>
+                    <button class="bg-sage-50 dark:bg-slate-800 p-2 rounded-lg text-slate-600 dark:text-slate-400">
+                        <span class="material-symbols-outlined">notifications</span>
+                    </button>
+                </div>
+            </header>
+            <div class="px-8 pb-12 grid grid-cols-12 gap-6">
+                <!-- Left Column: Tracking Grid -->
+                <div class="col-span-12 lg:col-span-8 space-y-6">
+                    <!-- Sholat Fardhu Section -->
+                    <section
+                        class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sage-100 dark:border-slate-800 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary">mosque</span>
+                                Sholat Fardhu
+                            </h3>
+                            <span class="text-xs font-bold bg-sage-50 text-sage-600 px-3 py-1 rounded-full uppercase">5
+                                Daily Prayers</span>
+                        </div>
+                        <div id="prayer-grid" class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                            <!-- Prayer: Subuh -->
+                            <div data-prayer="subuh" data-done="true"
+                                class="flex flex-col items-center gap-3 p-4 rounded-2xl bg-sage-50 dark:bg-slate-800/50 border border-transparent hover:border-primary/30 transition-all cursor-pointer group active:scale-95">
+                                <p class="text-xs font-bold text-sage-500 uppercase">Subuh</p>
+                                <div class="prayer-icon w-12 h-12 rounded-full border-2 border-primary flex items-center justify-center bg-primary text-white shadow-lg shadow-primary/20 transition-all duration-300">
+                                    <span class="material-symbols-outlined">check</span>
+                                </div>
+                                <p class="text-[10px] font-medium text-sage-400">04:45 AM</p>
+                            </div>
+                            <!-- Prayer: Dzuhur -->
+                            <div data-prayer="dzuhur" data-done="true"
+                                class="flex flex-col items-center gap-3 p-4 rounded-2xl bg-sage-50 dark:bg-slate-800/50 border border-transparent hover:border-primary/30 transition-all cursor-pointer group active:scale-95">
+                                <p class="text-xs font-bold text-sage-500 uppercase">Dzuhur</p>
+                                <div class="prayer-icon w-12 h-12 rounded-full border-2 border-primary flex items-center justify-center bg-primary text-white shadow-lg shadow-primary/20 transition-all duration-300">
+                                    <span class="material-symbols-outlined">check</span>
+                                </div>
+                                <p class="text-[10px] font-medium text-sage-400">12:05 PM</p>
+                            </div>
+                            <!-- Prayer: Ashar -->
+                            <div data-prayer="ashar" data-done="false"
+                                class="flex flex-col items-center gap-3 p-4 rounded-2xl bg-sage-50 dark:bg-slate-800/50 border border-transparent hover:border-primary/30 transition-all cursor-pointer group active:scale-95">
+                                <p class="text-xs font-bold text-sage-500 uppercase">Ashar</p>
+                                <div class="prayer-icon w-12 h-12 rounded-full border-2 border-slate-200 dark:border-slate-600 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-300 transition-all duration-300">
+                                </div>
+                                <p class="text-[10px] font-medium text-sage-400">03:15 PM</p>
+                            </div>
+                            <!-- Prayer: Maghrib -->
+                            <div data-prayer="maghrib" data-done="false"
+                                class="flex flex-col items-center gap-3 p-4 rounded-2xl bg-sage-50 dark:bg-slate-800/50 border border-transparent hover:border-primary/30 transition-all cursor-pointer group active:scale-95">
+                                <p class="text-xs font-bold text-sage-500 uppercase">Maghrib</p>
+                                <div class="prayer-icon w-12 h-12 rounded-full border-2 border-slate-200 dark:border-slate-600 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-300 transition-all duration-300">
+                                </div>
+                                <p class="text-[10px] font-medium text-sage-400">06:12 PM</p>
+                            </div>
+                            <!-- Prayer: Isya -->
+                            <div data-prayer="isya" data-done="false"
+                                class="flex flex-col items-center gap-3 p-4 rounded-2xl bg-sage-50 dark:bg-slate-800/50 border border-transparent hover:border-primary/30 transition-all cursor-pointer group active:scale-95">
+                                <p class="text-xs font-bold text-sage-500 uppercase">Isya</p>
+                                <div class="prayer-icon w-12 h-12 rounded-full border-2 border-slate-200 dark:border-slate-600 flex items-center justify-center bg-white dark:bg-slate-700 text-slate-300 transition-all duration-300">
+                                </div>
+                                <p class="text-[10px] font-medium text-sage-400">07:22 PM</p>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Two Column Section -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Ibadah Sunnah -->
+                        <section
+                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sage-100 dark:border-slate-800 shadow-sm">
+                            <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-amber-500">stars</span>
+                                Sunnah Activities
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-3 rounded-xl hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-sage-400">nightlight_round</span>
+                                        <span class="text-sm font-medium">Shalat Tarawih</span>
+                                    </div>
+                                    <button data-sunnah="tarawih" data-active="false"
+                                        class="sunnah-toggle w-10 h-5 bg-sage-200 dark:bg-slate-700 rounded-full relative transition-colors cursor-pointer active:scale-95">
+                                        <div class="sunnah-knob absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-all duration-300 ease-in-out">
+                                        </div>
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between p-3 rounded-xl hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-sage-400">set_meal</span>
+                                        <span class="text-sm font-medium">Sahur Healthy Meal</span>
+                                    </div>
+                                    <button data-sunnah="sahur" data-active="true"
+                                        class="sunnah-toggle w-10 h-5 bg-primary rounded-full relative transition-colors cursor-pointer active:scale-95">
+                                        <div class="sunnah-knob absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-all duration-300 ease-in-out">
+                                        </div>
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between p-3 rounded-xl hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <span class="material-symbols-outlined text-sage-400">volunteer_activism</span>
+                                        <span class="text-sm font-medium">Daily Sadaqah</span>
+                                    </div>
+                                    <button data-sunnah="sadaqah" data-active="true"
+                                        class="sunnah-toggle w-10 h-5 bg-primary rounded-full relative transition-colors cursor-pointer active:scale-95">
+                                        <div class="sunnah-knob absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-all duration-300 ease-in-out">
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+                        <!-- Tilawah Tracker -->
+                        <section
+                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sage-100 dark:border-slate-800 shadow-sm">
+                            <h3 class="text-lg font-bold mb-5 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-indigo-500">menu_book</span>
+                                Target Tilawah
+                            </h3>
+                            <div class="text-center py-4 bg-indigo-50/50 dark:bg-indigo-900/20 rounded-2xl mb-4">
+                                <p class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase mb-1">Current
+                                    Progress</p>
+                                <div class="flex items-center justify-center gap-4">
+                                    <button id="btn-tilawah-minus"
+                                        class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm text-indigo-600 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform cursor-pointer">
+                                        <span class="material-symbols-outlined">remove</span>
+                                    </button>
+                                    <span id="tilawah-display" class="text-4xl font-black text-slate-800 dark:text-slate-100">12</span>
+                                    <button id="btn-tilawah-plus"
+                                        class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm text-indigo-600 flex items-center justify-center hover:scale-110 active:scale-95 transition-transform cursor-pointer">
+                                        <span class="material-symbols-outlined">add</span>
+                                    </button>
+                                </div>
+                                <p class="text-sm font-medium text-slate-500 mt-2">Halaman yang dibaca hari ini</p>
+                            </div>
+                            <div class="flex justify-between items-center px-2">
+                                <p class="text-xs font-bold text-sage-500">Target: 20 Pages</p>
+                                <p id="tilawah-percent" class="text-xs font-bold text-primary">60% Done</p>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+                <!-- Right Column: Widgets -->
+                <div class="col-span-12 lg:col-span-4 space-y-6">
+                    <!-- 7-Day Streak -->
+                    <section class="bg-primary/10 dark:bg-primary/5 p-6 rounded-3xl border border-primary/20">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100">7-Day Streak</h3>
+                            <div class="flex items-center gap-1 text-primary">
+                                <span class="material-symbols-outlined fill-1">local_fire_department</span>
+                                <span class="font-black text-xl">4</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="flex flex-col items-center gap-2">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
+                                    M</div>
+                                <div class="w-1 h-1 bg-primary rounded-full"></div>
+                            </div>
+                            <div class="flex flex-col items-center gap-2">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
+                                    T</div>
+                                <div class="w-1 h-1 bg-primary rounded-full"></div>
+                            </div>
+                            <div class="flex flex-col items-center gap-2">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
+                                    W</div>
+                                <div class="w-1 h-1 bg-primary rounded-full"></div>
+                            </div>
+                            <div class="flex flex-col items-center gap-2">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
+                                    T</div>
+                                <div class="w-1 h-1 bg-primary rounded-full"></div>
+                            </div>
+                            <div class="flex flex-col items-center gap-2 opacity-30">
+                                <div
+                                    class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-xs font-bold text-slate-500">
+                                    F</div>
+                            </div>
+                            <div class="flex flex-col items-center gap-2 opacity-30">
+                                <div
+                                    class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-xs font-bold text-slate-500">
+                                    S</div>
+                            </div>
+                            <div class="flex flex-col items-center gap-2 opacity-30">
+                                <div
+                                    class="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-xs font-bold text-slate-500">
+                                    S</div>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Dua of the Day -->
+                    <section
+                        class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sage-100 dark:border-slate-800 shadow-sm relative overflow-hidden group">
+                        <div
+                            class="absolute -right-4 -bottom-4 w-24 h-24 bg-sage-50 dark:bg-slate-800 rounded-full group-hover:scale-150 transition-transform duration-700 opacity-50">
+                        </div>
+                        <h3 class="text-sm font-bold text-sage-500 uppercase tracking-widest mb-4">Dua of the Day</h3>
+                        <p
+                            class="text-2xl font-display font-medium leading-relaxed mb-4 text-slate-800 dark:text-slate-100 italic">
+                            "Allahumma laka sumtu wa bika aamantu wa 'ala rizqika aftartu."
+                        </p>
+                        <p class="text-sm text-sage-600 dark:text-sage-400">
+                            O Allah, for Thee I have fasted, in Thee I believe, and with Thy provision I break my fast.
+                        </p>
+                    </section>
+                    <!-- Upcoming Schedule/Reminders -->
+                    <section
+                        class="bg-slate-900 text-white p-6 rounded-3xl shadow-xl shadow-slate-200 dark:shadow-none">
+                        <h3 class="font-bold mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">schedule</span>
+                            Next Event
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="flex gap-4">
+                                <div class="w-12 h-12 bg-white/10 rounded-xl flex flex-col items-center justify-center">
+                                    <span class="text-xs font-bold text-primary">18</span>
+                                    <span class="text-[10px] uppercase font-medium">Min</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold">Maghrib Prayer</p>
+                                    <p class="text-xs text-slate-400 italic">Time to break the fast</p>
+                                </div>
+                            </div>
+                            <button
+                                class="w-full py-3 bg-primary text-slate-900 font-bold rounded-xl text-sm transition-transform active:scale-95">
+                                Open Full Schedule
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    // ═══════════════════════════════════════════════════════
+    // 🚀 VibeTracker Interactive Engine v1.0
+    // Handles: Tilawah Counter, Sholat Toggle, Sunnah Toggle,
+    //          Real-time Circular Progress Update
+    // ═══════════════════════════════════════════════════════
+
+    // 1. STATE MANAGEMENT
+    const state = {
+        tilawah: 12,
+        targetTilawah: 20,
+        sholat: { subuh: true, dzuhur: true, ashar: false, maghrib: false, isya: false },
+        sunnah: { tarawih: false, sahur: true, sadaqah: true }
+    };
+
+    // 2. DOM SELECTORS
+    const el = {
+        tilawahDisplay: document.getElementById('tilawah-display'),
+        tilawahPercent: document.getElementById('tilawah-percent'),
+        progressCircle: document.getElementById('progress-circle'),
+        progressPercent: document.getElementById('progress-percent'),
+        progressMessage: document.getElementById('progress-message'),
+        btnMinus: document.getElementById('btn-tilawah-minus'),
+        btnPlus: document.getElementById('btn-tilawah-plus'),
+        prayerCards: document.querySelectorAll('[data-prayer]'),
+        sunnahToggles: document.querySelectorAll('[data-sunnah]')
+    };
+
+    // 3. CORE UPDATE FUNCTION
+    function updateUI() {
+        // — Tilawah Section —
+        el.tilawahDisplay.textContent = state.tilawah;
+        const tilawahPct = Math.min(Math.round((state.tilawah / state.targetTilawah) * 100), 100);
+        el.tilawahPercent.textContent = tilawahPct + '% Done';
+
+        // — Combined Progress (Sholat 50% weight + Tilawah 50% weight) —
+        const prayersDone = Object.values(state.sholat).filter(v => v).length;
+        const totalPct = Math.round(((prayersDone / 5) * 50) + (tilawahPct / 2));
+
+        // — Update Header Circular Progress —
+        el.progressPercent.textContent = totalPct + '%';
+        const circumference = 175.9; // 2 * π * r(28)
+        const offset = circumference - (totalPct / 100 * circumference);
+        el.progressCircle.style.strokeDashoffset = offset;
+        el.progressCircle.style.transition = 'stroke-dashoffset 0.5s ease';
+
+        // — Motivational Message —
+        if (totalPct >= 100) el.progressMessage.textContent = 'Masya Allah! Perfect! 🌟';
+        else if (totalPct >= 80) el.progressMessage.textContent = 'Almost there!';
+        else if (totalPct >= 50) el.progressMessage.textContent = 'Keep going! 💪';
+        else el.progressMessage.textContent = 'Let\'s start strong!';
+    }
+
+    // 4. TILAWAH COUNTER (+/-)
+    el.btnPlus.addEventListener('click', () => {
+        state.tilawah++;
+        // Pop animation on number
+        el.tilawahDisplay.style.transform = 'scale(1.3)';
+        setTimeout(() => el.tilawahDisplay.style.transform = 'scale(1)', 150);
+        el.tilawahDisplay.style.transition = 'transform 0.15s ease';
+        updateUI();
+    });
+
+    el.btnMinus.addEventListener('click', () => {
+        if (state.tilawah > 0) {
+            state.tilawah--;
+            el.tilawahDisplay.style.transform = 'scale(0.8)';
+            setTimeout(() => el.tilawahDisplay.style.transform = 'scale(1)', 150);
+            el.tilawahDisplay.style.transition = 'transform 0.15s ease';
+            updateUI();
+        }
+    });
+
+    // 5. SHOLAT PRAYER TOGGLE (Click to check/uncheck)
+    el.prayerCards.forEach(card => {
+        card.addEventListener('click', () => {
+            const prayerName = card.dataset.prayer;
+            const isDone = card.dataset.done === 'true';
+            const newState = !isDone;
+
+            // Update state
+            state.sholat[prayerName] = newState;
+            card.dataset.done = String(newState);
+
+            // Update visual
+            const iconEl = card.querySelector('.prayer-icon');
+            if (newState) {
+                iconEl.classList.add('bg-primary', 'text-white', 'border-primary', 'shadow-lg', 'shadow-primary/20');
+                iconEl.classList.remove('bg-white', 'dark:bg-slate-700', 'text-slate-300', 'border-slate-200', 'dark:border-slate-600');
+                iconEl.innerHTML = '<span class="material-symbols-outlined">check</span>';
+            } else {
+                iconEl.classList.remove('bg-primary', 'text-white', 'border-primary', 'shadow-lg', 'shadow-primary/20');
+                iconEl.classList.add('bg-white', 'dark:bg-slate-700', 'text-slate-300', 'border-slate-200', 'dark:border-slate-600');
+                iconEl.innerHTML = '';
+            }
+
+            updateUI();
+        });
+    });
+
+    // 6. SUNNAH TOGGLE SWITCHES
+    el.sunnahToggles.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const sunnahName = btn.dataset.sunnah;
+            const isActive = btn.dataset.active === 'true';
+            const newState = !isActive;
+
+            state.sunnah[sunnahName] = newState;
+            btn.dataset.active = String(newState);
+
+            const knob = btn.querySelector('.sunnah-knob');
+            if (newState) {
+                btn.classList.remove('bg-sage-200', 'dark:bg-slate-700');
+                btn.classList.add('bg-primary');
+                knob.style.transform = 'translateX(20px)';
+            } else {
+                btn.classList.add('bg-sage-200', 'dark:bg-slate-700');
+                btn.classList.remove('bg-primary');
+                knob.style.transform = 'translateX(0px)';
+            }
+
+            updateUI();
+        });
+
+        // Set initial knob position
+        const knob = btn.querySelector('.sunnah-knob');
+        if (btn.dataset.active === 'true') {
+            knob.style.transform = 'translateX(20px)';
+        }
+    });
+
+    // 7. INITIAL RENDER
+    updateUI();
+
+    console.log('🚀 VibeTracker Interactive Engine loaded successfully!');
+    </script>
+</body>
+
+</html>
+
+<!-- Teacher Dashboard Desktop -->
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Teacher Dashboard - Ramadan Tracker</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col">
+            <div class="p-6 flex items-center gap-3">
+                <div class="bg-primary/20 p-2 rounded-lg">
+                    <span class="material-symbols-outlined text-primary">shield_moon</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Ramadan Tracker</h1>
+                    <p class="text-xs text-slate-500">Teacher Portal</p>
+                </div>
+            </div>
+            <nav class="flex-1 px-4 space-y-2 mt-4">
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary text-slate-900 font-medium"
+                    href="#">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    href="#">
+                    <span class="material-symbols-outlined">group</span>
+                    <span>Classroom</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    href="#">
+                    <span class="material-symbols-outlined">analytics</span>
+                    <span>Reports</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    href="#">
+                    <span class="material-symbols-outlined">auto_stories</span>
+                    <span>Resources</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    href="#">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+                <div class="bg-primary/10 rounded-xl p-4 mb-4">
+                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">PRO PLAN</p>
+                    <p class="text-xs text-slate-500 mb-3">Get advanced analytics for your whole class.</p>
+                    <button
+                        class="w-full py-2 bg-primary text-slate-900 text-xs font-bold rounded-lg hover:brightness-95">Upgrade
+                        Now</button>
+                </div>
+                <div class="flex items-center gap-3 p-2">
+                    <div class="w-10 h-10 rounded-full bg-slate-200" data-alt="Teacher profile avatar"
+                        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBKXbse9AqBPIstnmY6pPN-SoG3BXHPZV-7heJgEhwRp68okDCk90aA5WFzb0xui8xMuSRAgfsWEM7-Z6J_GR_snqQQD5xc48xS-YhMP9Q2D-sAvg-N33_7IG9oqEbqFiBDOYWStptjovoaOQ1wX3A52UoDYPM33CguaKXz73qgtuEOXCJ56WXK9li-o30QwTvDKdhoFBMJDj3dhsSSOcQ1e61lLjZ4zuSCHK7LuY6TNxOa2DXlr60-LQUFyG4wiEpXg3Cn1hmnRS0')">
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-sm font-semibold truncate">Ahmed Ali</p>
+                        <p class="text-xs text-slate-500 truncate">Senior Instructor</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col overflow-y-auto relative">
+            <!-- Header Bar -->
+            <header
+                class="h-16 flex items-center justify-between px-8 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
+                <div class="flex items-center flex-1 max-w-md">
+                    <div class="relative w-full">
+                        <span
+                            class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                        <input
+                            class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/50"
+                            placeholder="Search students, groups..." type="text" />
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span
+                            class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+                    </button>
+                    <button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                        <span class="material-symbols-outlined">chat_bubble</span>
+                    </button>
+                    <div class="h-8 w-px bg-slate-200 dark:border-slate-800 mx-2"></div>
+                    <button
+                        class="bg-primary hover:brightness-95 text-slate-900 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">add</span>
+                        Add Student
+                    </button>
+                </div>
+            </header>
+            <div class="p-8 space-y-8">
+                <!-- Stats Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-slate-500 text-sm font-medium">Total Students</span>
+                            <div class="bg-primary/20 p-2 rounded-lg text-primary">
+                                <span class="material-symbols-outlined text-sm">group</span>
+                            </div>
+                        </div>
+                        <h3 class="text-3xl font-bold">28</h3>
+                        <p class="text-xs text-green-600 mt-2 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs">trending_up</span> +2% this week
+                        </p>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-slate-500 text-sm font-medium">Class Average</span>
+                            <div class="bg-primary/20 p-2 rounded-lg text-primary">
+                                <span class="material-symbols-outlined text-sm">verified</span>
+                            </div>
+                        </div>
+                        <h3 class="text-3xl font-bold">84%</h3>
+                        <p class="text-xs text-red-500 mt-2 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs">trending_down</span> -1.2% from yesterday
+                        </p>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-slate-500 text-sm font-medium">Fasting Today</span>
+                            <div class="bg-primary/20 p-2 rounded-lg text-primary">
+                                <span class="material-symbols-outlined text-sm">water_drop</span>
+                            </div>
+                        </div>
+                        <h3 class="text-3xl font-bold">26/28</h3>
+                        <p class="text-xs text-slate-500 mt-2">Currently tracked</p>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-slate-500 text-sm font-medium">Quran Completion</span>
+                            <div class="bg-primary/20 p-2 rounded-lg text-primary">
+                                <span class="material-symbols-outlined text-sm">book_5</span>
+                            </div>
+                        </div>
+                        <h3 class="text-3xl font-bold">12%</h3>
+                        <p class="text-xs text-green-600 mt-2 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs">trending_up</span> +5% vs yesterday
+                        </p>
+                    </div>
+                </div>
+                <!-- Chart Section -->
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-lg font-bold">Prayer Completion Trends</h2>
+                            <p class="text-sm text-slate-500">Class-wide average for the last 7 days</p>
+                        </div>
+                        <select class="bg-slate-100 dark:bg-slate-800 border-none text-sm rounded-lg py-1 px-3">
+                            <option>Last 7 Days</option>
+                            <option>Last 30 Days</option>
+                        </select>
+                    </div>
+                    <div class="h-64 w-full">
+                        <svg class="w-full h-full" fill="none" preserveaspectratio="none" viewbox="0 0 500 150">
+                            <path d="M0 120 Q 50 110, 100 80 T 200 60 T 300 90 T 400 30 T 500 10 V 150 H 0 Z"
+                                fill="url(#grad)" fill-opacity="0.1"></path>
+                            <path d="M0 120 Q 50 110, 100 80 T 200 60 T 300 90 T 400 30 T 500 10" fill="none"
+                                stroke="#13ec5b" stroke-width="3"></path>
+                            <defs>
+                                <lineargradient id="grad" x1="0%" x2="0%" y1="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#13ec5b;stop-opacity:1"></stop>
+                                    <stop offset="100%" style="stop-color:#13ec5b;stop-opacity:0"></stop>
+                                </lineargradient>
+                            </defs>
+                        </svg>
+                        <div class="flex justify-between mt-4 px-2 text-xs text-slate-500 font-medium">
+                            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Student Grid -->
+                <div>
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold">Students List</h2>
+                        <div class="flex items-center gap-3">
+                            <button
+                                class="flex items-center gap-2 text-sm text-slate-500 bg-white dark:bg-slate-900 px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg">
+                                <span class="material-symbols-outlined text-sm">filter_list</span> Filter
+                            </button>
+                            <button
+                                class="flex items-center gap-2 text-sm text-slate-500 bg-white dark:bg-slate-900 px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-lg">
+                                <span class="material-symbols-outlined text-sm">sort</span> Sort By
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <!-- Student Card 1 -->
+                        <div
+                            class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 rounded-full bg-primary/20 overflow-hidden">
+                                    <img class="w-full h-full object-cover" data-alt="Student avatar placeholder"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDD3kgTTYfwOGBf00BdAcUfbgbNuHH4xfLP_-exP3jH0PtNFqpaUxs3lsNqy-hWaznnzS1_UxVm3957GNsPCdg-Bib1A0g_xvP85pXdxftUH5Ol36p7SLlwSpb0PVqKtYghk8AVVtOCaEkL-b-16Q0mBDHQnCBIkPEveg777BDR8G88mX9OdSvdRFnRFfE3PY3OLQV8BLCebZ4Lxn2030-MNdzfd2vCCVt5SXUfj-d1wvfuGDiDy8BPT4HCkgXdjDQ2r1529FX8QlM" />
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm">Zaid Malik</h4>
+                                    <p class="text-xs text-slate-500">Grade 10-A</p>
+                                </div>
+                                <button class="ml-auto text-slate-400 hover:text-slate-600">
+                                    <span class="material-symbols-outlined">more_vert</span>
+                                </button>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span class="text-slate-500">Salah Progress</span>
+                                        <span class="font-bold">4/5</span>
+                                    </div>
+                                    <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                        <div class="bg-primary h-full w-[80%]"></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex gap-2">
+                                        <div
+                                            class="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                            <span class="material-symbols-outlined text-xs">check_circle</span> FASTING
+                                        </div>
+                                        <div
+                                            class="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                            <span class="material-symbols-outlined text-xs">auto_stories</span> JUZ 2
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Student Card 2 -->
+                        <div
+                            class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden">
+                                    <img class="w-full h-full object-cover" data-alt="Student avatar placeholder"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRvWTtaLHoWsYCbsEEhjIm6_0ryXXjB330xuQLEPGKMEX9fnxviFsHJbKMZ8Ast2_wLPtmQLvglbN7NqdR8O8s7Df_3XfDMIlc3n9icpL6a2wg3H8WC-Pvk3w21cuUWvJtDXSyeCVGqeYO5OGId9VJIWf_btX4BFYVNI4wND3x8_-NpnOSowNfaHtWzTbsgHurNSqlenBpyUTev_cSGQ8J7dPMCloZVyQPjPQLzpjuCOBsYg5J7pADangcqNGSpba-3mepPKNKY5A" />
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm">Fatima Zahra</h4>
+                                    <p class="text-xs text-slate-500">Grade 10-A</p>
+                                </div>
+                                <button class="ml-auto text-slate-400 hover:text-slate-600">
+                                    <span class="material-symbols-outlined">more_vert</span>
+                                </button>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span class="text-slate-500">Salah Progress</span>
+                                        <span class="font-bold">5/5</span>
+                                    </div>
+                                    <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                        <div class="bg-primary h-full w-[100%]"></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex gap-2">
+                                        <div
+                                            class="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                            <span class="material-symbols-outlined text-xs">check_circle</span> FASTING
+                                        </div>
+                                        <div
+                                            class="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                            <span class="material-symbols-outlined text-xs">auto_stories</span> JUZ 5
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Student Card 3 -->
+                        <div
+                            class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden">
+                                    <img class="w-full h-full object-cover" data-alt="Student avatar placeholder"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQg2exoN7krFTEot_ovGpmWGeoXrm2PywKK_1QglaQcAOPS9lFLaJY3d90szG7wEYBZiQ6mSVeiF1UqX84C_5fBUT9xL8Eaowx36rRS6FdD1n1-qQG-EzM3dUbxnUg9sVnPXiEnDX7BtgSZM50xgWM4qB6CiqnxYz0Im82FTdZceV0Exk47N4KjmZTLw2W0xrwLJZcWba0zgFV3ZdWE4JNb_FceC0EPpXyH4u4dONQaYtT_cmrTzYdvdy_v88ys4ENtJGuXTH-MGI" />
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm">Omar Hassan</h4>
+                                    <p class="text-xs text-slate-500">Grade 10-A</p>
+                                </div>
+                                <button class="ml-auto text-slate-400 hover:text-slate-600">
+                                    <span class="material-symbols-outlined">more_vert</span>
+                                </button>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span class="text-slate-500">Salah Progress</span>
+                                        <span class="font-bold">2/5</span>
+                                    </div>
+                                    <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                        <div class="bg-primary h-full w-[40%]"></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex gap-2">
+                                        <div
+                                            class="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                            <span class="material-symbols-outlined text-xs">block</span> EXCUSED
+                                        </div>
+                                        <div
+                                            class="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                            <span class="material-symbols-outlined text-xs">auto_stories</span> JUZ 1
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Student Card 4 -->
+                        <div
+                            class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden">
+                                    <img class="w-full h-full object-cover" data-alt="Student avatar placeholder"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuATqntuhjN_hWI2Yyv2Qkceh7djmZDfFwrIrn2oLpvaawpEoMcSR_UEsK5ptuz-H9A19-pDNPFQAo3QWaaVO9HDi1rCK5A2Ekeyxl1t3cd7VqH4TVPuwcLx1tH7A5GJ92AM5zancX1mBA3ciOS03KAOMQLQFSvPHKbZtfeoqal9MEz0qZ4P1MtvCvN5yFOHvzihharBUMRFl5I31d1o4ZvpYHLMI1OnM-TvCfbuh2T_bpQQtqSrfuul4o84y9nuu4v3B4GmZ3YmimM" />
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-sm">Layla Idris</h4>
+                                    <p class="text-xs text-slate-500">Grade 10-A</p>
+                                </div>
+                                <button class="ml-auto text-slate-400 hover:text-slate-600">
+                                    <span class="material-symbols-outlined">more_vert</span>
+                                </button>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-xs mb-1">
+                                        <span class="text-slate-500">Salah Progress</span>
+                                        <span class="font-bold">5/5</span>
+                                    </div>
+                                    <div class="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                        <div class="bg-primary h-full w-[100%]"></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex gap-2">
+                                        <div
+                                            class="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                                            <span class="material-symbols-outlined text-xs">check_circle</span> FASTING
+                                        </div>
+                                        <div
+                                            class="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                                            <span class="material-symbols-outlined text-xs">auto_stories</span> JUZ 4
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Floating Action Button Mobile (visible on larger screens here as a sample) -->
+            <button
+                class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-slate-900 rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-transform z-20">
+                <span class="material-symbols-outlined">add</span>
+            </button>
+        </main>
+    </div>
+</body>
+
+</html>
+
+<!-- Parent Dashboard Desktop -->
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Ramadan Tracker - Parent Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "sage": "#61896f",
+                        "gold": "#d4af37",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+    <div class="flex h-screen overflow-hidden">
+        <!-- SideNavBar -->
+        <aside class="w-64 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
+            <div class="p-6 flex items-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-3xl font-bold">nights_stay</span>
+                </div>
+                <div>
+                    <h1 class="text-slate-900 dark:text-slate-50 text-base font-bold leading-none">Ramadan Tracker</h1>
+                    <p class="text-sage text-xs font-medium">Parent Portal</p>
+                </div>
+            </div>
+            <nav class="flex-1 px-4 py-4 flex flex-col gap-2">
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary/10 text-primary" href="#">
+                    <span class="material-symbols-outlined">child_care</span>
+                    <span class="text-sm font-semibold">My Child</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    href="#">
+                    <span class="material-symbols-outlined">chat_bubble</span>
+                    <span class="text-sm font-medium">Messages</span>
+                </a>
+                <a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    href="#">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span class="text-sm font-medium">Settings</span>
+                </a>
+            </nav>
+            <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                    <div class="h-10 w-10 rounded-full bg-slate-300 overflow-hidden bg-cover bg-center"
+                        data-alt="Portrait of a smiling parent"
+                        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAtwObhH5-Nl1np7iIjRt5ZaAk6ymDeCHs-EiCpDm129KwPq2DGjomEQeAB5a1LB1Koq6qddPtkfNRXDl6I9vHcatFt_SSQNVKRq0jhnNRlcMOoFvMTi2MyvzwHWzc7btVnCHmSq632sBcs8TgA202kAWFbib1i1g8ItYAKf5P7W1Q0AEgOOiOsExVujwfH6nB97HsW1AREgeaP971DfNZ-Wz8oNP-k2sUHaSuocsZLtS7_ibmMIujdG1gFv9rtXMOP92AFg-PfdXo')">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">Sarah Ahmed</p>
+                        <p class="text-xs text-sage truncate">Aisha's Mother</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col overflow-y-auto">
+            <!-- Top Header -->
+            <header
+                class="flex items-center justify-between px-8 py-6 bg-background-light dark:bg-background-dark sticky top-0 z-10 border-b border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Aisha's Spiritual
+                        Journey</h2>
+                    <p class="text-sage text-sm">Monitoring progress for Ramadan Day 12</p>
+                </div>
+                <button
+                    class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-slate-900 px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-primary/20">
+                    <span class="material-symbols-outlined">forum</span>
+                    <span>Chat with Teacher</span>
+                </button>
+            </header>
+            <div class="px-8 pb-12 space-y-8 max-w-[1200px] w-full mx-auto">
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
+                        <div
+                            class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-8 -mt-8 group-hover:bg-primary/10 transition-colors">
+                        </div>
+                        <p class="text-sage text-sm font-medium">Fast Days</p>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <p class="text-3xl font-black text-slate-900 dark:text-slate-100">12/30</p>
+                            <span class="text-xs font-bold text-primary flex items-center">
+                                <span class="material-symbols-outlined text-sm">trending_up</span> 80% Consistency
+                            </span>
+                        </div>
+                        <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div class="bg-primary h-full rounded-full" style="width: 40%"></div>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
+                        <div
+                            class="absolute top-0 right-0 w-24 h-24 bg-gold/5 rounded-bl-full -mr-8 -mt-8 group-hover:bg-gold/10 transition-colors">
+                        </div>
+                        <p class="text-sage text-sm font-medium">Prayers Completed</p>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <p class="text-3xl font-black text-slate-900 dark:text-slate-100">56/60</p>
+                            <span class="text-xs font-bold text-gold flex items-center">
+                                <span class="material-symbols-outlined text-sm">verified</span> Excellent
+                            </span>
+                        </div>
+                        <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div class="bg-gold h-full rounded-full" style="width: 93%"></div>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
+                        <div
+                            class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-8 -mt-8 group-hover:bg-primary/10 transition-colors">
+                        </div>
+                        <p class="text-sage text-sm font-medium">Quran Goal</p>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <p class="text-3xl font-black text-slate-900 dark:text-slate-100">42 <span
+                                    class="text-sm font-normal text-sage">Pages</span></p>
+                            <span class="text-xs font-bold text-primary flex items-center">
+                                <span class="material-symbols-outlined text-sm">auto_stories</span> +5 Today
+                            </span>
+                        </div>
+                        <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div class="bg-primary h-full rounded-full" style="width: 65%"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Worship Log & Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Weekly Table -->
+                    <div
+                        class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                        <div
+                            class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
+                            <h3 class="text-lg font-bold">Weekly Worship Log</h3>
+                            <button class="text-primary text-sm font-bold flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">file_download</span> Export PDF
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead>
+                                    <tr class="text-sage border-b border-slate-200 dark:border-slate-800">
+                                        <th class="px-6 py-4 font-semibold uppercase tracking-wider">Day</th>
+                                        <th class="px-4 py-4 font-semibold uppercase tracking-wider text-center">Fasting
+                                        </th>
+                                        <th class="px-4 py-4 font-semibold uppercase tracking-wider text-center">Fajr
+                                        </th>
+                                        <th class="px-4 py-4 font-semibold uppercase tracking-wider text-center">Dhuhr
+                                        </th>
+                                        <th class="px-4 py-4 font-semibold uppercase tracking-wider text-center">Asr
+                                        </th>
+                                        <th class="px-4 py-4 font-semibold uppercase tracking-wider text-center">Maghrib
+                                        </th>
+                                        <th class="px-4 py-4 font-semibold uppercase tracking-wider text-center">Isha
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                        <td class="px-6 py-4 font-bold">Monday</td>
+                                        <td class="px-4 py-4 text-center">
+                                            <span
+                                                class="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-bold">Full</span>
+                                        </td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                        <td class="px-6 py-4 font-bold text-slate-400">Tuesday</td>
+                                        <td class="px-4 py-4 text-center">
+                                            <span
+                                                class="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-bold">Full</span>
+                                        </td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                        <td class="px-6 py-4 font-bold text-slate-400">Wednesday</td>
+                                        <td class="px-4 py-4 text-center">
+                                            <span
+                                                class="bg-gold/20 text-gold px-3 py-1 rounded-full text-xs font-bold">Half</span>
+                                        </td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-slate-200 dark:text-slate-700">radio_button_unchecked</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                        <td class="px-6 py-4 font-bold text-slate-400">Thursday</td>
+                                        <td class="px-4 py-4 text-center">
+                                            <span
+                                                class="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-bold">Full</span>
+                                        </td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                                        <td class="px-6 py-4 font-bold text-slate-400">Friday</td>
+                                        <td class="px-4 py-4 text-center">
+                                            <span
+                                                class="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-bold">Full</span>
+                                        </td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                        <td class="px-4 py-4 text-center"><span
+                                                class="material-symbols-outlined text-primary">check_circle</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Side Stats -->
+                    <div class="space-y-6">
+                        <!-- Consistency Bar Graph Mockup -->
+                        <div
+                            class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <h3 class="text-sm font-bold mb-4 uppercase text-sage tracking-widest">Worship Consistency
+                            </h3>
+                            <div class="flex items-end gap-3 h-40 mt-6 px-2">
+                                <div class="flex-1 flex flex-col items-center gap-2">
+                                    <div class="w-full bg-primary/20 rounded-t-lg relative" style="height: 60%">
+                                        <div class="absolute inset-x-0 bottom-0 bg-primary h-2/3 rounded-t-lg"></div>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-slate-500">Fast</span>
+                                </div>
+                                <div class="flex-1 flex flex-col items-center gap-2">
+                                    <div class="w-full bg-gold/20 rounded-t-lg relative" style="height: 90%">
+                                        <div class="absolute inset-x-0 bottom-0 bg-gold h-4/5 rounded-t-lg"></div>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-slate-500">Salah</span>
+                                </div>
+                                <div class="flex-1 flex flex-col items-center gap-2">
+                                    <div class="w-full bg-primary/20 rounded-t-lg relative" style="height: 75%">
+                                        <div class="absolute inset-x-0 bottom-0 bg-primary h-1/2 rounded-t-lg"></div>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-slate-500">Quran</span>
+                                </div>
+                                <div class="flex-1 flex flex-col items-center gap-2">
+                                    <div class="w-full bg-gold/20 rounded-t-lg relative" style="height: 50%">
+                                        <div class="absolute inset-x-0 bottom-0 bg-gold h-3/4 rounded-t-lg"></div>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-slate-500">Dua</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Notes from Teacher -->
+                        <div
+                            class="bg-sage/10 dark:bg-primary/5 p-6 rounded-xl border border-sage/20 dark:border-primary/20 shadow-sm">
+                            <div class="flex items-center gap-2 mb-4 text-sage dark:text-primary">
+                                <span class="material-symbols-outlined text-xl">sticky_note_2</span>
+                                <h3 class="text-sm font-black uppercase tracking-widest">Notes from Teacher</h3>
+                            </div>
+                            <div class="space-y-4">
+                                <div
+                                    class="bg-white dark:bg-slate-900/50 p-4 rounded-lg border-l-4 border-gold text-sm leading-relaxed shadow-sm">
+                                    <p class="text-slate-600 dark:text-slate-300 italic">"Aisha showed great
+                                        concentration during our Quran circle today. She's starting to master the
+                                        Tajweed for Surah Al-Mulk."</p>
+                                    <div
+                                        class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                                        <span class="text-[10px] font-bold text-sage">Ustadha Amina</span>
+                                        <span class="text-[10px] text-slate-400">2 hours ago</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="bg-white dark:bg-slate-900/50 p-4 rounded-lg border-l-4 border-primary text-sm leading-relaxed shadow-sm">
+                                    <p class="text-slate-600 dark:text-slate-300 italic">"Encourage her to drink more
+                                        water during Suhoor as she mentioned feeling a bit tired during the afternoon
+                                        Asr session."</p>
+                                    <div
+                                        class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                                        <span class="text-[10px] font-bold text-sage">Ustadha Amina</span>
+                                        <span class="text-[10px] text-slate-400">Yesterday</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Recent Messages Snippet -->
+                <div
+                    class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-bold">Recent Communications</h3>
+                            <button class="text-sm font-bold text-sage hover:text-primary transition-colors">View
+                                All</button>
+                        </div>
+                        <div class="space-y-4">
+                            <div
+                                class="flex items-start gap-4 p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer border border-transparent hover:border-slate-100 dark:hover:border-slate-800">
+                                <div class="h-10 w-10 rounded-full bg-cover bg-center border-2 border-primary/20"
+                                    data-alt="Teacher portrait"
+                                    style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAKg4lZ2LrTzXq6onbKhYUoSYFU3xKJS9bMaQNlj941lm5EraFawh0wVo6dNNkbiNQOvFRNQnBt9ztymb6IUH2k6EvfhY3tkPBQKLSUD320kurrOSAPlw7m816T0fwGHqM-PWL5EoQEwKUnYV5ZRYSVgKU3MLWENqNQmhal25gZNdPcrhkoCRmVotFxV8seFb2kZ3GbZiOjDUUPI_YnBrAIVXd1zL5bYIejtQ9o78WBigv5h0OxWVrEkGQOhez4zTEoKA3kP9Nb_Yw')">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <p class="text-sm font-bold">Ustadha Amina</p>
+                                        <span class="text-[10px] text-slate-400">Today, 10:45 AM</span>
+                                    </div>
+                                    <p class="text-sm text-slate-500 truncate font-medium">As-salamu alaykum Sarah, I've
+                                        updated Aisha's progress for the morning session...</p>
+                                </div>
+                                <div class="w-2 h-2 rounded-full bg-primary mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>
