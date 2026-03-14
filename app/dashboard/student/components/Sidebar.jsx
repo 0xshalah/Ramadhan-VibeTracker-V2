@@ -14,19 +14,19 @@ export default function Sidebar({ user, onLogout }) {
         </div>
       </div>
       <nav className="flex-1 px-4 space-y-2">
-        <Link href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-sage-100 dark:bg-sage-900/30 text-sage-700 dark:text-primary font-semibold">
+        <Link href="/dashboard/student" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-sage-100 dark:bg-sage-900/30 text-sage-700 dark:text-primary font-semibold">
           <span className="material-symbols-outlined fill-1">home</span>
           <span>Home</span>
         </Link>
-        <Link href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors">
+        <Link href="/dashboard/history" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors">
           <span className="material-symbols-outlined">history</span>
           <span>History</span>
         </Link>
-        <Link href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors">
+        <Link href="/dashboard/badges" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors">
           <span className="material-symbols-outlined">military_tech</span>
           <span>Badges</span>
         </Link>
-        <Link href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors">
+        <Link href="/dashboard/profile" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors">
           <span className="material-symbols-outlined">person</span>
           <span>Profile</span>
         </Link>

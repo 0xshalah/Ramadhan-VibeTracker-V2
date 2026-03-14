@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 
-export default function TilawahCounter({ tilawah, tilawahPct, onIncrement, onDecrement }) {
+export default function TilawahCounter({ tilawah, targetTilawah, tilawahPct, onIncrement, onDecrement, onUpdateTarget }) {
   const [scaleAnim, setScaleAnim] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(targetTilawah || 20);
+
+  const handleSave = () => {
+    const val = parseInt(editValue);
+    if (!isNaN(val) && val > 0) {
+       onUpdateTarget(val);
+    }
+    setIsEditing(false);
+  };
 
   const handlePlus = () => {
     onIncrement();
@@ -42,7 +52,18 @@ export default function TilawahCounter({ tilawah, tilawahPct, onIncrement, onDec
         <p className="text-sm font-medium text-slate-500 mt-2">Halaman yang dibaca hari ini</p>
       </div>
       <div className="flex justify-between items-center px-2">
-        <p className="text-xs font-bold text-sage-500">Target: 20 Pages</p>
+        <div className="flex items-center gap-1">
+          {isEditing ? (
+             <div className="flex items-center gap-1 animate-fade-in-down">
+                <input type="number" value={editValue} onChange={e => setEditValue(e.target.value)} className="w-12 text-xs border rounded px-1 bg-transparent text-slate-800 dark:text-slate-200 outline-none" autoFocus onBlur={handleSave} onKeyDown={e => e.key === 'Enter' && handleSave()} />
+                <span className="text-xs font-bold text-sage-500 hover:text-primary cursor-pointer" onClick={handleSave}>✔</span>
+             </div>
+          ) : (
+             <p className="text-xs font-bold text-sage-500 flex items-center gap-1 group cursor-pointer" onClick={() => { setIsEditing(true); setEditValue(targetTilawah); }}>
+                 Target: {targetTilawah} Pages <span className="material-symbols-outlined text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">edit</span>
+             </p>
+          )}
+        </div>
         <p className="text-xs font-bold text-primary">{tilawahPct}% Done</p>
       </div>
     </section>

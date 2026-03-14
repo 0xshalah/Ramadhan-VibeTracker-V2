@@ -37,9 +37,10 @@ export default function NextEvent({ prayerTimes }) {
       const diffMs = next.dateObj - now;
       const diffMins = Math.floor(diffMs / 60000);
 
-      if (diffMins > 60) {
+      if (diffMins >= 60) {
         const hrs = Math.floor(diffMins / 60);
-        setTimeRemaining({ value: hrs, unit: 'Hrs' });
+        const mins = diffMins % 60;
+        setTimeRemaining({ value: `${hrs}h ${mins}m`, unit: 'Left' });
       } else {
         setTimeRemaining({ value: diffMins, unit: 'Min' });
       }
@@ -58,12 +59,12 @@ export default function NextEvent({ prayerTimes }) {
         Next Event
       </h3>
       <div className="space-y-4">
-        <div className="flex gap-4">
-          <div className="w-12 h-12 bg-white/10 rounded-xl flex flex-col items-center justify-center shrink-0">
-            <span className="text-xl font-bold text-primary leading-none">{timeRemaining.value}</span>
+        <div className="flex gap-4 items-center">
+          <div className="px-3 py-2 min-w-[3rem] h-12 bg-white/10 rounded-xl flex flex-col items-center justify-center shrink-0">
+            <span className="text-lg font-bold text-primary leading-none whitespace-nowrap">{timeRemaining.value}</span>
             <span className="text-[10px] uppercase font-medium mt-1">{timeRemaining.unit}</span>
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <p className="text-sm font-bold truncate">{nextEventName}</p>
             <p className="text-xs text-slate-400 italic">Prepare yourself</p>
           </div>

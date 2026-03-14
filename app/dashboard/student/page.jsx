@@ -30,6 +30,8 @@ export default function StudentDashboard() {
   });
 
   const [prayerTimes, setPrayerTimes] = useState(null);
+  const [hijriDate, setHijriDate] = useState('Loading...');
+  const [toastMessage, setToastMessage] = useState('');
 
   // REFS FOR AVOIDING UNNECESSARY DB WRITES ON LOAD
   const isInitialLoad = useRef(true);
@@ -75,12 +77,20 @@ export default function StudentDashboard() {
   useEffect(() => {
     async function fetchPrayerTimes() {
       // Fungsi untuk menghubungi API setelah mendapat koordinat atau fall-back
-      const getFromAPI = async (lat = -6.2088, lng = 106.8456) => { // Fallback Jakarta
+      const getFromAPI = async (lat = 1.0456, lng = 104.0305, isFallback = true) => { // Fallback Batam
         try {
           const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lng}&method=20`);
           const data = await res.json();
           if (data && data.data) {
             setPrayerTimes(data.data.timings);
+            if (data.data.date && data.data.date.hijri) {
+               const hijri = data.data.date.hijri;
+               setHijriDate(`${hijri.month.en} ${hijri.year} AH`);
+            }
+          }
+          if (isFallback) {
+             setToastMessage("Menggunakan zona waktu Batam (Default). Aktifkan GPS untuk akurasi lokasi.");
+             setTimeout(() => setToastMessage(''), 6000);
           }
         } catch (error) {
           console.error("Failed fetching Aladhan API", error);
@@ -90,10 +100,10 @@ export default function StudentDashboard() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            getFromAPI(position.coords.latitude, position.coords.longitude);
+            getFromAPI(position.coords.latitude, position.coords.longitude, false);
           },
           (error) => {
-            console.warn("Geolocation denied or failed. Fallback to default (Jakarta).", error);
+            console.warn("Geolocation denied or failed. Fallback to default (Batam).", error);
             getFromAPI(); // Panggil dengan fallback
           }
         );
@@ -105,24 +115,26 @@ export default function StudentDashboard() {
     fetchPrayerTimes();
   }, []);
 
-  // THE LOGIC ENGINE: Pembobotan ketat 50% Salah + 50% Tilawah (Sunnah sebagai Bonus Point)
+  // THE LOGIC ENGINE: Pemisahan Core & Bonus Sunnah
   const tilawahPct = Math.min(Math.round((tilawah / targetTilawah) * 100), 100);
   const prayersDone = Object.values(sholat).filter(v => v).length;
   const sholatPct = (prayersDone / 5) * 100;
   
+  // Core Progress (Max 100%)
+  const corePct = Math.min(Math.round((sholatPct * 0.5) + (tilawahPct * 0.5)), 100);
+  
   // Hitung jumlah sunnah yang dikerjakan (0 s/d 3)
   const sunnahDoneCount = Object.values(sunnah).filter(v => v).length;
   // Berikan 5% bonus XP per ibadah sunnah yang dijalankan
-  const sunnahBonusPct = sunnahDoneCount * 5;
-
-  // Rumus Akhir: (50% Fardhu) + (50% Tilawah) + (XP Sunnah), dibatasi maksimal 100% untuk UI
-  const totalPct = Math.min(Math.round((sholatPct * 0.5) + (tilawahPct * 0.5) + sunnahBonusPct), 100);
+  const sunnahBonusXP = sunnahDoneCount * 5;
 
   // HANDLERS
   const handlePrayerToggle = (key) => setSholat(prev => ({ ...prev, [key]: !prev[key] }));
   const handleSunnahToggle = (key) => setSunnah(prev => ({ ...prev, [key]: !prev[key] }));
   const handleTilawahInc = () => setTilawah(prev => prev + 1);
   const handleTilawahDec = () => setTilawah(prev => Math.max(0, prev - 1));
+  const handleUpdateTarget = (val) => setTargetTilawah(val);
+  const currentStreak = tilawah > 0 || prayersDone > 0 ? 5 : 4;
 
   // LOGIN SCREEN (AUTH GUARD)
   if (loadingContext) return <div className="h-screen w-screen flex items-center justify-center bg-background-light dark:bg-background-dark text-slate-500 font-bold">Loading spiritual journey...</div>;
@@ -153,8 +165,13 @@ export default function StudentDashboard() {
       <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased" style={{ fontFamily: 'Lexend, sans-serif' }}>
         <Sidebar user={user} onLogout={logout} />
         
-        <main className="flex-1 overflow-y-auto scroll-smooth">
-          <Header totalPct={totalPct} user={user} />
+        <main className="flex-1 overflow-y-auto scroll-smooth relative">
+          {toastMessage && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-4 py-2 rounded-full shadow-lg z-50 animate-bounce">
+              {toastMessage}
+            </div>
+          )}
+          <Header corePct={corePct} sunnahBonusXP={sunnahBonusXP} hijriDate={hijriDate} user={user} />
           
           <div className="px-8 pb-12 grid grid-cols-1 md:grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-8 space-y-6">
@@ -168,13 +185,14 @@ export default function StudentDashboard() {
                   tilawahPct={tilawahPct} 
                   onIncrement={handleTilawahInc} 
                   onDecrement={handleTilawahDec} 
+                  onUpdateTarget={handleUpdateTarget}
                 />
               </div>
             </div>
 
             {/* WIDGETS COLUMN */}
             <div className="col-span-12 lg:col-span-4 space-y-6">
-              <StreakWidget streakCount={4} />
+              <StreakWidget streakCount={currentStreak} />
               <DuaCard />
               <NextEvent prayerTimes={prayerTimes} />
             </div>

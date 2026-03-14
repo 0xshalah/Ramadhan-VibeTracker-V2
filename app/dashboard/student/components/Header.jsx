@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Header({ totalPct, user }) {
+export default function Header({ corePct, sunnahBonusXP, hijriDate, user }) {
   const [currentDate, setCurrentDate] = useState('');
 
   useEffect(() => {
@@ -9,12 +9,12 @@ export default function Header({ totalPct, user }) {
   }, []);
 
   const circumference = 175.9;
-  const strokeDashoffset = Math.max(0, circumference - ((totalPct / 100) * circumference));
+  const strokeDashoffset = Math.max(0, circumference - ((corePct / 100) * circumference));
 
   let progressMessage = "Let's start strong!";
-  if (totalPct >= 100) progressMessage = 'Masya Allah! Perfect! 🌟';
-  else if (totalPct >= 80) progressMessage = 'Almost there!';
-  else if (totalPct >= 50) progressMessage = 'Keep going! 💪';
+  if (corePct >= 100) progressMessage = 'Masya Allah! Perfect! 🌟';
+  else if (corePct >= 80) progressMessage = 'Almost there!';
+  else if (corePct >= 50) progressMessage = 'Keep going! 💪';
 
   const firstName = user?.displayName ? user.displayName.split(' ')[0] : 'Student';
 
@@ -24,9 +24,10 @@ export default function Header({ totalPct, user }) {
         <h2 className="text-3xl font-black text-slate-900 dark:text-slate-50 tracking-tight">Assalamu'alaikum, {firstName}!</h2>
         <div className="flex items-center gap-2 text-sage-600 dark:text-sage-400">
           <span className="material-symbols-outlined text-sm">calendar_today</span>
-          <p className="text-sm font-medium">{currentDate || 'Loading date...'} | <span className="text-primary font-bold">Ramadan 1445 AH</span></p>
+          <p className="text-sm font-medium">{currentDate || 'Loading date...'} | <span className="text-primary font-bold">{hijriDate}</span></p>
         </div>
       </div>
+      <div className="flex flex-col items-end gap-2 w-full lg:w-auto">
       <div className="flex items-center gap-6 bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-sage-100 dark:border-slate-800 w-full lg:w-auto">
         <div className="relative flex items-center justify-center">
           <svg className="w-16 h-16 transform -rotate-90">
@@ -39,7 +40,7 @@ export default function Header({ totalPct, user }) {
               strokeWidth="6">
             </circle>
           </svg>
-          <span className="absolute text-sm font-bold">{totalPct}%</span>
+          <span className="absolute text-sm font-bold">{corePct}%</span>
         </div>
         <div className="flex-1">
           <p className="text-xs font-bold text-sage-500 uppercase tracking-wider">Today's Worship</p>
@@ -48,6 +49,13 @@ export default function Header({ totalPct, user }) {
         <button className="bg-sage-50 dark:bg-slate-800 p-2 rounded-lg text-slate-600 dark:text-slate-400">
           <span className="material-symbols-outlined">notifications</span>
         </button>
+      </div>
+      {sunnahBonusXP > 0 && (
+         <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold px-3 py-1.5 rounded-lg text-center flex items-center justify-center gap-1 border border-amber-200 dark:border-amber-800 animate-zoom-in w-full lg:w-auto mt-2">
+           <span className="material-symbols-outlined text-[16px]">stars</span>
+           +{sunnahBonusXP} Vibe Points (Sunnah Bonus)
+         </div>
+      )}
       </div>
     </header>
   );
