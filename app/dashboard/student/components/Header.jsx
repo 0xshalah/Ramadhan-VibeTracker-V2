@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Header({ corePct, sunnahBonusXP, hijriDate, user, showToast }) {
+export default function Header({ corePct, sunnahBonusXP, hijriDate, user, showToast, onOpenNotif }) {
   const [currentDate, setCurrentDate] = useState('');
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function Header({ corePct, sunnahBonusXP, hijriDate, user, showTo
           <p className="text-xs font-bold text-sage-500 uppercase tracking-wider">Today's Worship</p>
           <p className="text-lg font-bold text-slate-800 dark:text-slate-100">{progressMessage}</p>
         </div>
-        <button onClick={() => showToast && showToast('Notifications are coming in Phase 2! 🔔')} className="bg-sage-50 dark:bg-slate-800 p-2 rounded-lg text-slate-600 dark:text-slate-400">
+        <button onClick={onOpenNotif} className="bg-sage-50 dark:bg-slate-800 p-2 rounded-lg text-slate-600 dark:text-slate-400">
           <span className="material-symbols-outlined">notifications</span>
         </button>
       </div>

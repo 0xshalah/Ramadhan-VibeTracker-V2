@@ -23,20 +23,34 @@ const DUA_COLLECTION = [
   }
 ];
 
-export default function DuaCard() {
+export default function DuaCard({ prayerTimes }) {
   const duaOfDay = useMemo(() => {
-    // Rotasi dinamis berbasis temporal jam (Pagi, Siang, Iftar, Malam)
-    const currentHour = new Date().getHours();
-    if (currentHour >= 3 && currentHour < 10) {
+    if (!prayerTimes) return DUA_COLLECTION[1]; // Fallback to general dua
+
+    const now = new Date();
+    const parseTime = (timeStr) => {
+      const [h, m] = timeStr.split(':');
+      const d = new Date();
+      d.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0);
+      return d;
+    };
+
+    const fajr = parseTime(prayerTimes.Fajr);
+    const dhuhr = parseTime(prayerTimes.Dhuhr);
+    const maghrib = parseTime(prayerTimes.Maghrib);
+    const isha = parseTime(prayerTimes.Isha);
+
+    // Rotasi dinamis berbasis temporal jam sholat
+    if (now >= fajr && now < dhuhr) {
       return DUA_COLLECTION[0]; // Pagi: Ilmu, Rezeki, Amal
-    } else if (currentHour >= 10 && currentHour < 15) {
-      return DUA_COLLECTION[1]; // Siang: Sapu Jagat
-    } else if (currentHour >= 15 && currentHour < 19) {
-      return DUA_COLLECTION[2]; // Sore (Iftar): Buka Puasa
+    } else if (now >= dhuhr && now < maghrib) {
+      return DUA_COLLECTION[1]; // Siang/Sore: Rabbana Atina
+    } else if (now >= maghrib && now < isha) {
+      return DUA_COLLECTION[2]; // Iftar: Buka Puasa
     } else {
-      return DUA_COLLECTION[3]; // Malam: Penetap Hati
+      return DUA_COLLECTION[3]; // Malam (Isha ke Fajr): Penetap Hati
     }
-  }, []);
+  }, [prayerTimes]);
 
   return (
     <section className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sage-100 dark:border-slate-800 shadow-sm relative overflow-hidden group">

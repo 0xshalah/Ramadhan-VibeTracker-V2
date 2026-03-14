@@ -8,10 +8,11 @@ import TilawahCounter from './components/TilawahCounter';
 import SunnahActivities from './components/SunnahActivities';
 import NextEvent from './components/NextEvent'; 
 import DuaCard from './components/DuaCard';
-import DuaCard from './components/DuaCard';
 import StreakWidget from './components/StreakWidget';
-import { auth, loginWithGoogle, getUserProgress, updateUserProgress, getUserWeeklyProgress, logout } from '@/lib/firebase';
+import Modal from './components/Modal';
+import { auth, db, loginWithGoogle, getUserProgress, updateUserProgress, getUserWeeklyProgress, logout } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { collection, query, limit, onSnapshot } from 'firebase/firestore';
 
 export default function StudentDashboard() {
   // DB & AUTH STATE
@@ -34,8 +35,12 @@ export default function StudentDashboard() {
   const [hijriDate, setHijriDate] = useState('Loading...');
   const [toastMessage, setToastMessage] = useState('');
   
-  const [streak, setStreak] = useState(0);
+  const [streakHistory, setStreakHistory] = useState([]);
+  const [verifiedSadaqah, setVerifiedSadaqah] = useState(false);
   const [syncStatus, setSyncStatus] = useState('saved'); // 'saved' | 'saving' | 'error'
+
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   // REFS FOR AVOIDING UNNECESSARY DB WRITES ON LOAD
   const isInitialLoad = useRef(true);
@@ -53,26 +58,12 @@ export default function StudentDashboard() {
           if (cloudData.sholat) setSholat(cloudData.sholat);
           if (cloudData.sunnah) setSunnah(cloudData.sunnah);
         }
-
+        
         // Fetch streak history
         const weeklyData = await getUserWeeklyProgress(currentUser.uid);
-        let calculatedStreak = 0;
-        for (let i = 0; i < weeklyData.length; i++) {
-           const dayData = weeklyData[i];
-           if (!dayData) {
-               if (i === 0) continue; // tolerate if nothing logged today
-               break; 
-           }
-           const dayPrayers = dayData.sholat ? Object.values(dayData.sholat).filter(v => v).length : 0;
-           const dayTilawah = dayData.tilawah || 0;
-           if (dayPrayers > 0 || dayTilawah > 0) {
-               calculatedStreak++;
-           } else {
-               if (i === 0) continue; 
-               break;
-           }
+        if (weeklyData) {
+          setStreakHistory(weeklyData.reverse()); 
         }
-        setStreak(calculatedStreak);
       }
       setLoadingContext(false);
       
@@ -117,6 +108,19 @@ export default function StudentDashboard() {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [syncStatus, tilawah, targetTilawah, sholat, sunnah, user]);
+
+  // REAL-TIME SADAQAH VERIFIER
+  useEffect(() => {
+    if (user) {
+      const sadaqahRef = collection(db, 'users', user.uid, 'sadaqah');
+      const q = query(sadaqahRef, limit(1)); // Just check if any exists for now
+      // In production, we should filter by today's date
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        setVerifiedSadaqah(!snapshot.empty);
+      });
+      return () => unsubscribe();
+    }
+  }, [user]);
 
   // ALADHAN API INTEGRATION (METHOD=20 [KEMENAG RI] & DYNAMIC GEOLOCATION)
   useEffect(() => {
@@ -169,7 +173,7 @@ export default function StudentDashboard() {
   const corePct = Math.min(Math.round((sholatPct * 0.5) + (tilawahPct * 0.5)), 100);
   
   // Hitung jumlah sunnah yang dikerjakan (0 s/d 3)
-  const sunnahDoneCount = Object.values(sunnah).filter(v => v).length;
+  const sunnahDoneCount = (sunnah.tarawih ? 1 : 0) + (sunnah.sahur ? 1 : 0) + (verifiedSadaqah ? 1 : 0);
   // Berikan 5% bonus XP per ibadah sunnah yang dijalankan
   const sunnahBonusXP = sunnahDoneCount * 5;
 
@@ -235,14 +239,14 @@ export default function StudentDashboard() {
              )}
           </div>
 
-          <Header corePct={corePct} sunnahBonusXP={sunnahBonusXP} hijriDate={hijriDate} user={user} showToast={showToast} />
+          <Header corePct={corePct} sunnahBonusXP={sunnahBonusXP} hijriDate={hijriDate} user={user} showToast={showToast} onOpenNotif={() => setIsNotifOpen(true)} />
           
           <div className="px-8 pb-12 grid grid-cols-1 md:grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-8 space-y-6">
               <PrayerGrid sholat={sholat} onToggle={handlePrayerToggle} dynamicTimes={prayerTimes} />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <SunnahActivities sunnah={sunnah} onToggle={handleSunnahToggle} />
+                <SunnahActivities sunnah={{...sunnah, sadaqah: verifiedSadaqah}} onToggle={handleSunnahToggle} />
                 <TilawahCounter 
                   tilawah={tilawah} 
                   targetTilawah={targetTilawah}
@@ -254,15 +258,44 @@ export default function StudentDashboard() {
               </div>
             </div>
 
-            {/* WIDGETS COLUMN */}
             <div className="col-span-12 lg:col-span-4 space-y-6">
-              <StreakWidget streakCount={streak} />
-              <DuaCard />
-              <NextEvent prayerTimes={prayerTimes} showToast={showToast} />
+              <StreakWidget history={streakHistory} />
+              <DuaCard prayerTimes={prayerTimes} />
+              <NextEvent prayerTimes={prayerTimes} showToast={showToast} onOpenSchedule={() => setIsScheduleOpen(true)} />
             </div>
           </div>
         </main>
       </div>
+
+      {/* ACTUAL MODALS */}
+      <Modal 
+        isOpen={isScheduleOpen} 
+        onClose={() => setIsScheduleOpen(false)} 
+        title="Full Prayer Schedule"
+      >
+        <div className="space-y-4">
+           {prayerTimes ? Object.entries(prayerTimes).filter(([k]) => ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(k)).map(([name, time]) => (
+              <div key={name} className="flex justify-between items-center p-4 bg-sage-50 dark:bg-slate-800 rounded-2xl hover:scale-[1.02] transition-transform">
+                 <span className="font-bold text-slate-700 dark:text-slate-300">{name}</span>
+                 <span className="text-primary font-black text-lg">{time}</span>
+              </div>
+           )) : <p className="text-center text-sage-500">Loading schedule...</p>}
+        </div>
+      </Modal>
+
+      <Modal 
+        isOpen={isNotifOpen} 
+        onClose={() => setIsNotifOpen(false)} 
+        title="Notifications"
+      >
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+           <div className="w-16 h-16 bg-sage-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-sage-400 mb-4">
+              <span className="material-symbols-outlined text-3xl">notifications_off</span>
+           </div>
+           <p className="font-bold text-slate-800 dark:text-white">No new notifications</p>
+           <p className="text-sm text-sage-500">We'll alert you when there's an update to your spiritual journey.</p>
+        </div>
+      </Modal>
     </>
   );
 }

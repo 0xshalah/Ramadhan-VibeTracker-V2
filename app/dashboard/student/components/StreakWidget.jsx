@@ -1,20 +1,31 @@
 import React, { useMemo } from 'react';
 
-export default function StreakWidget({ streakCount }) {
-  // Generate 7 days ending today
-  const weekDays = useMemo(() => {
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      days.push({
-        label: d.toLocaleDateString('en-US', { weekday: 'narrow' }), // M, T, W, T, F, S, S
-        isPastOrToday: true, // Untuk demo, asumsikan semua di array ini past/today karena kita ambil 7 hari ke belakang
-        achieved: i >= 7 - streakCount // Simple logic to simulate streak from right to left
-      });
+export default function StreakWidget({ history }) {
+  // Calculate current consecutive streak from history
+  const streakCount = useMemo(() => {
+    let count = 0;
+    // We expect history to be Chronological (oldest to newest)
+    // We'll check from newest to oldest
+    const reversedHistory = [...history].reverse();
+    for (const day of reversedHistory) {
+      if (!day) break;
+      const hasActivity = (day.tilawah > 0) || (day.sholat && Object.values(day.sholat).some(v => v));
+      if (hasActivity) count++;
+      else break;
     }
-    return days;
-  }, [streakCount]);
+    return count;
+  }, [history]);
+
+  const weekDays = useMemo(() => {
+    return history.map((day, i) => {
+       const dateObj = day?.dateId ? new Date(day.dateId) : new Date();
+       const hasActivity = day && (day.tilawah > 0 || (day.sholat && Object.values(day.sholat).some(v => v)));
+       return {
+         label: dateObj.toLocaleDateString('en-US', { weekday: 'narrow' }),
+         achieved: !!hasActivity
+       };
+    });
+  }, [history]);
 
   return (
     <section className="bg-primary/10 dark:bg-primary/5 p-6 rounded-3xl border border-primary/20">

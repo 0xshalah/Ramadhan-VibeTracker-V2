@@ -30,10 +30,11 @@ export default function SunnahActivities({ sunnah, onToggle }) {
               </div>
 
               <button
-                onClick={() => onToggle(item.key)}
+                disabled={item.key === 'sadaqah'}
+                onClick={() => item.key !== 'sadaqah' && onToggle(item.key)}
                 className={`w-10 h-5 rounded-full relative transition-colors cursor-pointer active:scale-95 ${
                   isActive ? "bg-primary" : "bg-sage-200 dark:bg-slate-700"
-                }`}
+                } ${item.key === 'sadaqah' ? 'cursor-not-allowed' : ''}`}
               >
                 {/* [FIX] Tailwind Utility Classes for toggle animation instead of inline styles */}
                 <div
@@ -42,6 +43,11 @@ export default function SunnahActivities({ sunnah, onToggle }) {
                   }`}
                 />
               </button>
+              {item.key === 'sadaqah' && (
+                <div className={`absolute -top-2 -right-2 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${isActive ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-500'}`}>
+                  {isActive ? 'Verified' : 'Required'}
+                </div>
+              )}
             </div>
           );
         })}

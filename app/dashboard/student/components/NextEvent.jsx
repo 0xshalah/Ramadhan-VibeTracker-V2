@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function NextEvent({ prayerTimes, showToast }) {
+export default function NextEvent({ prayerTimes, showToast, onOpenSchedule }) {
   const [timeRemaining, setTimeRemaining] = useState({ value: '--', unit: 'Min' });
   const [nextEventName, setNextEventName] = useState('Loading...');
 
@@ -69,7 +69,7 @@ export default function NextEvent({ prayerTimes, showToast }) {
             <p className="text-xs text-slate-400 italic">Prepare yourself</p>
           </div>
         </div>
-        <button onClick={() => showToast && showToast('Full schedule modal is coming in Phase 2! 📅')} className="w-full py-3 bg-primary text-slate-900 font-bold rounded-xl text-sm transition-transform active:scale-95 hover:brightness-95">
+        <button onClick={onOpenSchedule} className="w-full py-3 bg-primary text-slate-900 font-bold rounded-xl text-sm transition-transform active:scale-95 hover:brightness-95">
           Open Full Schedule
         </button>
       </div>
