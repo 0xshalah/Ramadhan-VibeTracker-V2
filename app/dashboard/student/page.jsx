@@ -11,6 +11,11 @@ import DuaCard from './components/DuaCard';
 import StreakWidget from './components/StreakWidget';
 import XPBurst from './components/XPBurst';
 import Modal from './components/Modal';
+import JourneyCanvas from './components/JourneyCanvas';
+import AIChatPanel from './components/AIChatPanel';
+import { useVibeStore } from '@/store/useVibeStore';
+import { toast } from 'sonner';
+import { Sparkles } from 'lucide-react';
 import { auth, db, loginWithGoogle, getUserProgress, getUserProfile, updateUserProgress, getUserWeeklyProgress, getLocalTodayId, logout, messaging, saveNotificationToken } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, limit, onSnapshot, where } from 'firebase/firestore';
@@ -43,7 +48,10 @@ export default function StudentDashboard() {
 
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [totalXP, setTotalXP] = useState(0);
+  
+  const setTotalXP = useVibeStore((state) => state.setTotalXP);
+  const totalXP = useVibeStore((state) => state.totalXP);
+  
   const [notifications, setNotifications] = useState([]);
   const [aiInsight, setAiInsight] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -365,9 +373,19 @@ export default function StudentDashboard() {
   const handleUpdateTarget = (val) => setTargetTilawah(val);
 
   const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 3000);
+    toast(msg);
   };
+
+  // [SONNER] Premium Sadaqah Feedback
+  useEffect(() => {
+    if (verifiedSadaqah && !isInitialLoad.current) {
+      toast.success('Sadaqah Verified!', {
+        description: 'May Allah accept your good deeds today.',
+        icon: <Sparkles className="text-amber-400" />,
+        duration: 5000,
+      });
+    }
+  }, [verifiedSadaqah]);
 
   // LOGIN SCREEN (AUTH GUARD)
   if (loadingContext) return <div className="h-screen w-screen flex items-center justify-center bg-background-light dark:bg-background-dark text-slate-500 font-bold">Loading spiritual journey...</div>;
@@ -423,6 +441,10 @@ export default function StudentDashboard() {
           
           <div className="px-8 pb-12 grid grid-cols-1 md:grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-8 space-y-6">
+              
+              {/* RAMADHAN ROADMAP */}
+              <JourneyCanvas currentDay={streakHistory.length + 1} />
+
               <PrayerGrid sholat={sholat} onToggle={handlePrayerToggle} dynamicTimes={prayerTimes} />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -470,6 +492,12 @@ export default function StudentDashboard() {
           </div>
         </main>
       </div>
+
+      <AIChatPanel progressData={{ 
+        tilawah, targetTilawah, 
+        sholatPct: Math.round((prayersDone / 5) * 100), 
+        sunnahCount: sunnahDoneCount 
+      }} />
 
       {/* ACTUAL MODALS */}
       <Modal 

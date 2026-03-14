@@ -1,7 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
+import { useVibeStore } from '@/store/useVibeStore';
 
-export default function Sidebar({ user, totalXP = 0, onLogout }) {
+export default function Sidebar({ user, onLogout }) {
+  const totalXP = useVibeStore((state) => state.totalXP);
   return (
     <aside className="w-72 bg-white dark:bg-slate-900 border-r border-sage-200 dark:border-slate-800 flex-col hidden lg:flex">
       <div className="p-8 flex items-center gap-3">

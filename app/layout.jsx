@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Toaster } from 'sonner';
 
 export const metadata = {
   title: "Ramadhan VibeTracker",
@@ -19,7 +20,10 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body className="font-display antialiased">{children}</body>
+      <body className="font-display antialiased">
+        {children}
+        <Toaster position="bottom-right" theme="dark" richColors />
+      </body>
     </html>
   );
 }
