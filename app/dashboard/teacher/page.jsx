@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { auth, logout, getUserProfile } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function TeacherDashboard() {
   const [user, setUser] = useState(null);
@@ -19,7 +20,7 @@ export default function TeacherDashboard() {
       const profile = await getUserProfile(u.uid);
       
       if (profile?.role !== 'teacher') { 
-        console.warn("Unauthorized access attempt. Redirecting...");
+        toast.error("Akses Ditolak: Anda bukan pengajar. ⚠️");
         router.push('/dashboard/student'); 
       } else {
         setUser(u);

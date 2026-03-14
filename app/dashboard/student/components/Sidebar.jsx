@@ -34,7 +34,7 @@ export default function Sidebar({ user, onLogout }) {
             <p className="text-sm font-bold truncate">{user?.displayName || 'Student'}</p>
             <div className="flex items-center gap-1 mt-0.5 text-xs font-bold text-amber-500">
               <span className="material-symbols-outlined text-[14px]">stars</span>
-              {totalXP} XP
+              {totalXP || 0} Vibe Points
             </div>
           </div>
           <button onClick={onLogout} title="Log Out" className="w-8 h-8 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 flex items-center justify-center transition-colors">

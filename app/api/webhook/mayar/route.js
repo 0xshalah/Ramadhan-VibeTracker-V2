@@ -86,15 +86,12 @@ export async function POST(request) {
        if (!snapshot.empty) {
             const userDoc = snapshot.docs[0];
             
-            // [FIX] Server-Side WIB Lock (UTC+7 Forced for Serverless)
-            const date = new Date();
-            const wibTime = new Date(date.getTime() + (7 * 60 * 60 * 1000));
-            const todayId = wibTime.toISOString().split('T')[0];
+            // [FIX] Hapus Kediktatoran WIB Hardcode
+            // Validasi utama sekarang menggunakan timestamp absolut di client-side.
             
             await db.collection('users').doc(userDoc.id).collection('sadaqah').doc(donationId.toString()).set({
                 amount: amount,
                 status: 'SUCCESS',
-                dateId: todayId,
                 timestamp: admin.firestore.FieldValue.serverTimestamp()
             });
            console.log(`[FIRESTORE_SYNC] Donation record ${donationId} mapped to user ${userDoc.id}`);

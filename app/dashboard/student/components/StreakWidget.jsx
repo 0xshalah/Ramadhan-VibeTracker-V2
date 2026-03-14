@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect, useRef } from 'react';
 import anime from 'animejs';
+import { getLocalTodayId } from '@/lib/firebase';
 
 export default function StreakWidget({ history }) {
   // Calculate current consecutive streak from history
@@ -7,9 +8,7 @@ export default function StreakWidget({ history }) {
     let count = 0;
     const reversedHistory = [...history].reverse();
     // [FIX] Local timezone todayId (Anti-UTC Sabotage)
-    const date = new Date();
-    const offset = date.getTimezoneOffset() * 60000;
-    const todayId = new Date(date - offset).toISOString().split('T')[0];
+    const todayId = getLocalTodayId();
 
     for (const day of reversedHistory) {
       if (!day) break;
