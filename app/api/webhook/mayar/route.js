@@ -86,10 +86,10 @@ export async function POST(request) {
        if (!snapshot.empty) {
             const userDoc = snapshot.docs[0];
             
-            // Local Timezone Date ID (Batam/WIB Fix)
+            // [FIX] Server-Side WIB Lock (UTC+7 Forced for Serverless)
             const date = new Date();
-            const offset = date.getTimezoneOffset() * 60000;
-            const todayId = new Date(date - offset).toISOString().split('T')[0];
+            const wibTime = new Date(date.getTime() + (7 * 60 * 60 * 1000));
+            const todayId = wibTime.toISOString().split('T')[0];
             
             await db.collection('users').doc(userDoc.id).collection('sadaqah').doc(donationId.toString()).set({
                 amount: amount,

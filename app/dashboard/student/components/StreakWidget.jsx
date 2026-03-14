@@ -24,7 +24,8 @@ export default function StreakWidget({ history }) {
 
   const weekDays = useMemo(() => {
     return history.map((day, i) => {
-       const dateObj = day?.dateId ? new Date(day.dateId) : new Date();
+       // [FIX] Midnight Offset Override: Paksa ke jam 12 siang agar tidak bergeser hari
+       const dateObj = day?.dateId ? new Date(`${day.dateId}T12:00:00`) : new Date();
        const hasActivity = day && (day.tilawah > 0 || (day.sholat && Object.values(day.sholat).some(v => v)));
        return {
          label: dateObj.toLocaleDateString('en-US', { weekday: 'narrow' }),

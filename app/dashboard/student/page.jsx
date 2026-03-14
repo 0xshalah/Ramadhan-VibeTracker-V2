@@ -42,6 +42,7 @@ export default function StudentDashboard() {
 
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [totalXP, setTotalXP] = useState(0);
 
   // REFS FOR AVOIDING UNNECESSARY DB WRITES ON LOAD
   const isInitialLoad = useRef(true);
@@ -62,8 +63,14 @@ export default function StudentDashboard() {
         
         // [DECREE 2] Fetch Target from Profile (Persistence)
         const profile = await getUserProfile(currentUser.uid);
-        if (profile && profile.targetTilawah) {
-          setTargetTilawah(profile.targetTilawah);
+        if (profile) {
+          if (profile.targetTilawah) setTargetTilawah(profile.targetTilawah);
+          
+          // [FIX] XP Aggregation: Sum all dailyXP values from profile
+          if (profile.dailyXP) {
+            const totalAccumulated = Object.values(profile.dailyXP).reduce((a, b) => a + b, 0);
+            setTotalXP(totalAccumulated);
+          }
         }
         
         // Fetch streak history
@@ -237,15 +244,15 @@ export default function StudentDashboard() {
             if (data.data.date && data.data.date.hijri) {
                const hijri = data.data.date.hijri;
                
-               // [DECREE 4] Hijriah Pasca-Maghrib Fix
+               // [FIX] Anti-Heresy Hijriah: Semantic "Malam" rollover
                const now = new Date();
                const [maghribH, maghribM] = timings.Maghrib.split(':');
                const maghribTime = new Date();
                maghribTime.setHours(parseInt(maghribH, 10), parseInt(maghribM, 10), 0, 0);
                
                if (now >= maghribTime) {
-                   const tomorrowHijriDay = parseInt(hijri.day, 10) + 1;
-                   setHijriDate(`${tomorrowHijriDay} ${hijri.month.en} ${hijri.year} AH (Post-Maghrib)`);
+                   // Gunakan semantik "Malam" tanpa memanipulasi angka tanggal
+                   setHijriDate(`Malam ${hijri.day} ${hijri.month.en} ${hijri.year} AH`);
                } else {
                    setHijriDate(`${hijri.day} ${hijri.month.en} ${hijri.year} AH`);
                }
