@@ -20,18 +20,6 @@ export default function Sidebar({ user, onLogout }) {
           <span className="material-symbols-outlined fill-1">home</span>
           <span>Home</span>
         </Link>
-        <Link href="/dashboard/history" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-          <span className="material-symbols-outlined">history</span>
-          <span>History</span>
-        </Link>
-        <Link href="/dashboard/badges" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-          <span className="material-symbols-outlined">military_tech</span>
-          <span>Badges</span>
-        </Link>
-        <Link href="/dashboard/profile" className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
-          <span className="material-symbols-outlined">person</span>
-          <span>Profile</span>
-        </Link>
       </nav>
       <div className="p-6 border-t border-sage-100 dark:border-slate-800">
         <div className="bg-sage-50 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-3">

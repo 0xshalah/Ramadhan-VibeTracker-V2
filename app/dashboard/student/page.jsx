@@ -22,8 +22,14 @@ import { collection, query, limit, onSnapshot, where } from 'firebase/firestore'
 import { getToken, onMessage } from 'firebase/messaging';
 
 export default function StudentDashboard() {
-  // DB & AUTH STATE
-  const [user, setUser] = useState(null);
+  // DB, AUTH & ZUSTAND STORE
+  const user = useVibeStore((state) => state.user);
+  const setUser = useVibeStore((state) => state.setUser);
+  const verifiedSadaqah = useVibeStore((state) => state.verifiedSadaqah);
+  const setSadaqah = useVibeStore((state) => state.setSadaqah);
+  const setTotalXP = useVibeStore((state) => state.setTotalXP);
+  const totalXP = useVibeStore((state) => state.totalXP);
+  
   const [loadingContext, setLoadingContext] = useState(true);
 
   // LOGIC STATE
@@ -40,22 +46,22 @@ export default function StudentDashboard() {
 
   const [prayerTimes, setPrayerTimes] = useState(null);
   const [hijriDate, setHijriDate] = useState('Loading...');
+  const [hijriDayInt, setHijriDayInt] = useState(1);
   const [toastMessage, setToastMessage] = useState('');
   
   const [streakHistory, setStreakHistory] = useState([]);
-  const [verifiedSadaqah, setVerifiedSadaqah] = useState(false);
   const [syncStatus, setSyncStatus] = useState('saved'); // 'saved' | 'saving' | 'error'
 
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  
-  const setTotalXP = useVibeStore((state) => state.setTotalXP);
-  const totalXP = useVibeStore((state) => state.totalXP);
+  const [notifPermission, setNotifPermission] = useState('default');
   
   const [notifications, setNotifications] = useState([]);
-  const [aiInsight, setAiInsight] = useState('');
-  const [isAiLoading, setIsAiLoading] = useState(false);
   const [xpBurstTrigger, setXpBurstTrigger] = useState(0);
+
+  useEffect(() => {
+    if ('Notification' in window) setNotifPermission(Notification.permission);
+  }, []);
 
   // REFS FOR AVOIDING UNNECESSARY DB WRITES ON LOAD
   const isInitialLoad = useRef(true);
@@ -126,31 +132,6 @@ export default function StudentDashboard() {
     }
   }, [user, tilawah, targetTilawah, sholat, sunnah, loadingContext]);
 
-  // [AI MANUAL TRIGGER] Insight Engine
-  const handleGenerateInsight = async () => {
-    setIsAiLoading(true);
-    try {
-      const sholatCount = Object.values(sholat).filter(Boolean).length;
-      const res = await fetch('/api/insight', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          progressData: {
-            sholatPct: Math.round((sholatCount / 5) * 100),
-            tilawah, targetTilawah, streak: streakHistory.length,
-            sunnahCount: Object.values(sunnah).filter(Boolean).length
-          }
-        })
-      });
-      const data = await res.json();
-      if (data.insight) setAiInsight(data.insight);
-    } catch {
-      showToast("AI Insight engine offline.");
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
-
   // PREVENT ACCIDENTAL CLOSE WHEN SAVING
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -175,7 +156,7 @@ export default function StudentDashboard() {
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
         if (snapshot.empty) {
-          setVerifiedSadaqah(false);
+          setSadaqah(false);
           return;
         }
 
@@ -191,7 +172,7 @@ export default function StudentDashboard() {
           return (now - donationTime) <= 86400000; 
         });
 
-        setVerifiedSadaqah(hasRecentDonation);
+        setSadaqah(hasRecentDonation);
       });
       return () => unsubscribe();
     }
@@ -206,16 +187,6 @@ export default function StudentDashboard() {
           if ('serviceWorker' in navigator) {
             const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
             console.log('[FCM] SW registered:', registration.scope);
-          }
-
-          const permission = await Notification.requestPermission();
-          if (permission === 'granted') {
-            const token = await getToken(messaging, { 
-              vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY 
-            });
-            if (token) {
-              await saveNotificationToken(user.uid, token);
-            }
           }
         } catch (error) {
           console.error("[FCM] Notification setup failed:", error);
@@ -313,12 +284,15 @@ export default function StudentDashboard() {
                const maghribTime = new Date();
                maghribTime.setHours(parseInt(maghribH, 10), parseInt(maghribM, 10), 0, 0);
                
+               let currentDayNum = parseInt(hijri.day, 10);
+               
                if (now >= maghribTime) {
-                   // Gunakan semantik "Malam" tanpa memanipulasi angka tanggal
-                   setHijriDate(`Malam ${hijri.day} ${hijri.month.en} ${hijri.year} AH`);
+                   currentDayNum += 1; // Pasca maghrib masuk malam hari berikutnya
+                   setHijriDate(`Malam ${currentDayNum} ${hijri.month.en} ${hijri.year} AH`);
                } else {
                    setHijriDate(`${hijri.day} ${hijri.month.en} ${hijri.year} AH`);
                }
+               setHijriDayInt(currentDayNum); // Simpan angka murninya untuk Canvas
             }
           }
           if (isFallback) {
@@ -372,6 +346,20 @@ export default function StudentDashboard() {
   const handleTilawahDec = () => setTilawah(prev => Math.max(0, prev - 1));
   const handleUpdateTarget = (val) => setTargetTilawah(val);
 
+  const enableNotifications = async () => {
+    try {
+      const perm = await Notification.requestPermission();
+      setNotifPermission(perm);
+      if (perm === 'granted' && messaging) {
+        const token = await getToken(messaging, { vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY });
+        if (token) await saveNotificationToken(user.uid, token);
+        showToast("Notifikasi pengingat sholat diaktifkan! ✨");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const showToast = (msg) => {
     toast(msg);
   };
@@ -417,6 +405,16 @@ export default function StudentDashboard() {
         <Sidebar user={user} totalXP={totalXP} onLogout={logout} />
         
         <main className="flex-1 overflow-y-auto scroll-smooth relative">
+          {/* NOTIFICATION BANNER */}
+          {notifPermission === 'default' && (
+            <div className="bg-indigo-600 text-white text-xs px-6 py-3 flex justify-between items-center shadow-md">
+              <span>Aktifkan pengingat waktu sholat lokal?</span>
+              <button onClick={enableNotifications} className="bg-white text-indigo-600 px-4 py-1.5 rounded-full font-bold hover:bg-slate-100 transition-colors">
+                Aktifkan
+              </button>
+            </div>
+          )}
+
           {/* TOASTS & INDICATORS */}
           {toastMessage && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-4 py-2 rounded-full shadow-lg z-50 animate-bounce">
@@ -443,7 +441,7 @@ export default function StudentDashboard() {
             <div className="col-span-12 lg:col-span-8 space-y-6">
               
               {/* RAMADHAN ROADMAP */}
-              <JourneyCanvas currentDay={streakHistory.length + 1} />
+              <JourneyCanvas currentDay={hijriDayInt} totalDays={30} />
 
               <PrayerGrid sholat={sholat} onToggle={handlePrayerToggle} dynamicTimes={prayerTimes} />
               
@@ -463,26 +461,6 @@ export default function StudentDashboard() {
             <div className="col-span-12 lg:col-span-4 space-y-6">
               <StreakWidget history={streakHistory} />
               
-              {/* AI SPIRITUAL INSIGHT */}
-              <section className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/5 dark:to-purple-500/5 p-6 rounded-3xl border border-indigo-200/30 dark:border-indigo-800/30">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-indigo-500 fill-1">psychology</span>
-                      <h3 className="font-bold text-sm text-indigo-600 dark:text-indigo-400">Spiritual Insight</h3>
-                    </div>
-                    {!aiInsight && (
-                      <button onClick={handleGenerateInsight} disabled={isAiLoading} className="text-xs bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-full font-bold transition-colors disabled:opacity-50">
-                        {isAiLoading ? 'Analyzing...' : 'Generate'}
-                      </button>
-                    )}
-                  </div>
-                  {aiInsight ? (
-                    <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{aiInsight}</p>
-                  ) : (
-                    <p className="text-xs text-indigo-400/70 italic">Click generate to receive personalized Ramadhan reflection based on your worship data today.</p>
-                  )}
-              </section>
-
               {/* XP BURST ANIMATION */}
               {sunnahBonusXP > 0 && <XPBurst points={sunnahBonusXP} trigger={xpBurstTrigger} />}
 

@@ -13,9 +13,9 @@ const DayNode = ({ data }) => (
 
 const nodeTypes = { dayNode: DayNode };
 
-export default function JourneyCanvas({ currentDay }) {
-  // Otomatis membuat 30 Node (titik) perjalanan
-  const nodes = useMemo(() => Array.from({ length: 30 }).map((_, i) => ({
+export default function JourneyCanvas({ currentDay, totalDays = 30 }) {
+  // Otomatis membuat titik perjalanan
+  const nodes = useMemo(() => Array.from({ length: totalDays }).map((_, i) => ({
     id: `day-${i + 1}`,
     type: 'dayNode',
     position: { x: (i % 5) * 200, y: Math.floor(i / 5) * 150 }, // Pola Zig-zag
@@ -23,7 +23,7 @@ export default function JourneyCanvas({ currentDay }) {
   })), [currentDay]);
 
   // Menghubungkan antar hari dengan garis panah
-  const edges = useMemo(() => Array.from({ length: 29 }).map((_, i) => ({
+  const edges = useMemo(() => Array.from({ length: totalDays - 1 }).map((_, i) => ({
     id: `e-${i + 1}-${i + 2}`,
     source: `day-${i + 1}`,
     target: `day-${i + 2}`,
