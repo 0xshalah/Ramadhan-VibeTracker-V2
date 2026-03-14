@@ -25,9 +25,17 @@ const DUA_COLLECTION = [
 
 export default function DuaCard() {
   const duaOfDay = useMemo(() => {
-    // Rotasi sederhana berdasarkan Day of Year
-    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-    return DUA_COLLECTION[dayOfYear % DUA_COLLECTION.length];
+    // Rotasi dinamis berbasis temporal jam (Pagi, Siang, Iftar, Malam)
+    const currentHour = new Date().getHours();
+    if (currentHour >= 3 && currentHour < 10) {
+      return DUA_COLLECTION[0]; // Pagi: Ilmu, Rezeki, Amal
+    } else if (currentHour >= 10 && currentHour < 15) {
+      return DUA_COLLECTION[1]; // Siang: Sapu Jagat
+    } else if (currentHour >= 15 && currentHour < 19) {
+      return DUA_COLLECTION[2]; // Sore (Iftar): Buka Puasa
+    } else {
+      return DUA_COLLECTION[3]; // Malam: Penetap Hati
+    }
   }, []);
 
   return (

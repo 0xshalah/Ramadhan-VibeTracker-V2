@@ -64,13 +64,28 @@ export async function POST(request) {
     // [INTEGRATION] Menyimpan record pembayaran ke Firestore Server-Side
     try {
        const db = admin.firestore();
-       await db.collection('donations_webhook').doc(donationId.toString()).set({
-           amount: amount,
-           email: email,
-           status: 'SUCCESS',
-           timestamp: admin.firestore.FieldValue.serverTimestamp()
-       });
-       console.log(`[FIRESTORE_SYNC] Donation record ${donationId} correctly appended to server db`);
+       // Cari User berdasarkan email dari payload webhook
+       const usersRef = db.collection('users');
+       const snapshot = await usersRef.where('email', '==', email).limit(1).get();
+       
+       if (!snapshot.empty) {
+           const userDoc = snapshot.docs[0];
+           await db.collection('users').doc(userDoc.id).collection('sadaqah').doc(donationId.toString()).set({
+               amount: amount,
+               status: 'SUCCESS',
+               timestamp: admin.firestore.FieldValue.serverTimestamp()
+           });
+           console.log(`[FIRESTORE_SYNC] Donation record ${donationId} mapped to user ${userDoc.id}`);
+       } else {
+           // Jika user tidak terdaftar, taruh di root /unclaimed_donations
+           await db.collection('unclaimed_donations').doc(donationId.toString()).set({
+               amount: amount,
+               email: email,
+               status: 'SUCCESS',
+               timestamp: admin.firestore.FieldValue.serverTimestamp()
+           });
+           console.log(`[FIRESTORE_SYNC] Donation ${donationId} placed in unclaimed (no matching email)`);
+       }
     } catch(dbError) {
        console.warn(`[FIRESTORE_FALLBACK] Simulated DB write for ${donationId} due to missing SA credentials`);
     }

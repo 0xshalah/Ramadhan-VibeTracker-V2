@@ -8,8 +8,9 @@ import TilawahCounter from './components/TilawahCounter';
 import SunnahActivities from './components/SunnahActivities';
 import NextEvent from './components/NextEvent'; 
 import DuaCard from './components/DuaCard';
+import DuaCard from './components/DuaCard';
 import StreakWidget from './components/StreakWidget';
-import { auth, loginWithGoogle, getUserProgress, updateUserProgress, logout } from '@/lib/firebase';
+import { auth, loginWithGoogle, getUserProgress, updateUserProgress, getUserWeeklyProgress, logout } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export default function StudentDashboard() {
@@ -32,6 +33,9 @@ export default function StudentDashboard() {
   const [prayerTimes, setPrayerTimes] = useState(null);
   const [hijriDate, setHijriDate] = useState('Loading...');
   const [toastMessage, setToastMessage] = useState('');
+  
+  const [streak, setStreak] = useState(0);
+  const [syncStatus, setSyncStatus] = useState('saved'); // 'saved' | 'saving' | 'error'
 
   // REFS FOR AVOIDING UNNECESSARY DB WRITES ON LOAD
   const isInitialLoad = useRef(true);
@@ -49,6 +53,26 @@ export default function StudentDashboard() {
           if (cloudData.sholat) setSholat(cloudData.sholat);
           if (cloudData.sunnah) setSunnah(cloudData.sunnah);
         }
+
+        // Fetch streak history
+        const weeklyData = await getUserWeeklyProgress(currentUser.uid);
+        let calculatedStreak = 0;
+        for (let i = 0; i < weeklyData.length; i++) {
+           const dayData = weeklyData[i];
+           if (!dayData) {
+               if (i === 0) continue; // tolerate if nothing logged today
+               break; 
+           }
+           const dayPrayers = dayData.sholat ? Object.values(dayData.sholat).filter(v => v).length : 0;
+           const dayTilawah = dayData.tilawah || 0;
+           if (dayPrayers > 0 || dayTilawah > 0) {
+               calculatedStreak++;
+           } else {
+               if (i === 0) continue; 
+               break;
+           }
+        }
+        setStreak(calculatedStreak);
       }
       setLoadingContext(false);
       
@@ -63,15 +87,36 @@ export default function StudentDashboard() {
   // DB SYNC ENGINE (TWO-WAY BINDING)
   useEffect(() => {
     if (user && !isInitialLoad.current && !loadingContext) {
+      setSyncStatus('saving');
       const todayId = new Date().toISOString().split('T')[0];
       const payload = { tilawah, targetTilawah, sholat, sunnah };
       // Debounce saving
-      const timer = setTimeout(() => {
-        updateUserProgress(user.uid, todayId, payload);
+      const timer = setTimeout(async () => {
+        try {
+          await updateUserProgress(user.uid, todayId, payload);
+          setSyncStatus('saved');
+        } catch(e) {
+          setSyncStatus('error');
+        }
       }, 1000);
       return () => clearTimeout(timer);
     }
   }, [user, tilawah, targetTilawah, sholat, sunnah, loadingContext]);
+
+  // PREVENT ACCIDENTAL CLOSE WHEN SAVING
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (syncStatus === 'saving') {
+        const payload = { tilawah, targetTilawah, sholat, sunnah };
+        const todayId = new Date().toISOString().split('T')[0];
+        updateUserProgress(user?.uid, todayId, payload); // Force fire
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [syncStatus, tilawah, targetTilawah, sholat, sunnah, user]);
 
   // ALADHAN API INTEGRATION (METHOD=20 [KEMENAG RI] & DYNAMIC GEOLOCATION)
   useEffect(() => {
@@ -134,7 +179,11 @@ export default function StudentDashboard() {
   const handleTilawahInc = () => setTilawah(prev => prev + 1);
   const handleTilawahDec = () => setTilawah(prev => Math.max(0, prev - 1));
   const handleUpdateTarget = (val) => setTargetTilawah(val);
-  const currentStreak = tilawah > 0 || prayersDone > 0 ? 5 : 4;
+
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 3000);
+  };
 
   // LOGIN SCREEN (AUTH GUARD)
   if (loadingContext) return <div className="h-screen w-screen flex items-center justify-center bg-background-light dark:bg-background-dark text-slate-500 font-bold">Loading spiritual journey...</div>;
@@ -163,15 +212,30 @@ export default function StudentDashboard() {
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       
       <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased" style={{ fontFamily: 'Lexend, sans-serif' }}>
-        <Sidebar user={user} onLogout={logout} />
+        <Sidebar user={user} onLogout={logout} onFeatureUnavailable={() => showToast('Feature currently under construction for Phase 2! 🚧')} />
         
         <main className="flex-1 overflow-y-auto scroll-smooth relative">
+          {/* TOASTS & INDICATORS */}
           {toastMessage && (
             <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-4 py-2 rounded-full shadow-lg z-50 animate-bounce">
               {toastMessage}
             </div>
           )}
-          <Header corePct={corePct} sunnahBonusXP={sunnahBonusXP} hijriDate={hijriDate} user={user} />
+          
+          <div className="absolute top-4 right-8 z-50 flex items-center gap-2">
+             {syncStatus === 'saving' && (
+                <div className="flex items-center gap-1.5 bg-slate-800/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase animate-fade-in-down">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Saving...
+                </div>
+             )}
+             {syncStatus === 'saved' && !isInitialLoad.current && (
+                <div className="flex items-center gap-1.5 bg-sage-100/80 dark:bg-slate-800/80 backdrop-blur-md text-sage-600 dark:text-sage-300 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase transition-opacity duration-1000 opacity-50 hover:opacity-100">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span> Saved
+                </div>
+             )}
+          </div>
+
+          <Header corePct={corePct} sunnahBonusXP={sunnahBonusXP} hijriDate={hijriDate} user={user} showToast={showToast} />
           
           <div className="px-8 pb-12 grid grid-cols-1 md:grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-8 space-y-6">
@@ -192,9 +256,9 @@ export default function StudentDashboard() {
 
             {/* WIDGETS COLUMN */}
             <div className="col-span-12 lg:col-span-4 space-y-6">
-              <StreakWidget streakCount={currentStreak} />
+              <StreakWidget streakCount={streak} />
               <DuaCard />
-              <NextEvent prayerTimes={prayerTimes} />
+              <NextEvent prayerTimes={prayerTimes} showToast={showToast} />
             </div>
           </div>
         </main>
