@@ -69,12 +69,14 @@ export async function POST(request) {
        const snapshot = await usersRef.where('email', '==', email).limit(1).get();
        
        if (!snapshot.empty) {
-           const userDoc = snapshot.docs[0];
-           await db.collection('users').doc(userDoc.id).collection('sadaqah').doc(donationId.toString()).set({
-               amount: amount,
-               status: 'SUCCESS',
-               timestamp: admin.firestore.FieldValue.serverTimestamp()
-           });
+            const userDoc = snapshot.docs[0];
+            const todayId = new Date().toISOString().split('T')[0];
+            await db.collection('users').doc(userDoc.id).collection('sadaqah').doc(donationId.toString()).set({
+                amount: amount,
+                status: 'SUCCESS',
+                dateId: todayId,
+                timestamp: admin.firestore.FieldValue.serverTimestamp()
+            });
            console.log(`[FIRESTORE_SYNC] Donation record ${donationId} mapped to user ${userDoc.id}`);
        } else {
            // Jika user tidak terdaftar, taruh di root /unclaimed_donations

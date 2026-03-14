@@ -12,7 +12,7 @@ import StreakWidget from './components/StreakWidget';
 import Modal from './components/Modal';
 import { auth, db, loginWithGoogle, getUserProgress, updateUserProgress, getUserWeeklyProgress, logout } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, query, limit, onSnapshot } from 'firebase/firestore';
+import { collection, query, limit, onSnapshot, where } from 'firebase/firestore';
 
 export default function StudentDashboard() {
   // DB & AUTH STATE
@@ -62,15 +62,13 @@ export default function StudentDashboard() {
         // Fetch streak history
         const weeklyData = await getUserWeeklyProgress(currentUser.uid);
         if (weeklyData) {
-          setStreakHistory(weeklyData.reverse()); 
+          setStreakHistory(weeklyData); // Keep original order, StreakWidget will handle reversed check
         }
+        
+        // Resolve initial load only after all await calls finish
+        isInitialLoad.current = false;
       }
       setLoadingContext(false);
-      
-      // Allow syncing to DB on next render cycle
-      setTimeout(() => {
-        isInitialLoad.current = false;
-      }, 500);
     });
     return () => unsubscribe();
   }, []);
@@ -80,7 +78,13 @@ export default function StudentDashboard() {
     if (user && !isInitialLoad.current && !loadingContext) {
       setSyncStatus('saving');
       const todayId = new Date().toISOString().split('T')[0];
-      const payload = { tilawah, targetTilawah, sholat, sunnah };
+      
+      // Materialize Vibe Points to Payload
+      const sunnahDoneCount = (sunnah.tarawih ? 1 : 0) + (sunnah.sahur ? 1 : 0) + (verifiedSadaqah ? 1 : 0);
+      const sunnahBonusXP = sunnahDoneCount * 5;
+      
+      const payload = { tilawah, targetTilawah, sholat, sunnah, earnedXP: sunnahBonusXP };
+      
       // Debounce saving
       const timer = setTimeout(async () => {
         try {
@@ -109,12 +113,13 @@ export default function StudentDashboard() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [syncStatus, tilawah, targetTilawah, sholat, sunnah, user]);
 
-  // REAL-TIME SADAQAH VERIFIER
+  // REAL-TIME SADAQAH VERIFIER (TIME-BOUND)
   useEffect(() => {
     if (user) {
+      const todayId = new Date().toISOString().split('T')[0];
       const sadaqahRef = collection(db, 'users', user.uid, 'sadaqah');
-      const q = query(sadaqahRef, limit(1)); // Just check if any exists for now
-      // In production, we should filter by today's date
+      const q = query(sadaqahRef, where('dateId', '==', todayId), limit(1)); 
+      
       const unsubscribe = onSnapshot(q, (snapshot) => {
         setVerifiedSadaqah(!snapshot.empty);
       });
@@ -216,7 +221,7 @@ export default function StudentDashboard() {
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       
       <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased" style={{ fontFamily: 'Lexend, sans-serif' }}>
-        <Sidebar user={user} onLogout={logout} onFeatureUnavailable={() => showToast('Feature currently under construction for Phase 2! 🚧')} />
+        <Sidebar user={user} onLogout={logout} />
         
         <main className="flex-1 overflow-y-auto scroll-smooth relative">
           {/* TOASTS & INDICATORS */}

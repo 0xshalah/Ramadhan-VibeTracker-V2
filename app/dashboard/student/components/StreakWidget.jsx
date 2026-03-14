@@ -4,14 +4,20 @@ export default function StreakWidget({ history }) {
   // Calculate current consecutive streak from history
   const streakCount = useMemo(() => {
     let count = 0;
-    // We expect history to be Chronological (oldest to newest)
-    // We'll check from newest to oldest
     const reversedHistory = [...history].reverse();
+    const todayId = new Date().toISOString().split('T')[0];
+
     for (const day of reversedHistory) {
       if (!day) break;
       const hasActivity = (day.tilawah > 0) || (day.sholat && Object.values(day.sholat).some(v => v));
-      if (hasActivity) count++;
-      else break;
+      
+      if (hasActivity) {
+        count++;
+      } else {
+        // [FIX] Zero-Day Trap: If it's today and empty, don't break the streak yet
+        if (day.dateId === todayId) continue;
+        break;
+      }
     }
     return count;
   }, [history]);
@@ -22,7 +28,8 @@ export default function StreakWidget({ history }) {
        const hasActivity = day && (day.tilawah > 0 || (day.sholat && Object.values(day.sholat).some(v => v)));
        return {
          label: dateObj.toLocaleDateString('en-US', { weekday: 'narrow' }),
-         achieved: !!hasActivity
+         achieved: !!hasActivity,
+         dateId: day?.dateId
        };
     });
   }, [history]);
