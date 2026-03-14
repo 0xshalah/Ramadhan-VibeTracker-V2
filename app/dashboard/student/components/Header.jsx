@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import anime from 'animejs';
 
 export default function Header({ corePct, sunnahBonusXP, hijriDate, user, showToast, onOpenNotif }) {
   const [currentDate, setCurrentDate] = useState('');
@@ -9,7 +10,20 @@ export default function Header({ corePct, sunnahBonusXP, hijriDate, user, showTo
   }, []);
 
   const circumference = 175.9;
-  const strokeDashoffset = Math.max(0, circumference - ((corePct / 100) * circumference));
+  const targetOffset = Math.max(0, circumference - ((corePct / 100) * circumference));
+  const circleRef = useRef(null);
+
+  // [ANIME.JS] Premium Spring Animation for Progress Circle
+  useEffect(() => {
+    if (circleRef.current) {
+      anime({
+        targets: circleRef.current,
+        strokeDashoffset: targetOffset,
+        duration: 1500,
+        easing: 'spring(1, 80, 10, 0)'
+      });
+    }
+  }, [targetOffset]);
 
   let progressMessage = "Let's start strong!";
   if (corePct >= 100) progressMessage = 'Masya Allah! Perfect! 🌟';
@@ -33,10 +47,11 @@ export default function Header({ corePct, sunnahBonusXP, hijriDate, user, showTo
           <svg className="w-16 h-16 transform -rotate-90">
             <circle className="text-sage-100 dark:text-slate-800" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeWidth="6"></circle>
             <circle 
-              className="text-primary transition-all duration-500 ease-in-out" 
+              ref={circleRef}
+              className="text-primary" 
               cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" 
               strokeDasharray="175.9" 
-              strokeDashoffset={strokeDashoffset} 
+              strokeDashoffset="175.9" 
               strokeWidth="6">
             </circle>
           </svg>
