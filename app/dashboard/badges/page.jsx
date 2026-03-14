@@ -1,11 +1,13 @@
 "use client";
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import Sidebar from '../student/components/Sidebar';
 import { auth, logout } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export default function BadgesPage() {
   const [user, setUser] = React.useState(null);
+  const router = useRouter();
   React.useEffect(() => {
     onAuthStateChanged(auth, u => setUser(u));
   }, []);
@@ -19,7 +21,7 @@ export default function BadgesPage() {
         </div>
         <h1 className="text-3xl font-black mb-4">Achievements & Badges</h1>
         <p className="text-sage-500 max-w-md">Unlock legendary badges by completing your Ramadan goals. Badge system is currently under development.</p>
-        <button onClick={() => window.history.back()} className="mt-8 px-6 py-2 bg-primary text-white font-bold rounded-xl active:scale-95 transition-transform">Go Back</button>
+        <button onClick={() => router.push('/dashboard/student')} className="mt-8 px-6 py-2 bg-primary text-white font-bold rounded-xl active:scale-95 transition-transform">Return to Dashboard</button>
       </main>
     </div>
   );

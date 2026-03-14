@@ -5,7 +5,10 @@ export default function StreakWidget({ history }) {
   const streakCount = useMemo(() => {
     let count = 0;
     const reversedHistory = [...history].reverse();
-    const todayId = new Date().toISOString().split('T')[0];
+    // [FIX] Local timezone todayId (Anti-UTC Sabotage)
+    const date = new Date();
+    const offset = date.getTimezoneOffset() * 60000;
+    const todayId = new Date(date - offset).toISOString().split('T')[0];
 
     for (const day of reversedHistory) {
       if (!day) break;

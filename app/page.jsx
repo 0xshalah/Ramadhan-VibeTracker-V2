@@ -56,8 +56,7 @@ export default function LandingPage() {
 
         <p className="text-lg md:text-xl text-sage-500 max-w-2xl mb-12 leading-relaxed">
           The all-in-one spiritual companion. Track your prayers, monitor your
-          daily tilawah, and build consistency. Built for students, teachers, and
-          parents.
+          daily tilawah, and build consistency throughout Ramadan.
         </p>
 
         {/* Login Button */}

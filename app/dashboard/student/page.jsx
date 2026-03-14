@@ -347,7 +347,7 @@ export default function StudentDashboard() {
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       
       <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased" style={{ fontFamily: 'Lexend, sans-serif' }}>
-        <Sidebar user={user} onLogout={logout} />
+        <Sidebar user={user} totalXP={totalXP} onLogout={logout} />
         
         <main className="flex-1 overflow-y-auto scroll-smooth relative">
           {/* TOASTS & INDICATORS */}

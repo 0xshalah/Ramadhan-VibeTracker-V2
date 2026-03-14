@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-export default function Sidebar({ user, onLogout }) {
+export default function Sidebar({ user, totalXP = 0, onLogout }) {
   return (
     <aside className="w-72 bg-white dark:bg-slate-900 border-r border-sage-200 dark:border-slate-800 flex-col hidden lg:flex">
       <div className="p-8 flex items-center gap-3">
@@ -42,7 +42,10 @@ export default function Sidebar({ user, onLogout }) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold truncate">{user?.displayName || 'Student'}</p>
-            <p className="text-xs text-sage-500 truncate">{user?.email || 'Ramadhan Logger'}</p>
+            <div className="flex items-center gap-1 mt-0.5 text-xs font-bold text-amber-500">
+              <span className="material-symbols-outlined text-[14px]">stars</span>
+              {totalXP} XP
+            </div>
           </div>
           <button onClick={onLogout} title="Log Out" className="w-8 h-8 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 flex items-center justify-center transition-colors">
              <span className="material-symbols-outlined text-[18px]">logout</span>
