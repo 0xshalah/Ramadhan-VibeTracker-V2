@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { loginWithGoogle } from '@/lib/firebase';
 
 export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -8,12 +9,8 @@ export default function LandingPage() {
   const handleLogin = async () => {
     setIsLoading(true);
     try {
-      // TODO: Replace with actual Firebase Google Sign-In
-      // import { loginWithGoogle } from '@/lib/firebase';
-      // await loginWithGoogle();
-      setTimeout(() => {
-        window.location.href = "/dashboard/student";
-      }, 800);
+      await loginWithGoogle();
+      window.location.href = "/dashboard/student";
     } catch (error) {
       console.error("Login failed", error);
       setIsLoading(false);
@@ -21,7 +18,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background-light text-slate-900 flex flex-col">
+    <div className="min-h-screen bg-background-light text-slate-900 flex flex-col scroll-smooth">
       {/* Navbar */}
       <header className="px-8 py-6 flex justify-between items-center w-full max-w-6xl mx-auto">
         <div className="flex items-center gap-2">
@@ -64,7 +61,7 @@ export default function LandingPage() {
         </p>
 
         {/* Login Button */}
-        <div className="flex flex-col items-center gap-4 w-full max-w-sm">
+        <div className="flex flex-col items-center gap-4 w-full max-w-sm mb-16">
           <button
             onClick={handleLogin}
             disabled={isLoading}
@@ -106,10 +103,41 @@ export default function LandingPage() {
             Secure authentication powered by Firebase.
           </p>
         </div>
+
+        {/* Features Content (Dead Hooks Resolver) */}
+        <section id="features" className="w-full max-w-4xl py-12 border-t border-slate-200">
+          <h3 className="text-2xl font-bold mb-6">Key Features</h3>
+          <div className="grid md:grid-cols-3 gap-6 text-left">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+              <span className="material-symbols-outlined text-primary mb-2 text-3xl">mosque</span>
+              <h4 className="font-bold mb-2">Geolocation Prayer Times</h4>
+              <p className="text-sm text-sage-600">Accurate prayer tracking utilizing local timezones synced directly with the Kemenag API.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+              <span className="material-symbols-outlined text-indigo-500 mb-2 text-3xl">import_contacts</span>
+              <h4 className="font-bold mb-2">Tilawah & Sunnah Manager</h4>
+              <p className="text-sm text-sage-600">Track Quranic reading targets and daily sunnahs to enhance your spiritual streak points.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+              <span className="material-symbols-outlined text-amber-500 mb-2 text-3xl">cloud_sync</span>
+              <h4 className="font-bold mb-2">Firebase Deep Sync</h4>
+              <p className="text-sm text-sage-600">Secure daily data binding. Never lose your religious progression throughout Ramadhan.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* About Content (Dead Hooks Resolver) */}
+        <section id="about" className="w-full max-w-4xl py-12 border-t border-slate-200 text-center">
+            <h3 className="text-2xl font-bold mb-4">About VibeTracker V2</h3>
+            <p className="text-sage-600 w-full sm:w-2/3 mx-auto">
+              Ramadhan VibeTracker V2 is engineered entirely by <strong>Antigravity (Agentic AI)</strong> under the supervision of the Chief Architect. A testament to rapid zero-to-production workflows featuring Google Firebase, Next.js, and strict API logic.
+            </p>
+        </section>
+
       </main>
 
       {/* Footer */}
-      <footer className="py-8 text-center text-sm text-sage-500 border-t border-slate-200/50 mt-12">
+      <footer className="py-8 text-center text-sm text-sage-500 border-t border-slate-200/50 mt-12 bg-white">
         <p>
           © 2026 Ramadhan VibeTracker. Built for Season 01: One Week to Ship.
         </p>

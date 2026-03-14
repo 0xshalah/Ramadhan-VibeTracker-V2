@@ -71,27 +71,52 @@ export default function StudentDashboard() {
     }
   }, [user, tilawah, targetTilawah, sholat, sunnah, loadingContext]);
 
-  // ALADHAN API INTEGRATION (METHOD=20 [KEMENAG RI])
+  // ALADHAN API INTEGRATION (METHOD=20 [KEMENAG RI] & DYNAMIC GEOLOCATION)
   useEffect(() => {
     async function fetchPrayerTimes() {
-      try {
-        const res = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Jakarta&country=Indonesia&method=20');
-        const data = await res.json();
-        if (data && data.data) {
-          setPrayerTimes(data.data.timings);
+      // Fungsi untuk menghubungi API setelah mendapat koordinat atau fall-back
+      const getFromAPI = async (lat = -6.2088, lng = 106.8456) => { // Fallback Jakarta
+        try {
+          const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lng}&method=20`);
+          const data = await res.json();
+          if (data && data.data) {
+            setPrayerTimes(data.data.timings);
+          }
+        } catch (error) {
+          console.error("Failed fetching Aladhan API", error);
         }
-      } catch (error) {
-        console.error("Failed fetching Aladhan API", error);
+      };
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            getFromAPI(position.coords.latitude, position.coords.longitude);
+          },
+          (error) => {
+            console.warn("Geolocation denied or failed. Fallback to default (Jakarta).", error);
+            getFromAPI(); // Panggil dengan fallback
+          }
+        );
+      } else {
+        console.warn("Geolocation is not supported by this browser. Fallback to default.");
+        getFromAPI();
       }
     }
     fetchPrayerTimes();
   }, []);
 
-  // THE LOGIC ENGINE: Pembobotan ketat 50% Salah + 50% Tilawah (Sunnah diabaikan dari persentase inti)
+  // THE LOGIC ENGINE: Pembobotan ketat 50% Salah + 50% Tilawah (Sunnah sebagai Bonus Point)
   const tilawahPct = Math.min(Math.round((tilawah / targetTilawah) * 100), 100);
   const prayersDone = Object.values(sholat).filter(v => v).length;
   const sholatPct = (prayersDone / 5) * 100;
-  const totalPct = Math.round((sholatPct * 0.5) + (tilawahPct * 0.5));
+  
+  // Hitung jumlah sunnah yang dikerjakan (0 s/d 3)
+  const sunnahDoneCount = Object.values(sunnah).filter(v => v).length;
+  // Berikan 5% bonus XP per ibadah sunnah yang dijalankan
+  const sunnahBonusPct = sunnahDoneCount * 5;
+
+  // Rumus Akhir: (50% Fardhu) + (50% Tilawah) + (XP Sunnah), dibatasi maksimal 100% untuk UI
+  const totalPct = Math.min(Math.round((sholatPct * 0.5) + (tilawahPct * 0.5) + sunnahBonusPct), 100);
 
   // HANDLERS
   const handlePrayerToggle = (key) => setSholat(prev => ({ ...prev, [key]: !prev[key] }));
