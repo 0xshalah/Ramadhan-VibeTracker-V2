@@ -70,7 +70,12 @@ export async function POST(request) {
        
        if (!snapshot.empty) {
             const userDoc = snapshot.docs[0];
-            const todayId = new Date().toISOString().split('T')[0];
+            
+            // [DECREE 1] Local Timezone Date ID (Batam/WIB Fix)
+            const date = new Date();
+            const offset = date.getTimezoneOffset() * 60000;
+            const todayId = new Date(date - offset).toISOString().split('T')[0];
+            
             await db.collection('users').doc(userDoc.id).collection('sadaqah').doc(donationId.toString()).set({
                 amount: amount,
                 status: 'SUCCESS',

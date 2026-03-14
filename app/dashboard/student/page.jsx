@@ -10,7 +10,7 @@ import NextEvent from './components/NextEvent';
 import DuaCard from './components/DuaCard';
 import StreakWidget from './components/StreakWidget';
 import Modal from './components/Modal';
-import { auth, db, loginWithGoogle, getUserProgress, updateUserProgress, getUserWeeklyProgress, logout } from '@/lib/firebase';
+import { auth, db, loginWithGoogle, getUserProgress, updateUserProgress, getUserWeeklyProgress, getLocalTodayId, logout } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, limit, onSnapshot, where } from 'firebase/firestore';
 
@@ -50,7 +50,7 @@ export default function StudentDashboard() {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        const todayId = new Date().toISOString().split('T')[0];
+        const todayId = getLocalTodayId();
         const cloudData = await getUserProgress(currentUser.uid, todayId);
         if (cloudData) {
           if (cloudData.tilawah !== undefined) setTilawah(cloudData.tilawah);
@@ -77,7 +77,7 @@ export default function StudentDashboard() {
   useEffect(() => {
     if (user && !isInitialLoad.current && !loadingContext) {
       setSyncStatus('saving');
-      const todayId = new Date().toISOString().split('T')[0];
+      const todayId = getLocalTodayId();
       
       // Materialize Vibe Points to Payload
       const sunnahDoneCount = (sunnah.tarawih ? 1 : 0) + (sunnah.sahur ? 1 : 0) + (verifiedSadaqah ? 1 : 0);
@@ -103,7 +103,7 @@ export default function StudentDashboard() {
     const handleBeforeUnload = (e) => {
       if (syncStatus === 'saving') {
         const payload = { tilawah, targetTilawah, sholat, sunnah };
-        const todayId = new Date().toISOString().split('T')[0];
+        const todayId = getLocalTodayId();
         updateUserProgress(user?.uid, todayId, payload); // Force fire
         e.preventDefault();
         e.returnValue = '';
@@ -116,7 +116,7 @@ export default function StudentDashboard() {
   // REAL-TIME SADAQAH VERIFIER (TIME-BOUND)
   useEffect(() => {
     if (user) {
-      const todayId = new Date().toISOString().split('T')[0];
+      const todayId = getLocalTodayId();
       const sadaqahRef = collection(db, 'users', user.uid, 'sadaqah');
       const q = query(sadaqahRef, where('dateId', '==', todayId), limit(1)); 
       

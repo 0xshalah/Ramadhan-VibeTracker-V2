@@ -2,10 +2,16 @@ import React, { useState, useEffect } from 'react';
 
 export default function NextEvent({ prayerTimes, showToast, onOpenSchedule }) {
   const [timeRemaining, setTimeRemaining] = useState({ value: '--', unit: 'Min' });
-  const [nextEventName, setNextEventName] = useState('Loading...');
+  const [nextEventName, setNextEventName] = useState('Calculating...');
 
   useEffect(() => {
-    if (!prayerTimes) return;
+    if (!prayerTimes) {
+      // [DECREE 5] Fail-safe for API Downtime
+      const timer = setTimeout(() => {
+        if (!prayerTimes) setNextEventName('Schedule Unavailable');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
 
     const calculateNext = () => {
       const now = new Date();
