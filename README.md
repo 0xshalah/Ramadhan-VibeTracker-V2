@@ -15,7 +15,8 @@
   [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 
   <p align="center">
-    A unified spiritual tracking platform designed to build worship consistency during the holy month of Ramadhan, powered by <b>AI Insights</b>, <b>Real-time Sync</b>, and <b>Enterprise-grade Security</b>.
+    A unified spiritual tracking platform designed to build worship consistency during the holy month of Ramadhan, powered by <b>AI Insights</b>, <b>Real-time Sync</b>, and <b>Enterprise-grade Security</b>. <br/>
+    Built for <b>Hackathon Season 01: One Week to Ship</b>.
   </p>
 </div>
 
@@ -24,13 +25,13 @@
 ## 🚀 Key Features
 
 - **🧠 AI Spiritual Companion** — Integration with Alibaba Cloud Qwen-Turbo LLM for personalized worship insights and motivation based on daily activity patterns.
+- **🛡️ Zero-Trust RBAC & Dual Gateway** — Multi-tier role-based access control protecting Student, Teacher, and Super Admin gateways. Includes a `whitelisted_staff` architecture to prevent role escalation.
+- **👨‍🏫 Global Teacher & Admin Portals** — Real-time live monitoring of student progress with materialized view aggregation for cost-efficient leaderboards.
 - **🔄 Vibe Engine (Zustand + Firebase)** — Two-way state synchronization with debounced auto-save, ensuring worship data is never lost.
 - **🕌 Geolocation-Aware Prayer Times** — Dynamic prayer schedule using the Aladhan API (Kemenag RI Method 20) with GPS fallback protection.
-- **🔔 Eternal Notification Engine** — Web Push reminders (FCM) with persistent notification history stored in Firestore.
-- **📊 Consistency Heatmap** — GitHub-style contribution calendar visualizing 30-day worship activity using `react-calendar-heatmap`.
-- **👨‍🏫 Multi-Role Dashboard** — Teacher Portal (real-time student monitoring), Parent Observer, and Student Dashboard with role-based access control.
-- **🛡️ Enterprise Security** — 4-layer API defense (Auth → Rate Limiting → Payload Validation → LLM), Cloud Functions for zero-trust RBAC, and HMAC webhook verification.
-- **🔒 Dual-Layer Type Safety** — TypeScript for compile-time protection + Zod for runtime data validation against corrupted Firestore payloads.
+- **📊 Consistency Heatmap & Analytics** — GitHub-style contribution calendar visualizing 30-day worship activity, individual deep-dive student analytics.
+- **🔐 Enterprise Security** — 4-layer API defense (Auth → Rate Limiting → Payload Validation → LLM), Cloud Functions, and HMAC webhook verification for digital Sadaqah.
+- **👮 Dual-Layer Type Safety** — TypeScript for compile-time protection + Zod for runtime data validation against corrupted Firestore payloads.
 
 ## 🛠️ Architecture
 
@@ -38,38 +39,36 @@ Built on the **Next.js 14 App Router** with clear separation between client-side
 
 ```mermaid
 graph TD;
-    Client[Next.js Client - React 18 + TypeScript] -->|Zustand State| UI;
+    Client[Next.js Client - React 18] -->|Zustand State| UI;
     Client -->|Debounced Sync| Firestore[Firebase Firestore];
     Client -->|Geolocation| Aladhan[Aladhan API];
-    Client -->|Auth| FirebaseAuth[Firebase Auth];
     
-    API_Insight[API Route /api/insight] -->|Bearer Auth + Rate Limit| LLM[Alibaba Cloud Qwen AI];
+    AuthSync[API /api/auth/sync] -->|Validate Whitelist| Firestore;
+    Client -->|Google Sign-In| FirebaseAuth[Firebase Auth] --> AuthSync;
+    
+    API_Insight[API /api/insight] -->|Bearer Auth + Rate Limit| LLM[Alibaba Cloud Qwen AI];
     API_Insight -->|Upstash Redis| RateLimit[Sliding Window 3req/10s];
-    Firestore --> API_Insight;
     
-    CloudFunctions[Firebase Cloud Functions] -->|onUserCreate Trigger| Firestore;
-    CloudFunctions -->|Zero-Trust RBAC| Firestore;
-    
-    Webhook[Mayar Webhook /api/webhook/mayar] -->|HMAC SHA-256| Firestore;
+    Webhook[Mayar Webhook] -->|HMAC SHA-256| Firestore_Donations[Firestore];
 ```
 
-### Frontend Architecture (Post-Decoupling)
+### Full-Stack Decoupling
 
-| Layer | File | Responsibility |
+| Layer | Implementation | Responsibility |
 |-------|------|----------------|
-| **Custom Hook** | `hooks/usePrayerTimes.js` | Geolocation + Aladhan API + Hijri calendar |
-| **Custom Hook** | `hooks/useVibeSync.js` | Debounced Firestore sync + beforeUnload guard |
-| **Schemas** | `lib/schemas.ts` | Zod schemas (Source of Truth for all data shapes) |
-| **Store** | `store/useVibeStore.ts` | Zustand global state with strict TypeScript interface |
-| **Data Layer** | `lib/firebase.ts` | All Firestore operations with Zod runtime validation |
-| **UI Components** | `app/dashboard/*/` | Pure rendering components (Separation of Concerns) |
+| **Core UI** | `app/dashboard/*/` | Dynamic Routing, Next.js App Router, Tailwind Styles |
+| **Logic Hooks** | `hooks/usePrayerTimes.js`, `useVibeSync.js` | Geolocation, Debounced network calls, API orchestration |
+| **State Mngr** | `store/useVibeStore.ts` | Zustand global state with strict TypeScript interface |
+| **Data Layer** | `lib/firebase.ts` | Firestore read/write, Real-time `onSnapshot` listeners |
+| **Edge API** | `app/api/*/route.ts` | Auth Whitelist Sync, Secure LLM Proxy, Webhooks |
+| **Validation** | `lib/schemas.ts` | Zod runtime schemas acting as absolute source of truth |
 
 ## 📦 Installation
 
 ### Prerequisites
 
 - Node.js 18.17.0 or higher
-- Firebase project (Authentication, Firestore, Cloud Messaging)
+- Firebase project (Authentication, Firestore Database)
 - Alibaba Cloud API Key (for AI Insights)
 - Upstash Redis account (for Rate Limiting — optional, graceful degradation)
 
@@ -91,70 +90,68 @@ cp .env.local.example .env.local
 npm run dev
 ```
 
-### Environment Variables
+### Environment Variables (.env.local)
 
 ```env
-# Firebase
+# Client-Side Firebase
 NEXT_PUBLIC_FIREBASE_API_KEY=
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
-NEXT_PUBLIC_FIREBASE_VAPID_KEY=
 
-# AI Engine
+# AI Engine / Analytics
 ALIBABA_CLOUD_API_KEY=
 
-# Rate Limiting (Optional — graceful degradation if not set)
+# Rate Limiting (Optional)
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 
-# Webhook Security
-MAYAR_WEBHOOK_SECRET=
-
-# Firebase Admin (Server-side)
+# Firebase Admin SDK (Server-Side For Webhooks/Sync)
 FIREBASE_ADMIN_PROJECT_ID=
 FIREBASE_ADMIN_CLIENT_EMAIL=
 FIREBASE_ADMIN_PRIVATE_KEY=
 ```
 
-### Deploy Cloud Functions (Optional)
+### Required Firestore Setup
 
+To access the Teacher/Admin dashboards, create a collection named `whitelisted_staff` in Firestore:
+- **Document ID**: The Google Email of the staff member
+- **Field**: `role` (string) = `teacher` or `admin`
+
+Deploy Firestore Rules:
 ```bash
-cd functions
-npm install
-firebase deploy --only functions
+npx firebase deploy --only firestore:rules
 ```
 
 ## 🛡️ Security Standards
 
-| Layer | Protection | Implementation |
+| Threat Vector | Protection Layer | Implementation |
 |-------|-----------|----------------|
-| **Zero-Trust Backend** | RBAC & Donation Resolver | Firebase Cloud Functions (`onUserCreate`) |
-| **API Guard** | Bearer Token validation | `app/api/insight/route.js` |
-| **Rate Limiting** | Sliding window (3 req/10s) | Upstash Redis + `@upstash/ratelimit` |
-| **Webhook Integrity** | HMAC SHA-256 + `timingSafeEqual` | `app/api/webhook/mayar/route.js` |
-| **Data Validation** | Runtime schema enforcement | Zod schemas on all Firestore reads |
-| **Race Conditions** | Debounced sync + absolute XP | `useVibeSync` hook + daily XP map |
+| **Privilege Escalation** | Staff Whitelisting | `api/auth/sync` verifies admin-created documents |
+| **Data Corruption** | Runtime Validation | Zod `.passthrough()` and strict type schemas |
+| **API Abuse (DDoS)** | Rate Limiting | Upstash Redis Sliding Window (3 req/10s) |
+| **Cross-User Data Leak** | Zero-Trust Rules | `firestore.rules` enforces `isOwner()` |
+| **Payment Spoofing** | Webhook Integrity | HMAC SHA-256 + `timingSafeEqual` |
 
 ## 🧪 Testing & Validation
 
-Validated using **TestSprite MCP** infrastructure:
+Architectural integrity validated iteratively via AI-driven QA logic and manual structural tests.
 
 - [x] End-to-End Sadaqah Webhook Lifecycle
+- [x] Onboarding Deadlock Catch-22 Resolution
+- [x] In-App Navigation Routing Matrix Test
 - [x] UI Synchronization Stress Test (Tilawah Tracker)
-- [x] Timezone Anomaly Detection (Anti-UTC Sabotage)
+- [x] Timezone Anomaly Detection
 
-## 🛣️ Roadmap
+## 🛣️ Roadmap Genesis to Production
 
-- [x] **Phase 1** — Core Tracking, AI Insights, FCM Notifications
-- [x] **Phase 2** — Enterprise Security & Frontend Decoupling
-- [x] **Phase 3** — CI/CD Pipeline & Rate Limiting
-- [x] **Phase 4** — TypeScript & Zod Dual-Layer Type Safety
-- [ ] **Phase 5** — Sentry Observability & Centralized Logging
-- [ ] **Phase 6** — Institutional Leaderboard (Cloud Functions Aggregation)
-- [ ] **Phase 7** — Mobile Offline-First (Flutter)
+- [x] **Phase 1-4** — Static HTML mockups translated to Next.js component structures.
+- [x] **Phase 5-7** — Firestore integration, Zod schema runtime validation, Zustand state binding.
+- [x] **Phase 8-9** — LLM prompt engineering, edge computing webhooks, animation polish.
+- [x] **Phase 10-12** — Role-Based Access Control, Dual Login Gateway, Whitelisted Staff Architecture.
+- [x] **Phase 13** — Super Admin Console, Global Telemetry, Final QA and Production Deployment.
 
 ## 📄 License
 
@@ -163,5 +160,6 @@ MIT License — see [LICENSE](LICENSE) for details.
 ---
 
 <div align="center">
-  <p><b>Build for the Soul, Code for Eternity.</b> 🌙</p>
+  <p><b>Engineered by Antigravity under the direction of the Chief Architect.</b></p>
+  <p><i>Build for the Soul, Code for Eternity.</i> 🌙</p>
 </div>

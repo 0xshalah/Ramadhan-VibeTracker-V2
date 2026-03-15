@@ -164,32 +164,47 @@ export default function LandingPage() {
         </div>
 
         {/* Features Content */}
-        <section id="features" className="w-full max-w-4xl py-12 border-t border-slate-200">
-          <h3 className="text-2xl font-bold mb-6">Key Features</h3>
-          <div className="grid md:grid-cols-3 gap-6 text-left">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <span className="material-symbols-outlined text-primary mb-2 text-3xl">mosque</span>
+        <section id="features" className="w-full max-w-5xl py-12 border-t border-slate-200">
+          <h3 className="text-2xl font-bold mb-8">Enterprise-Grade Features</h3>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-primary/30 transition-colors">
+              <span className="material-symbols-outlined text-primary mb-3 text-3xl">mosque</span>
               <h4 className="font-bold mb-2">Geolocation Prayer Times</h4>
-              <p className="text-sm text-sage-600">Accurate prayer tracking utilizing local timezones synced directly with the Kemenag API.</p>
+              <p className="text-sm text-sage-600 leading-relaxed">Accurate prayer tracking utilizing local timezones synced directly with the Kemenag API, wrapped in a dynamic Daily Challenge Grid.</p>
             </div>
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <span className="material-symbols-outlined text-indigo-500 mb-2 text-3xl">import_contacts</span>
-              <h4 className="font-bold mb-2">Tilawah &amp; Sunnah Manager</h4>
-              <p className="text-sm text-sage-600">Track Quranic reading targets and daily sunnahs to enhance your spiritual streak points.</p>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-indigo-300 transition-colors">
+              <span className="material-symbols-outlined text-indigo-500 mb-3 text-3xl">admin_panel_settings</span>
+              <h4 className="font-bold mb-2">Zero-Trust RBAC</h4>
+              <p className="text-sm text-sage-600 leading-relaxed">Multi-tier access control with a Dual Gateway. Protects against role escalation while providing distinct Student, Teacher, and Super Admin routing.</p>
             </div>
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <span className="material-symbols-outlined text-amber-500 mb-2 text-3xl">cloud_sync</span>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-amber-300 transition-colors">
+              <span className="material-symbols-outlined text-amber-500 mb-3 text-3xl">cloud_sync</span>
               <h4 className="font-bold mb-2">Firebase Deep Sync</h4>
-              <p className="text-sm text-sage-600">Secure daily data binding. Never lose your religious progression throughout Ramadhan.</p>
+              <p className="text-sm text-sage-600 leading-relaxed">Secure data binding with Zod runtime validation. Never lose your religious progression throughout Ramadhan.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-emerald-300 transition-colors">
+              <span className="material-symbols-outlined text-emerald-500 mb-3 text-3xl">school</span>
+              <h4 className="font-bold mb-2">Class Monitoring</h4>
+              <p className="text-sm text-sage-600 leading-relaxed">Pre-registered Staff Whitelisting allowing teachers to access a live dashboard of student telemetry and prayer consistency analytics.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-fuchsia-300 transition-colors">
+              <span className="material-symbols-outlined text-fuchsia-500 mb-3 text-3xl">smart_toy</span>
+              <h4 className="font-bold mb-2">AI-Driven Insights</h4>
+              <p className="text-sm text-sage-600 leading-relaxed">Integrated with Qwen LLM for personalized spiritual advice based on 30-day worship heatmap patterns.</p>
+            </div>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-rose-300 transition-colors">
+              <span className="material-symbols-outlined text-rose-500 mb-3 text-3xl">payments</span>
+              <h4 className="font-bold mb-2">Sadaqah Gateway</h4>
+              <p className="text-sm text-sage-600 leading-relaxed">Server-to-server webhook verification preventing client-side spoofing for secure digital donations.</p>
             </div>
           </div>
         </section>
 
         {/* About Content */}
         <section id="about" className="w-full max-w-4xl py-12 border-t border-slate-200 text-center">
-            <h3 className="text-2xl font-bold mb-4">About VibeTracker V2</h3>
-            <p className="text-sage-600 w-full sm:w-2/3 mx-auto">
-              Ramadhan VibeTracker V2 is engineered entirely by <strong>Antigravity (Agentic AI)</strong> under the supervision of the Chief Architect. A testament to rapid zero-to-production workflows featuring Google Firebase, Next.js, and strict API logic.
+            <h3 className="text-2xl font-bold mb-4">The Architecture</h3>
+            <p className="text-sage-600 w-full sm:w-3/4 mx-auto leading-relaxed">
+              Ramadhan VibeTracker V2 is engineered from scratch for Season 01: One Week to Ship. What started as a static mockup was transformed into a full-stack Next.js production application by <strong>Antigravity (Agentic AI)</strong> working in tandem with the Chief Architect. It features rigid Zod validation schemas, memory-aware edge functions, and cost-optimized Firestore data modeling.
             </p>
         </section>
 
