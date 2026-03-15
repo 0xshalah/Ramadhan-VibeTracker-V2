@@ -33,7 +33,7 @@ export type SunnahState = z.infer<typeof SunnahSchema>;
 // 2. User Profile Schema
 // ═══════════════════════════════════════════════════════
 export const UserProfileSchema = z.object({
-  uid: z.string(),
+  uid: z.string().optional(), // Optional: older documents may not have uid embedded
   email: z.string().email().nullable().optional(),
   displayName: z.string().nullable().optional(),
   photoURL: z.string().nullable().optional(),
@@ -46,8 +46,9 @@ export const UserProfileSchema = z.object({
   totalXP: z.number().nonnegative().optional(),
   streak: z.number().nonnegative().optional(),
   lastActivity: z.string().optional(),
-  lastLogin: z.string().optional(),
-});
+  lastLogin: z.any().optional(), // Accepts Firestore Timestamp or ISO string
+  createdAt: z.any().optional(), // Accepts Firestore Timestamp or ISO string
+}).passthrough(); // Allow unknown fields without crashing Zod parser
 
 export type UserProfile = z.infer<typeof UserProfileSchema>;
 

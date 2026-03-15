@@ -57,14 +57,15 @@ export async function POST(request: Request) {
 
       // 5. Buat Dokumen Pengguna dengan Role yang Dinamis
       await userRef.set({
+        uid: uid, // CRITICAL: Zod UserProfileSchema requires this field!
         email: email,
         displayName: displayName || 'New User',
         photoURL: photoURL || '',
         role: assignedRole, // Dynamically locked based on Whitelist!
         totalXP: 0,
         streak: 0,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        lastLogin: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: new Date().toISOString(), // Use ISO string, not Firestore Timestamp (Zod expects string)
+        lastLogin: new Date().toISOString(),
       });
 
       // 6. Klaim Donasi yang Tertunda (Idempotency Resolver)
