@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     if (!response.ok) {
       console.error('[AI_INSIGHT] API Error:', response.status);
       return NextResponse.json(
-        { insight: "Setiap langkah kecil dalam ibadah adalah investasi abadi. Terus istiqomah! ✨" },
+        { insight: "Every small step in worship is an eternal investment. Keep up the consistency! ✨" },
         { status: 200 }
       );
     }

@@ -27,6 +27,10 @@ export default function Sidebar({ onLogout }: SidebarProps) {
           <span className="material-symbols-outlined fill-1">home</span>
           <span>Home</span>
         </Link>
+        <Link href="/dashboard/student/sadaqah" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sage-100 hover:dark:bg-sage-900/30 text-sage-600 dark:text-sage-400 font-semibold transition-colors">
+          <span className="material-symbols-outlined fill-1">volunteer_activism</span>
+          <span>Charity Hub</span>
+        </Link>
         <Link href="/dashboard/badges" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sage-100 hover:dark:bg-sage-900/30 text-sage-600 dark:text-sage-400 font-semibold transition-colors">
           <span className="material-symbols-outlined fill-1">military_tech</span>
           <span>Badges</span>

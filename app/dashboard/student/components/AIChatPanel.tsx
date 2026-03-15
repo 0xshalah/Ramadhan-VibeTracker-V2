@@ -10,14 +10,14 @@ interface AIChatPanelProps {
 }
 
 interface ChatMessage {
-  role: 'ai' | 'user';
+  role: 'assistant' | 'user';
   content: string;
 }
 
 export default function AIChatPanel({ progressData }: AIChatPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'ai', content: 'Assalamu\'alaikum. Is there any spiritual reflection you would like to share today?' }
+    { role: 'assistant', content: 'Assalamu\'alaikum. Is there any spiritual reflection you would like to share today?' }
   ]);
   const [input, setInput] = useState('');
 
@@ -46,7 +46,7 @@ export default function AIChatPanel({ progressData }: AIChatPanelProps) {
         throw new Error(data.error || "Insight failure");
       }
       
-      setMessages([...newMsgs, { role: 'ai', content: data.insight }]);
+      setMessages([...newMsgs, { role: 'assistant', content: data.insight }]);
     } catch (e: any) {
       toast.error(e.message === "Unauthorized" ? "Silakan login ulang." : "AI is resting. Try again later.");
     }
@@ -68,7 +68,7 @@ export default function AIChatPanel({ progressData }: AIChatPanelProps) {
         
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((m, i) => (
-            <div key={i} className={`p-3 rounded-2xl max-w-[85%] ${m.role === 'ai' ? 'bg-slate-800 text-slate-200 self-start rounded-tl-sm' : 'bg-emerald-600 text-white self-end ml-auto rounded-tr-sm'}`}>
+            <div key={i} className={`p-3 rounded-2xl max-w-[85%] ${m.role === 'assistant' ? 'bg-slate-800 text-slate-200 self-start rounded-tl-sm' : 'bg-emerald-600 text-white self-end ml-auto rounded-tr-sm'}`}>
               {m.content}
             </div>
           ))}

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useVibeStore } from '@/store/useVibeStore';
 import Sidebar from '../components/Sidebar';
 import { ErrorBoundary } from 'react-error-boundary';
+import { toast } from 'sonner';
 
 // --- ErrorBoundary Fallback Component ---
 function WidgetFallback() {
@@ -30,12 +31,30 @@ export default function SadaqahHub() {
     if (!selectedAmount || !user) return;
     setIsProcessing(true);
     
-    // Di sini Anda memanggil endpoint backend yang berkomunikasi dengan API Mayar
-    // untuk meng-generate Payment Link, lalu redirect user ke link tersebut.
-    console.log(`Generating Mayar link for Rp ${selectedAmount} with email ${user.email}...`);
-    
-    // Simulasi delay
-    setTimeout(() => setIsProcessing(false), 2000);
+    try {
+      const response = await fetch('/api/checkout/mayar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: selectedAmount,
+          email: user.email,
+          name: user.displayName || 'VibeTracker Student'
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate secure link');
+      }
+
+      // Berhasil membuat link, belokkan navigasi (Redirect)
+      window.location.href = data.url;
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || 'Payment system unavailable');
+      setIsProcessing(false);
+    }
   };
 
   return (
