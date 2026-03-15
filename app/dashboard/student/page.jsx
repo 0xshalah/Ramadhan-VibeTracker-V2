@@ -16,6 +16,8 @@ import AIChatPanel from './components/AIChatPanel';
 import { useVibeStore } from '@/store/useVibeStore';
 import { toast } from 'sonner';
 import { Sparkles } from 'lucide-react';
+import { usePrayerTimes } from './hooks/usePrayerTimes';
+import { useVibeSync } from './hooks/useVibeSync';
 import { auth, db, loginWithGoogle, getUserProgress, getUserProfile, updateUserProgress, getUserWeeklyProgress, getLocalTodayId, logout, messaging, saveNotificationToken, saveNotification, getUserNotifications } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, limit, onSnapshot, where } from 'firebase/firestore';
@@ -44,20 +46,15 @@ export default function StudentDashboard() {
     tarawih: false, sahur: false, sadaqah: false
   });
 
-  const [prayerTimes, setPrayerTimes] = useState(null);
-  const [hijriDate, setHijriDate] = useState('Loading...');
-  const [hijriDayInt, setHijriDayInt] = useState(1);
-  const [toastMessage, setToastMessage] = useState('');
+  const { prayerTimes, hijriDate, hijriDayInt } = usePrayerTimes();
   
   const [streakHistory, setStreakHistory] = useState([]);
-  const [syncStatus, setSyncStatus] = useState('saved'); // 'saved' | 'saving' | 'error'
 
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [notifPermission, setNotifPermission] = useState('default');
   
   const [notifications, setNotifications] = useState([]);
-  const [xpBurstTrigger, setXpBurstTrigger] = useState(0);
 
   useEffect(() => {
     if ('Notification' in window) setNotifPermission(Notification.permission);
@@ -65,6 +62,10 @@ export default function StudentDashboard() {
 
   // REFS FOR AVOIDING UNNECESSARY DB WRITES ON LOAD
   const isInitialLoad = useRef(true);
+
+  const { syncStatus, xpBurstTrigger } = useVibeSync({
+    user, tilawah, targetTilawah, sholat, sunnah, verifiedSadaqah, loadingContext, isInitialLoad
+  });
 
   // AUTH OBSERVER & DB FETCHING
   useEffect(() => {
@@ -110,46 +111,7 @@ export default function StudentDashboard() {
     return () => unsubscribe();
   }, []);
 
-  // DB SYNC ENGINE (TWO-WAY BINDING)
-  useEffect(() => {
-    if (user && !isInitialLoad.current && !loadingContext) {
-      setSyncStatus('saving');
-      const todayId = getLocalTodayId();
-      
-      // Materialize Vibe Points to Payload
-      const sunnahDoneCount = (sunnah.tarawih ? 1 : 0) + (sunnah.sahur ? 1 : 0) + (verifiedSadaqah ? 1 : 0);
-      const sunnahBonusXP = sunnahDoneCount * 5;
-      
-      const payload = { tilawah, targetTilawah, sholat, sunnah, earnedXP: sunnahBonusXP };
-      
-      // Debounce saving
-       const timer = setTimeout(async () => {
-        try {
-          await updateUserProgress(user.uid, todayId, payload);
-          setSyncStatus('saved');
-          setXpBurstTrigger(prev => prev + 1);
-        } catch(e) {
-          setSyncStatus('error');
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [user, tilawah, targetTilawah, sholat, sunnah, loadingContext]);
-
-  // PREVENT ACCIDENTAL CLOSE WHEN SAVING
-  useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (syncStatus === 'saving') {
-        const payload = { tilawah, targetTilawah, sholat, sunnah };
-        const todayId = getLocalTodayId();
-        updateUserProgress(user?.uid, todayId, payload); // Force fire
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [syncStatus, tilawah, targetTilawah, sholat, sunnah, user]);
+  // Handled by useVibeSync custom hook
 
   // [SECURITY FIX] REAL-TIME SADAQAH VERIFIER (24-Hour Time-Bound)
   useEffect(() => {
@@ -271,66 +233,7 @@ export default function StudentDashboard() {
     return () => { document.body.style.overflow = 'unset'; };
   }, [isScheduleOpen, isNotifOpen]);
 
-  // ALADHAN API INTEGRATION (METHOD=20 [KEMENAG RI] & DYNAMIC GEOLOCATION)
-  useEffect(() => {
-    async function fetchPrayerTimes() {
-      // Fungsi untuk menghubungi API setelah mendapat koordinat atau fall-back
-      const getFromAPI = async (lat = 1.0456, lng = 104.0305, isFallback = true) => { // Fallback Batam
-        try {
-          const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lng}&method=20`);
-          const data = await res.json();
-          if (data && data.data) {
-            const timings = data.data.timings;
-            setPrayerTimes(timings);
-            
-            if (data.data.date && data.data.date.hijri) {
-               const hijri = data.data.date.hijri;
-               
-               // [FIX] Anti-Heresy Hijriah: Semantic "Malam" rollover
-               const now = new Date();
-               const [maghribH, maghribM] = timings.Maghrib.split(':');
-               const maghribTime = new Date();
-               maghribTime.setHours(parseInt(maghribH, 10), parseInt(maghribM, 10), 0, 0);
-               
-               let currentDayNum = parseInt(hijri.day, 10);
-               
-               if (now >= maghribTime) {
-                   currentDayNum += 1; // Pasca maghrib masuk malam hari berikutnya
-                   setHijriDate(`Malam ${currentDayNum} ${hijri.month.en} ${hijri.year} AH`);
-               } else {
-                   setHijriDate(`${hijri.day} ${hijri.month.en} ${hijri.year} AH`);
-               }
-               setHijriDayInt(currentDayNum); // Simpan angka murninya untuk Canvas
-            }
-          }
-          if (isFallback) {
-             setToastMessage("Menggunakan zona waktu Batam (Default). Aktifkan GPS untuk akurasi lokasi.");
-             setTimeout(() => setToastMessage(''), 6000);
-          }
-        } catch (error) {
-          console.error("Failed fetching Aladhan API", error);
-        }
-      };
 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            getFromAPI(position.coords.latitude, position.coords.longitude, false);
-          },
-          (error) => {
-            // [FIX] Jangan diam saja, beritahu UI
-            console.warn("GPS Denied.", error);
-            getFromAPI(1.0456, 104.0305, true); // Fallback Batam
-            showToast("⚠️ GPS Ditolak. Menggunakan zona waktu Batam. Mohon izinkan lokasi.");
-          }
-        );
-      } else {
-        console.warn("Geolocation is not supported by this browser. Fallback to default.");
-        getFromAPI();
-      }
-    }
-    fetchPrayerTimes();
-  }, []);
 
   // THE LOGIC ENGINE: Pemisahan Core & Bonus Sunnah
   const safeTarget = Math.max(1, targetTilawah); // [DECREE 1] Anti-Zero Division
