@@ -19,6 +19,14 @@ service cloud.firestore {
     }
 
     // ═══════════════════════════════════════════════════════
+    // METADATA (Leaderboard, App Config — Public Read, Server Write Only)
+    // ═══════════════════════════════════════════════════════
+    match /metadata/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // Only Cloud Functions (Admin SDK) can write
+    }
+
+    // ═══════════════════════════════════════════════════════
     // 1. USER PROFILES (/users/{userId})
     // ═══════════════════════════════════════════════════════
     match /users/{userId} {

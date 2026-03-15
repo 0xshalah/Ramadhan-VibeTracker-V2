@@ -1,0 +1,67 @@
+[debug] [2026-03-15T01:16:29.487Z] ----------------------------------------------------------------------
+[debug] [2026-03-15T01:16:29.489Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Shalahuddin\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions --debug
+[debug] [2026-03-15T01:16:29.490Z] CLI Version:   15.9.0
+[debug] [2026-03-15T01:16:29.490Z] Platform:      win32
+[debug] [2026-03-15T01:16:29.490Z] Node Version:  v24.14.0
+[debug] [2026-03-15T01:16:29.490Z] Time:          Sun Mar 15 2026 08:16:29 GMT+0700 (Western Indonesia Time)
+[debug] [2026-03-15T01:16:29.490Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-15T01:16:30.710Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-15T01:16:30.711Z] > authorizing via signed-in user (hokaigome@gmail.com)
+[debug] [2026-03-15T01:16:30.711Z] [iam] checking project vibetracker-architect-v2 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-03-15T01:16:30.712Z] Checked if tokens are valid: true, expires at: 1773540583222
+[debug] [2026-03-15T01:16:30.712Z] Checked if tokens are valid: true, expires at: 1773540583222
+[debug] [2026-03-15T01:16:30.712Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/vibetracker-architect-v2:testIamPermissions [none]
+[debug] [2026-03-15T01:16:30.712Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/vibetracker-architect-v2:testIamPermissions  x-goog-user-project=vibetracker-architect-v2
+[debug] [2026-03-15T01:16:30.713Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/vibetracker-architect-v2:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-03-15T01:16:31.740Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/vibetracker-architect-v2:testIamPermissions 200
+[debug] [2026-03-15T01:16:31.741Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/vibetracker-architect-v2:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-03-15T01:16:31.741Z] Checked if tokens are valid: true, expires at: 1773540583222
+[debug] [2026-03-15T01:16:31.741Z] Checked if tokens are valid: true, expires at: 1773540583222
+[debug] [2026-03-15T01:16:31.741Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/vibetracker-architect-v2/serviceAccounts/vibetracker-architect-v2@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-03-15T01:16:31.741Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/vibetracker-architect-v2/serviceAccounts/vibetracker-architect-v2@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-03-15T01:16:32.956Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/vibetracker-architect-v2/serviceAccounts/vibetracker-architect-v2@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-03-15T01:16:32.956Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/vibetracker-architect-v2/serviceAccounts/vibetracker-architect-v2@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'vibetracker-architect-v2'...
+[info] 
+[info] i  deploying functions 
+[debug] [2026-03-15T01:16:32.959Z] Checked if tokens are valid: true, expires at: 1773540583222
+[debug] [2026-03-15T01:16:32.959Z] Checked if tokens are valid: true, expires at: 1773540583222
+[debug] [2026-03-15T01:16:32.959Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/vibetracker-architect-v2 [none]
+[debug] [2026-03-15T01:16:33.218Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/vibetracker-architect-v2 200
+[debug] [2026-03-15T01:16:33.218Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/vibetracker-architect-v2 {"projectNumber":"721098781478","projectId":"vibetracker-architect-v2","lifecycleState":"ACTIVE","name":"VibeTracker Architect V2","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-03-14T22:39:17.536448Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[debug] [2026-03-15T01:16:33.222Z] Checked if tokens are valid: true, expires at: 1773540583222
+[debug] [2026-03-15T01:16:33.222Z] Checked if tokens are valid: true, expires at: 1773540583222
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-03-15T01:16:33.222Z] Checked if tokens are valid: true, expires at: 1773540583222
+[debug] [2026-03-15T01:16:33.223Z] Checked if tokens are valid: true, expires at: 1773540583222
+[debug] [2026-03-15T01:16:33.223Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/cloudbuild.googleapis.com [none]
+[debug] [2026-03-15T01:16:33.223Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/cloudbuild.googleapis.com  x-goog-user-project=vibetracker-architect-v2
+[debug] [2026-03-15T01:16:33.224Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/artifactregistry.googleapis.com [none]
+[debug] [2026-03-15T01:16:33.224Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/artifactregistry.googleapis.com  x-goog-user-project=vibetracker-architect-v2
+[debug] [2026-03-15T01:16:34.497Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/artifactregistry.googleapis.com 200
+[debug] [2026-03-15T01:16:34.497Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/artifactregistry.googleapis.com [omitted]
+[warn] !  artifactregistry: missing required API artifactregistry.googleapis.com. Enabling now... 
+[debug] [2026-03-15T01:16:34.498Z] Checked if tokens are valid: true, expires at: 1773540583222
+[debug] [2026-03-15T01:16:34.498Z] Checked if tokens are valid: true, expires at: 1773540583222
+[debug] [2026-03-15T01:16:34.498Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/artifactregistry.googleapis.com:enable [none]
+[debug] [2026-03-15T01:16:34.498Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/artifactregistry.googleapis.com:enable  x-goog-user-project=vibetracker-architect-v2
+[debug] [2026-03-15T01:16:34.518Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/cloudbuild.googleapis.com 200
+[debug] [2026-03-15T01:16:34.518Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/cloudbuild.googleapis.com [omitted]
+[warn] !  functions: missing required API cloudbuild.googleapis.com. Enabling now... 
+[debug] [2026-03-15T01:16:34.519Z] Checked if tokens are valid: true, expires at: 1773540583222
+[debug] [2026-03-15T01:16:34.519Z] Checked if tokens are valid: true, expires at: 1773540583222
+[debug] [2026-03-15T01:16:34.519Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/cloudbuild.googleapis.com:enable [none]
+[debug] [2026-03-15T01:16:34.519Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/cloudbuild.googleapis.com:enable  x-goog-user-project=vibetracker-architect-v2
+[debug] [2026-03-15T01:16:34.802Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/artifactregistry.googleapis.com:enable 400
+[debug] [2026-03-15T01:16:34.803Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/artifactregistry.googleapis.com:enable [omitted]
+[error] 
+[error] Error: Your project vibetracker-architect-v2 must be on the Blaze (pay-as-you-go) plan to complete this command. Required API artifactregistry.googleapis.com can't be enabled until the upgrade is complete. To upgrade, visit the following URL:
+
+https://console.firebase.google.com/project/vibetracker-architect-v2/usage/details
+[debug] [2026-03-15T01:16:34.834Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/cloudbuild.googleapis.com:enable 400
+[debug] [2026-03-15T01:16:34.834Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/vibetracker-architect-v2/services/cloudbuild.googleapis.com:enable [omitted]

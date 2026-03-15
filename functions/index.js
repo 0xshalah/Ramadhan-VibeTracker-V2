@@ -2,8 +2,9 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
+const db = admin.firestore();
+
 exports.onUserCreate = functions.auth.user().onCreate(async (user) => {
-  const db = admin.firestore();
   
   // 1. Set Default Role murni di Server (RBAC Anti-Bypass)
   const userRef = db.collection('users').doc(user.uid);
@@ -31,3 +32,66 @@ exports.onUserCreate = functions.auth.user().onCreate(async (user) => {
     console.log(`[ZERO-TRUST] Orchestrator successfully transferred ${snapshot.size} orphaned donations to user ${user.uid}`);
   }
 });
+
+// ═══════════════════════════════════════════════════════
+// PHASE 6: LEADERBOARD AGGREGATION ENGINE
+// Materialized View Pattern — 1 Document Read untuk 1000 klien
+// ═══════════════════════════════════════════════════════
+exports.updateGlobalLeaderboard = functions.firestore
+  .document('users/{userId}')
+  .onWrite(async (change, context) => {
+    // Jika user dihapus, lewati
+    if (!change.after.exists) return null;
+
+    const newData = change.after.data();
+    const oldData = change.before.exists ? change.before.data() : {};
+
+    // Kalkulasi Total XP dari map dailyXP
+    const calculateTotalXP = (dailyXPMap) => {
+      if (!dailyXPMap) return 0;
+      return Object.values(dailyXPMap).reduce((acc, curr) => acc + curr, 0);
+    };
+
+    const newTotalXP = calculateTotalXP(newData.dailyXP);
+    const oldTotalXP = calculateTotalXP(oldData.dailyXP);
+
+    // Cost Guard: Jika XP dan nama tidak berubah, hentikan eksekusi
+    if (newTotalXP === oldTotalXP && newData.displayName === oldData.displayName) {
+      return null;
+    }
+
+    const userId = context.params.userId;
+    const leaderboardRef = db.collection('metadata').doc('leaderboard_global');
+
+    // Atomic Transaction (Race Condition Safe)
+    return db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(leaderboardRef);
+      let topUsers = doc.exists ? doc.data().top100 || [] : [];
+
+      const userEntry = {
+        uid: userId,
+        displayName: newData.displayName || 'Hamba Allah',
+        photoURL: newData.photoURL || '',
+        totalXP: newTotalXP,
+        role: newData.role || 'student'
+      };
+
+      // Hanya student yang masuk kompetisi leaderboard
+      if (userEntry.role !== 'student') return;
+
+      // Hapus entri lama siswa ini
+      topUsers = topUsers.filter((u) => u.uid !== userId);
+
+      // Masukkan data XP baru
+      topUsers.push(userEntry);
+
+      // Urutkan descending dan potong Top 100
+      topUsers.sort((a, b) => b.totalXP - a.totalXP);
+      topUsers = topUsers.slice(0, 100);
+
+      transaction.set(leaderboardRef, { 
+        top100: topUsers,
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    });
+  });
