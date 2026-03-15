@@ -170,20 +170,30 @@ export const getMyStudentsLive = (classCode: string, callback: (students: (UserP
 };
 
 export const getLeaderboardLive = (callback: (entries: (UserProfile & { uid: string })[]) => void): Unsubscribe => {
-  const q = query(
-    collection(db, 'users'),
-    where('role', '==', 'student'),
-    orderBy('totalXP', 'desc'),
-    limit(20)
-  );
-  return onSnapshot(q, (snapshot) => {
-    const entries = snapshot.docs.map(d => {
-      const raw = d.data();
-      return { uid: d.id, ...raw } as UserProfile & { uid: string };
-    });
-    callback(entries);
+  // Cost Optimization: Read ONE materialized view document instead of N user documents.
+  // The `metadata/leaderboard_global` doc is pre-aggregated by Cloud Functions (Phase 6).
+  // This reduces Firestore reads from 20 → 1 per leaderboard view.
+  const docRef = doc(db, 'metadata', 'leaderboard_global');
+  return onSnapshot(docRef, (snapshot) => {
+    if (snapshot.exists()) {
+      const data = snapshot.data();
+      const top100: (UserProfile & { uid: string })[] = Array.isArray(data.top100)
+        ? data.top100.map((entry: Record<string, unknown>) => ({
+            uid: (entry.uid as string) || '',
+            displayName: (entry.displayName as string) || 'Anonymous',
+            photoURL: (entry.photoURL as string) || null,
+            totalXP: (entry.totalXP as number) || 0,
+            streak: (entry.streak as number) || 0,
+            role: 'student' as const,
+          } as UserProfile & { uid: string }))
+        : [];
+      callback(top100);
+    } else {
+      console.warn('[LEADERBOARD] metadata/leaderboard_global document does not exist yet.');
+      callback([]);
+    }
   }, (error) => {
-    console.warn('[LEADERBOARD] onSnapshot error (index may be needed):', error.message);
+    console.warn('[LEADERBOARD] onSnapshot error:', error.message);
     callback([]);
   });
 };
