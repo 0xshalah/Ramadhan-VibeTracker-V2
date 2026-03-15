@@ -16,9 +16,13 @@ export default function Sidebar({ user, onLogout }) {
         </div>
       </div>
       <nav className="flex-1 px-4 space-y-2">
-        <Link href="/dashboard/student" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-sage-100 dark:bg-sage-900/30 text-sage-700 dark:text-primary font-semibold">
+        <Link href="/dashboard/student" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sage-100 hover:dark:bg-sage-900/30 text-sage-700 dark:text-primary font-semibold transition-colors">
           <span className="material-symbols-outlined fill-1">home</span>
           <span>Home</span>
+        </Link>
+        <Link href="/dashboard/badges" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-sage-100 hover:dark:bg-sage-900/30 text-sage-600 dark:text-sage-400 font-semibold transition-colors">
+          <span className="material-symbols-outlined fill-1">military_tech</span>
+          <span>Badges</span>
         </Link>
       </nav>
       <div className="p-6 border-t border-sage-100 dark:border-slate-800">
