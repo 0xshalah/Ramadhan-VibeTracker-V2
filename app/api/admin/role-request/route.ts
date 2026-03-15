@@ -97,6 +97,17 @@ export async function PATCH(request: Request) {
       
       // [GUARDIAN FLOW] Set Custom Claims to lock role at the JWT Level
       await adminAuth.setCustomUserClaims(requestData.uid, { role: requestData.requestedRole });
+
+      // [FCM NOTIFICATION] Kirim Notifikasi Sistem ke Siswa
+      const notifRef = adminDb.collection('users').doc(requestData.uid).collection('notifications').doc();
+      batch.set(notifRef, {
+        id: notifRef.id,
+        title: "🎉 Akses Staf Disetujui!",
+        body: `Permintaan Anda untuk menjadi ${requestData.requestedRole} telah disetujui oleh Super Admin. Silakan muat ulang (refresh) halaman atau login kembali.`,
+        time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        isRead: false,
+        createdAt: new Date().toISOString()
+      });
     }
 
     // 3. Audit Log

@@ -76,6 +76,7 @@ export default function StudentDashboard() {
   const [customTasks, setCustomTasks] = useState<Array<any>>([]);
   const [isNotifDismissed, setIsNotifDismissed] = useState(false);
   const [selectedDayStats, setSelectedDayStats] = useState<any>(null);
+  const [pendingRoleRequest, setPendingRoleRequest] = useState<string | null>(null);
 
   useEffect(() => {
     if ('Notification' in window) setNotifPermission(Notification.permission);
@@ -135,6 +136,20 @@ export default function StudentDashboard() {
         setNotifications(history as any); // Type cast until Notifications have strict interfaces on fetch
         
         isInitialLoad.current = false;
+
+        // [STATUS INDICATOR LOGIC] C Check if user has a pending role request
+        const checkPendingRequest = async () => {
+          try {
+            const { doc, getDoc } = await import('firebase/firestore');
+            const reqDoc = await getDoc(doc(db, 'role_requests', currentUser.email?.toLowerCase() || ''));
+            if (reqDoc.exists() && reqDoc.data()?.status === 'pending') {
+              setPendingRoleRequest(reqDoc.data()?.requestedRole);
+            } else {
+              setPendingRoleRequest(null);
+            }
+          } catch (e) { /* ignore silent */ }
+        };
+        checkPendingRequest();
       }
       setLoadingContext(false);
     });
@@ -403,6 +418,20 @@ export default function StudentDashboard() {
           </div>
 
           <ErrorBoundary FallbackComponent={WidgetFallback}>
+            {pendingRoleRequest && (
+              <div className="bg-amber-500/10 border-b border-amber-500/30 px-8 py-3 flex items-center justify-between animate-fade-in-down">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-amber-500 animate-pulse">hourglass_empty</span>
+                  <p className="text-sm font-bold text-amber-600 dark:text-amber-400">
+                    Your request to become a <span className="uppercase text-amber-700 dark:text-amber-300">{pendingRoleRequest}</span> is pending admin approval.
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-[10px] font-bold text-amber-500/60 uppercase tracking-widest hidden sm:block">Awaiting Escalation</span>
+                  <div className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></div>
+                </div>
+              </div>
+            )}
             <Header corePct={corePct} sunnahBonusXP={sunnahBonusXP} hijriDate={hijriDate || ''} onOpenNotif={() => setIsNotifOpen(true)} />
           </ErrorBoundary>
           

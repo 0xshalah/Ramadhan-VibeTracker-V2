@@ -20,6 +20,16 @@ type UserRow = {
   photoURL: string;
 };
 
+type RoleRequest = {
+  id: string;
+  uid: string;
+  email: string;
+  displayName: string;
+  requestedRole: string;
+  status: string;
+  createdAt: string;
+};
+
 type SystemStats = {
   totalUsers: number;
   totalStudents: number;
@@ -30,8 +40,10 @@ type SystemStats = {
 
 function AdminDashboardContent() {
   const [users, setUsers] = useState<UserRow[]>([]);
-  const [roleRequests, setRoleRequests] = useState<any[]>([]);
-  const [isProcessingRequest, setIsProcessingRequest] = useState<string | null>(null);
+  const [requests, setRequests] = useState<RoleRequest[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'users' | 'requests'>('users');
   const [stats, setStats] = useState<SystemStats>({ totalUsers: 0, totalStudents: 0, totalTeachers: 0, totalAdmins: 0, totalXPGlobal: 0 });
   const [loading, setLoading] = useState(true);
   const [adminName, setAdminName] = useState('');
@@ -55,18 +67,18 @@ function AdminDashboardContent() {
 
       // Listen to pending role requests
       const requestsRef = collection(db, 'role_requests');
-      const qReq = query(requestsRef, where('status', '==', 'pending'));
+      const qReq = query(requestsRef, where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
       const unsubReq = onSnapshot(qReq, (snap) => {
-        const reqs: any[] = [];
+        const reqs: RoleRequest[] = [];
         snap.docs.forEach(doc => {
-          reqs.push({ id: doc.id, ...doc.data() });
+          reqs.push({ id: doc.id, ...doc.data() } as RoleRequest);
         });
-        setRoleRequests(reqs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        setRequests(reqs);
       });
 
       // Real-time listener on all users
       const usersRef = collection(db, 'users');
-      const unsub = onSnapshot(usersRef, (snapshot) => {
+      const unsubUsers = onSnapshot(usersRef, (snapshot) => {
         const allUsers: UserRow[] = [];
         let students = 0, teachers = 0, admins = 0, globalXP = 0;
 
@@ -109,9 +121,17 @@ function AdminDashboardContent() {
         // We will let the user see a blank table but at least they won't be stuck loading
       });
 
+      // Audit Logs Listener
+      const logsRef = collection(db, 'audit_logs');
+      const qLogs = query(logsRef, orderBy('timestamp', 'desc'), limit(20));
+      const unsubLogs = onSnapshot(qLogs, (snap) => {
+        setAuditLogs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
+
       return () => {
-        unsub();
+        unsubUsers();
         unsubReq();
+        unsubLogs();
       };
     });
 
@@ -119,7 +139,7 @@ function AdminDashboardContent() {
   }, [router]);
 
   const handleRoleAction = async (email: string, action: 'approve' | 'reject') => {
-    setIsProcessingRequest(email);
+    setProcessingId(email);
     try {
       const res = await fetch('/api/admin/role-request', {
         method: 'PATCH',
@@ -132,7 +152,7 @@ function AdminDashboardContent() {
     } catch (err: any) {
       toast.error(err.message);
     } finally {
-      setIsProcessingRequest(null);
+      setProcessingId(null);
     }
   };
 
@@ -265,14 +285,14 @@ function AdminDashboardContent() {
         </div>
 
         {/* Pending Approvals Queue */}
-        {roleRequests.length > 0 && (
+        {requests.length > 0 && (
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
             <h2 className="text-xl font-bold flex items-center gap-2 mb-4 text-amber-500">
               <span className="material-symbols-outlined">how_to_reg</span>
               Pending Staff Approvals
             </h2>
             <div className="grid gap-4">
-              {roleRequests.map(req => (
+              {requests.map(req => (
                 <div key={req.id} className="bg-slate-900 border border-amber-500/20 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-amber-500/50 transition-colors">
                   <div>
                     <h3 className="font-bold text-white">{req.displayName}</h3>
@@ -282,10 +302,10 @@ function AdminDashboardContent() {
                   <div className="flex items-center gap-3 w-full md:w-auto">
                     <button 
                       onClick={() => handleRoleAction(req.email, 'approve')}
-                      disabled={isProcessingRequest === req.email}
+                      disabled={processingId === req.email}
                       className="flex-1 md:flex-none px-4 py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                      {isProcessingRequest === req.email ? (
+                      {processingId === req.email ? (
                         <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
                       ) : (
                         <><span className="material-symbols-outlined text-[16px]">check_circle</span> Approve</>
@@ -293,7 +313,7 @@ function AdminDashboardContent() {
                     </button>
                     <button 
                       onClick={() => handleRoleAction(req.email, 'reject')}
-                      disabled={isProcessingRequest === req.email}
+                      disabled={processingId === req.email}
                       className="flex-1 md:flex-none px-4 py-2 bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       <span className="material-symbols-outlined text-[16px]">cancel</span> Reject
