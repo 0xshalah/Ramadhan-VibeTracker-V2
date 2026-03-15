@@ -17,7 +17,7 @@ interface ChatMessage {
 export default function AIChatPanel({ progressData }: AIChatPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'ai', content: 'Assalamu\'alaikum. Ada yang ingin direfleksikan dari ibadahmu hari ini?' }
+    { role: 'ai', content: 'Assalamu\'alaikum. Is there any spiritual reflection you would like to share today?' }
   ]);
   const [input, setInput] = useState('');
 
@@ -37,7 +37,7 @@ export default function AIChatPanel({ progressData }: AIChatPanelProps) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${idToken}`
         },
-        body: JSON.stringify({ progressData, userMessage: input })
+        body: JSON.stringify({ progressData, messages: newMsgs })
       });
       
       const data = await res.json();
@@ -80,7 +80,7 @@ export default function AIChatPanel({ progressData }: AIChatPanelProps) {
             onChange={(e)=>setInput(e.target.value)} 
             onKeyDown={(e)=>e.key==='Enter'&&sendMessage()} 
             className="flex-1 bg-slate-800 text-white rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500" 
-            placeholder="Curhat soal ibadah..." 
+            placeholder="Share your reflection..." 
           />
           <button onClick={sendMessage} className="bg-emerald-600 p-2 rounded-xl text-white hover:bg-emerald-500 cursor-pointer">
             <Send size={20} />

@@ -7,9 +7,9 @@ interface SunnahActivitiesProps {
 }
 
 const sunnahItems: Array<{ key: keyof DailyProgress['sunnah']; label: string; icon: string }> = [
-  { key: "tarawih", label: "Shalat Tarawih", icon: "nightlight_round" },
-  { key: "sahur", label: "Sahur Healthy Meal", icon: "set_meal" },
-  { key: "sadaqah", label: "Daily Sadaqah", icon: "volunteer_activism" },
+  { key: "tarawih", label: "Night Prayer (Tahajud)", icon: "nightlight_round" },
+  { key: "sahur", label: "Pre-dawn Meal (Sahur)", icon: "set_meal" },
+  { key: "sadaqah", label: "Charity (Sadaqah)", icon: "volunteer_activism" },
 ];
 
 export default function SunnahActivities({ sunnah, onToggle }: SunnahActivitiesProps) {

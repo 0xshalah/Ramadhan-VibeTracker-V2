@@ -38,7 +38,7 @@ export default function TilawahCounter({ tilawah, targetTilawah, tilawahPct, onI
     <section className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sage-100 dark:border-slate-800 shadow-sm">
       <h3 className="text-lg font-bold mb-5 flex items-center gap-2">
         <span className="material-symbols-outlined text-indigo-500">menu_book</span>
-        Target Tilawah
+        Quran Recitation Target
       </h3>
       <div className="text-center py-4 bg-indigo-50/50 dark:bg-indigo-900/20 rounded-2xl mb-4">
         <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase mb-1">Current Progress</p>
@@ -58,7 +58,7 @@ export default function TilawahCounter({ tilawah, targetTilawah, tilawahPct, onI
             <span className="material-symbols-outlined">add</span>
           </button>
         </div>
-        <p className="text-sm font-medium text-slate-500 mt-2">Halaman yang dibaca hari ini</p>
+        <p className="text-sm font-medium text-slate-500 mt-2">Pages read today</p>
       </div>
       <div className="flex justify-between items-center px-2">
         <div className="flex items-center gap-1">

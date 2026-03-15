@@ -30,11 +30,11 @@ interface PrayerGridProps {
 
 export default function PrayerGrid({ sholat, onToggle, dynamicTimes }: PrayerGridProps) {
   const prayers: Array<{ name: keyof DailyProgress['sholat']; time: string; label: string }> = [
-    { name: 'subuh', time: dynamicTimes?.Fajr || '04:45 AM', label: 'Subuh' },
-    { name: 'dzuhur', time: dynamicTimes?.Dhuhr || '12:05 PM', label: 'Dzuhur' },
-    { name: 'ashar', time: dynamicTimes?.Asr || '03:15 PM', label: 'Ashar' },
+    { name: 'subuh', time: dynamicTimes?.Fajr || '04:45 AM', label: 'Fajr' },
+    { name: 'dzuhur', time: dynamicTimes?.Dhuhr || '12:05 PM', label: 'Dhuhr' },
+    { name: 'ashar', time: dynamicTimes?.Asr || '03:15 PM', label: 'Asr' },
     { name: 'maghrib', time: dynamicTimes?.Maghrib || '06:12 PM', label: 'Maghrib' },
-    { name: 'isya', time: dynamicTimes?.Isha || '07:22 PM', label: 'Isya' }
+    { name: 'isya', time: dynamicTimes?.Isha || '07:22 PM', label: 'Isha' }
   ];
 
   return (
@@ -42,7 +42,7 @@ export default function PrayerGrid({ sholat, onToggle, dynamicTimes }: PrayerGri
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-bold flex items-center gap-2">
           <span className="material-symbols-outlined text-primary">mosque</span>
-          Sholat Fardhu
+          Obligatory Prayers
         </h3>
         <span className="text-xs font-bold bg-sage-50 dark:bg-slate-800 text-sage-600 dark:text-slate-300 px-3 py-1 rounded-full uppercase">5 Daily Prayers</span>
       </div>
