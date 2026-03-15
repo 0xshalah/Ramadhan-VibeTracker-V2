@@ -30,7 +30,7 @@ function TeacherDashboardContent() {
       }
       
       const profile = await getUserProfile(u.uid);
-      if (profile?.role !== 'teacher') {
+      if (profile?.role !== 'teacher' && profile?.role !== 'admin') {
         router.push('/dashboard/student');
         return;
       }
