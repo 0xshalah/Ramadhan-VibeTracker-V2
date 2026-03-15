@@ -18,6 +18,7 @@ type EnrichedStudent = UserProfile & {
 function TeacherDashboardContent() {
   const [students, setStudents] = useState<EnrichedStudent[]>([]);
   const [classCode, setClassCode] = useState<string>("");
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -33,6 +34,10 @@ function TeacherDashboardContent() {
       if (profile?.role !== 'teacher' && profile?.role !== 'admin') {
         router.push('/dashboard/student');
         return;
+      }
+      
+      if (profile?.role === 'admin') {
+        setIsAdmin(true);
       }
 
       const assignedClass = profile?.managedClass || "BTM-01"; // Fallback to BTM-01
@@ -59,7 +64,15 @@ function TeacherDashboardContent() {
           <h1 className="text-3xl font-black text-indigo-600 dark:text-indigo-400">Class Monitoring: {classCode}</h1>
           <p className="text-slate-500 font-bold">Live Student Progress Tracking</p>
         </div>
-        <button onClick={logout} className="p-3 bg-red-100 text-red-600 rounded-2xl font-bold hover:bg-red-200 transition-all text-sm cursor-pointer">Sign Out</button>
+        <div className="flex gap-3">
+          {isAdmin && (
+            <Link href="/dashboard/admin" className="p-3 bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 rounded-2xl font-bold hover:bg-indigo-200 dark:hover:bg-indigo-500/20 transition-all text-sm flex items-center gap-2">
+              <span className="material-symbols-outlined text-[16px]">admin_panel_settings</span>
+              Admin Console
+            </Link>
+          )}
+          <button onClick={logout} className="p-3 bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl font-bold hover:bg-red-200 dark:hover:bg-red-900/40 transition-all text-sm cursor-pointer">Sign Out</button>
+        </div>
       </header>
       
       {students.length === 0 ? (
