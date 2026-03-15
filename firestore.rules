@@ -1,0 +1,102 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ═══════════════════════════════════════════════════════
+    // GLOBAL UTILITY FUNCTIONS
+    // ═══════════════════════════════════════════════════════
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    // Checks if the incoming write attempts to modify protected fields
+    function isNotEscalating() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'uid']);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // 1. USER PROFILES (/users/{userId})
+    // ═══════════════════════════════════════════════════════
+    match /users/{userId} {
+
+      // READ: Only the owner can read their own full profile.
+      // Teachers can read student profiles within their class (handled via Cloud Functions or custom claims later).
+      allow read: if isOwner(userId);
+
+      // CREATE: Blocked from client. User documents are created
+      // exclusively by the Cloud Function `onUserCreate` trigger (Phase 2).
+      // This prevents an attacker from crafting a user doc with role: 'admin'.
+      allow create: if false;
+
+      // UPDATE: Owner can update their profile, but CANNOT escalate privileges.
+      // Protected fields: 'role', 'uid' — these are immutable from the client.
+      allow update: if isOwner(userId) && isNotEscalating();
+
+      // DELETE: Forbidden from client. Account deletion must go through
+      // Firebase Admin SDK or a dedicated Cloud Function.
+      allow delete: if false;
+
+      // ─────────────────────────────────────────────────────
+      // 1a. DAILY PROGRESS (/users/{userId}/daily_progress/{dateId})
+      // ─────────────────────────────────────────────────────
+      match /daily_progress/{dateId} {
+        // READ: Owner only.
+        allow read: if isOwner(userId);
+
+        // WRITE: Owner only, with schema validation at the database level.
+        // This mirrors the Zod DailyProgressSchema — Defense in Depth.
+        allow write: if isOwner(userId)
+                     && request.resource.data.tilawah is number
+                     && request.resource.data.tilawah >= 0
+                     && request.resource.data.sholat is map
+                     && request.resource.data.sholat.keys().hasAll(['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya']);
+      }
+
+      // ─────────────────────────────────────────────────────
+      // 1b. SADAQAH / DONATIONS (/users/{userId}/sadaqah/{donationId})
+      // ─────────────────────────────────────────────────────
+      match /sadaqah/{donationId} {
+        // READ: Owner can verify their own donation status.
+        allow read: if isOwner(userId);
+
+        // WRITE: Absolutely forbidden from client.
+        // Donations are written exclusively by the Mayar Webhook API route
+        // which uses Firebase Admin SDK (server-side, bypasses rules).
+        // This prevents any client from faking a donation verification.
+        allow write: if false;
+      }
+
+      // ─────────────────────────────────────────────────────
+      // 1c. NOTIFICATIONS (/users/{userId}/notifications/{notifId})
+      // ─────────────────────────────────────────────────────
+      match /notifications/{notifId} {
+        // READ: Owner only.
+        allow read: if isOwner(userId);
+
+        // CREATE: Owner can create notifications (from FCM foreground handler).
+        allow create: if isOwner(userId)
+                      && request.resource.data.title is string
+                      && request.resource.data.title.size() > 0
+                      && request.resource.data.title.size() <= 200;
+
+        // UPDATE: Owner can mark notifications as read.
+        allow update: if isOwner(userId);
+
+        // DELETE: Owner can clear their own notifications.
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // 2. CATCH-ALL: Deny everything else by default.
+    //    Any new collection MUST have explicit rules added here.
+    // ═══════════════════════════════════════════════════════
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
