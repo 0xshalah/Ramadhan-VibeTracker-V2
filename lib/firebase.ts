@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, User, updateProfile, deleteUser } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, deleteDoc, writeBatch, addDoc, serverTimestamp, orderBy, limit, onSnapshot, updateDoc, Unsubscribe, DocumentData, increment } from "firebase/firestore";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, getDoc, collection, query, where, getDocs, deleteDoc, writeBatch, addDoc, serverTimestamp, orderBy, limit, onSnapshot, updateDoc, Unsubscribe, DocumentData, increment } from "firebase/firestore";
 import { getMessaging, Messaging } from "firebase/messaging";
 import { DailyProgressSchema, UserProfileSchema, type DailyProgress, type UserProfile, type AppNotification } from "./schemas";
 import { useVibeStore } from '@/store/useVibeStore';
@@ -22,7 +22,12 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+// [OFFLINE ENGINE] Inisialisasi Firestore dengan Persistent Local Cache
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager() 
+  })
+});
 export const googleProvider = new GoogleAuthProvider();
 
 // [THE FIX] Force Google to always show the account selection screen
