@@ -16,7 +16,7 @@ import AIChatPanel from './components/AIChatPanel';
 import { useVibeStore } from '@/store/useVibeStore';
 import { toast } from 'sonner';
 import { Sparkles } from 'lucide-react';
-import { auth, db, loginWithGoogle, getUserProgress, getUserProfile, updateUserProgress, getUserWeeklyProgress, getLocalTodayId, logout, messaging, saveNotificationToken } from '@/lib/firebase';
+import { auth, db, loginWithGoogle, getUserProgress, getUserProfile, updateUserProgress, getUserWeeklyProgress, getLocalTodayId, logout, messaging, saveNotificationToken, saveNotification, getUserNotifications } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, query, limit, onSnapshot, where } from 'firebase/firestore';
 import { getToken, onMessage } from 'firebase/messaging';
@@ -97,6 +97,10 @@ export default function StudentDashboard() {
         if (weeklyData) {
           setStreakHistory(weeklyData); // Keep original order, StreakWidget will handle reversed check
         }
+        
+        // [NEW] Fetch Eternal Notifications
+        const history = await getUserNotifications(currentUser.uid);
+        setNotifications(history);
         
         // Resolve initial load only after all await calls finish
         isInitialLoad.current = false;
@@ -194,16 +198,20 @@ export default function StudentDashboard() {
       };
       initMessaging();
 
-      const unsubscribe = onMessage(messaging, (payload) => {
+      const unsubscribe = onMessage(messaging, async (payload) => {
         console.log('[FCM] Foreground message received:', payload);
         const newNotif = {
           id: Date.now(),
-          title: payload.notification?.title || 'Notification',
+          title: payload.notification?.title || 'System Update',
           body: payload.notification?.body || '',
           time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
         };
+        
+        // Simpan ke Keabadian Firestore
+        if (user) await saveNotification(user.uid, newNotif);
+        
         setNotifications(prev => [newNotif, ...prev]);
-        showToast(`📢 ${newNotif.title}: ${newNotif.body}`);
+        showToast(`📢 ${newNotif.title}`);
       });
       return () => unsubscribe();
     }
