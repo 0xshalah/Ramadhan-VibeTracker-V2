@@ -17,36 +17,36 @@ export async function POST(request: Request) {
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    // 2. THE ULTIMATE FIX: Absolute Uniqueness
+    // 2. THE ZERO COLLISION FIX
     const timestamp = Date.now().toString();
     const entropy = Math.random().toString(36).substring(2, 10).toUpperCase();
-    const orderId = `VBT${timestamp.slice(-5)}${entropy}`; 
+    const orderId = `VBT${timestamp.slice(-4)}${entropy}`; 
+    const randomMobile = `08${Math.floor(Math.random() * 1000000000).toString().padStart(10, '0')}`;
 
     // 3. Headless API Payload Construction
+    // Simplifying to the absolute bare essentials that Mayar Headless V1 expects
     const mayarPayload: any = {
-      // NOTE: Prefixing EVERYTHING with the unique orderId
-      name: `[${orderId}] Sadaqah VibeTracker`, 
+      // name is the slug source. Keep it alphanumeric and unique.
+      name: `PAY${orderId}`, 
       amount: Math.floor(Number(amount)),
-      description: `Payment ID: ${orderId}. From: ${name || email}`,
+      description: `Donation ${orderId}`,
       customer_name: (name && name !== "Anonymous") ? name : "Blessed Donor",
       
-      // Root naming
+      // Duplicating fields to ensure compatibility
       email: email, 
-      mobile: `08${Math.floor(1000000000 + Math.random() * 9000000000)}`, // Complete random mobile
-      
-      // Secondary naming for safety
       customer_email: email,
-      customer_mobile: `08${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+      
+      mobile: randomMobile, 
+      customer_mobile: randomMobile,
 
       redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success`,
       metadata: {
-        app: "VibeTracker-V2",
         orderId: orderId,
-        uid: timestamp
+        platform: "VBT-V2"
       }
     };
 
-    console.log("[MAYAR ULTRA AGGRESSIVE FIX] Payload:", JSON.stringify(mayarPayload, null, 2));
+    console.log("[MAYAR ZERO COLLISION] Payload:", JSON.stringify(mayarPayload, null, 2));
 
     // 4. Mayar API Invocation
     const mayarResponse = await fetch('https://api.mayar.id/hl/v1/payment/create', {
