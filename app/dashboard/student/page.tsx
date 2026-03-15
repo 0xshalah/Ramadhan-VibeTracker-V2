@@ -21,7 +21,7 @@ import { usePrayerTimes } from './hooks/usePrayerTimes';
 import { useVibeSync } from './hooks/useVibeSync';
 import { auth, db, loginWithGoogle, getUserProgress, getUserProfile, getUserWeeklyProgress, getLocalTodayId, logout, messaging, saveNotificationToken, saveNotification, getUserNotifications } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, query, limit, onSnapshot } from 'firebase/firestore';
+import { collection, query, limit, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { getToken, onMessage } from 'firebase/messaging';
 import type { DailyProgress } from '@/lib/schemas';
 
@@ -70,6 +70,8 @@ export default function StudentDashboard() {
   const [notifPermission, setNotifPermission] = useState('default');
   
   const [notifications, setNotifications] = useState<Array<{id: string|number, title: string, body: string, time: string}>>([]);
+  const [customTasks, setCustomTasks] = useState<Array<any>>([]);
+  const [isNotifDismissed, setIsNotifDismissed] = useState(false);
 
   useEffect(() => {
     if ('Notification' in window) setNotifPermission(Notification.permission);
@@ -110,6 +112,9 @@ export default function StudentDashboard() {
           // [PHASE 19] Sync role to Zustand Store for Sidebar Conditional Navigation
           if (profile.role) {
             setUserRole(profile.role);
+          }
+          if (profile.dismissedNotif) {
+            setIsNotifDismissed(true);
           }
         }
         
@@ -166,6 +171,27 @@ export default function StudentDashboard() {
       return () => unsubscribe();
     }
   }, [user, setSadaqah]);
+
+  // REAL-TIME CUSTOM TASKS LISTENER
+  useEffect(() => {
+    if (user) {
+      const tasksRef = collection(db, 'users', user.uid, 'custom_tasks');
+      const q = query(tasksRef, limit(10));
+      
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setCustomTasks(tasks);
+        
+        // Show toast for new tasks
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added" && !isInitialLoad.current) {
+            toast.info(`📋 Tugas Baru: ${change.doc.data().task}`);
+          }
+        });
+      });
+      return () => unsubscribe();
+    }
+  }, [user]);
 
   // WEB PUSH & FCM INITIALIZATION
   useEffect(() => {
@@ -288,6 +314,18 @@ export default function StudentDashboard() {
     }
   };
 
+  const dismissNotificationBanner = async () => {
+    setIsNotifDismissed(true);
+    if (user) {
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, { dismissedNotif: true });
+      } catch (e) {
+        // Silent fail
+      }
+    }
+  };
+
   // Premium Sadaqah Feedback
   useEffect(() => {
     if (verifiedSadaqah && !isInitialLoad.current) {
@@ -331,12 +369,17 @@ export default function StudentDashboard() {
         </ErrorBoundary>
         
         <main className="flex-1 overflow-y-auto scroll-smooth relative">
-          {notifPermission === 'default' && (
+          {notifPermission === 'default' && !isNotifDismissed && (
             <div className="bg-indigo-600 text-white text-xs px-6 py-3 flex justify-between items-center shadow-md">
               <span>Aktifkan pengingat waktu sholat lokal?</span>
-              <button onClick={enableNotifications} className="cursor-pointer bg-white text-indigo-600 px-4 py-1.5 rounded-full font-bold hover:bg-slate-100 transition-colors">
-                Aktifkan
-              </button>
+              <div className="flex gap-2">
+                <button onClick={enableNotifications} className="cursor-pointer bg-white text-indigo-600 px-4 py-1.5 rounded-full font-bold hover:bg-slate-100 transition-colors">
+                  Aktifkan
+                </button>
+                <button onClick={dismissNotificationBanner} className="text-white/70 hover:text-white px-2 py-1.5 font-medium transition-colors">
+                  Tutup
+                </button>
+              </div>
             </div>
           )}
 
@@ -395,6 +438,25 @@ export default function StudentDashboard() {
               <ErrorBoundary FallbackComponent={WidgetFallback}>
                 <DuaCard prayerTimes={prayerTimes} />
               </ErrorBoundary>
+              
+              {/* Custom Tasks Widget */}
+              {customTasks.length > 0 && (
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-6">
+                  <h3 className="font-bold text-amber-500 flex items-center gap-2 mb-4">
+                    <span className="material-symbols-outlined text-sm">assignment_late</span>
+                    Tugas Khusus Guru
+                  </h3>
+                  <div className="space-y-3">
+                    {customTasks.filter(t => t.status === 'pending').map(t => (
+                      <div key={t.id} className="p-3 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-amber-500/20">
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{t.task}</p>
+                        <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">Oleh: {t.assignedBy}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <ErrorBoundary FallbackComponent={WidgetFallback}>
                 <NextEvent prayerTimes={prayerTimes} showToast={toast as any} onOpenSchedule={() => setIsScheduleOpen(true)} />
               </ErrorBoundary>

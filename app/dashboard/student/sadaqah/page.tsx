@@ -151,7 +151,7 @@ function SadaqahContent() {
             <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 p-6 rounded-2xl flex items-center justify-between">
                 <div>
                 <h2 className="text-emerald-600 dark:text-emerald-400 text-sm font-semibold uppercase tracking-wider">Your Total Impact This Month</h2>
-                <p className="text-4xl font-bold text-slate-800 dark:text-white mt-2">Rp 0</p>
+                <p className="text-4xl font-bold text-slate-800 dark:text-white mt-2">Rp {totalImpact.toLocaleString('id-ID')}</p>
                 </div>
                 <div className="text-5xl opacity-50 drop-shadow-sm">✨</div>
             </div>

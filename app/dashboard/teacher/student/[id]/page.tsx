@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth, getUserProfile, getUserWeeklyProgress } from '@/lib/firebase';
+import { auth, getUserProfile, getUserWeeklyProgress, saveNotification } from '@/lib/firebase';
 import type { UserProfile } from '@/lib/schemas';
 import type { DailyProgress } from '@/lib/schemas';
 import { toast } from 'sonner';
@@ -58,19 +58,46 @@ export default function StudentAnalyticsPage() {
     return () => unsub();
   }, [studentId]);
 
-  const handleIntervene = () => {
-    if (student?.email) {
-      window.location.href = `mailto:${student.email}?subject=VibeTracker%20Intervention&body=Assalamu%27alaikum%20${student.displayName},%0D%0A%0D%0ASaya%20melihat%20perkembangan%20ibadahmu%20akhir-akhir%20ini...`;
-      toast.success('Email draft opened.');
-    } else {
-      toast.info('Pesan intervensi telah dikirim ke notifikasi siswa (Simulasi).');
+  const handleIntervene = async () => {
+    if (!studentId) return;
+    
+    // Create a robust intervention notification
+    const notifPayload = {
+      id: Date.now().toString(),
+      title: "Pesan dari Guru 📝",
+      body: `Assalamu'alaikum ${student?.displayName?.split(' ')[0] || ''}, tolong tingkatkan laporan ibadah harianmu. Semangat!`,
+      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      isRead: false
+    };
+
+    try {
+      await saveNotification(studentId, notifPayload as any);
+      toast.success('Pesan intervensi terkirim ke Inbox Siswa!');
+    } catch (e) {
+      toast.error('Gagal mengirim intervensi.');
     }
   };
 
-  const handleAssignTask = () => {
-    const task = window.prompt("Masukkan instruksi tugas khusus untuk siswa ini:");
-    if (task && task.trim() !== "") {
-      toast.success(`Tugas '${task}' berhasil dikirim ke student! (Simulasi)`);
+  const handleAssignTask = async () => {
+    if (!studentId) return;
+    const taskText = window.prompt("Masukkan instruksi tugas khusus untuk siswa ini:");
+    if (!taskText || taskText.trim() === "") return;
+
+    try {
+      const { collection, addDoc } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase');
+      
+      const tasksRef = collection(db, 'users', studentId, 'custom_tasks');
+      await addDoc(tasksRef, {
+        task: taskText.trim(),
+        assignedAt: new Date().toISOString(),
+        status: 'pending',
+        assignedBy: auth.currentUser?.email || 'Teacher'
+      });
+      
+      toast.success(`Tugas khusus berhasil dikirim ke dashboard siswa!`);
+    } catch (e) {
+      toast.error('Gagal merilis tugas khusus.');
     }
   };
 

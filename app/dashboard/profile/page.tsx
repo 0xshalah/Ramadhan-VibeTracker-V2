@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useVibeStore } from '@/store/useVibeStore';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { updateUserAvatar, deleteUserAccount, logout } from '@/lib/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
@@ -12,7 +14,39 @@ export default function ProfilePage() {
   const [quranTarget, setQuranTarget] = useState(12);
   const [isProcessingAvatar, setIsProcessingAvatar] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const initialMount = useRef(true);
   const router = useRouter();
+
+  // Initialize from store
+  useEffect(() => {
+    if (user && (user as any).targetTilawah) {
+      setQuranTarget((user as any).targetTilawah);
+    }
+  }, [user]);
+
+  // Debounced Auto-Save for Quran Target
+  useEffect(() => {
+    if (initialMount.current) {
+      initialMount.current = false;
+      return;
+    }
+    
+    if (!user) return;
+
+    const timeoutId = setTimeout(async () => {
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, { targetTilawah: quranTarget });
+        // Optionally update global store too
+        setUser({ ...user, targetTilawah: quranTarget } as any);
+        toast.success(`Daily target saved: ${quranTarget} pages`, { position: 'bottom-center' });
+      } catch (error) {
+        toast.error("Failed to save target. Please try again.");
+      }
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [quranTarget, user, setUser]);
 
   const handleGenerateAvatar = async () => {
     if (!user) return;
@@ -31,7 +65,7 @@ export default function ProfilePage() {
         toast.error("Failed to update avatar.");
       }
     } catch (error) {
-      toast.error("An error occurred while generating avatar.");
+       toast.error("An error occurred while generating avatar.");
     } finally {
       setIsProcessingAvatar(false);
     }
