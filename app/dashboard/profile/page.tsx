@@ -40,9 +40,9 @@ export default function ProfilePage() {
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, { targetTilawah: quranTarget });
       setUser({ ...user, targetTilawah: quranTarget } as any);
-      toast.success("Target Tilawah diperbarui! 🎯");
+      toast.success("Tilawah Target updated! 🎯");
     } catch (e) {
-      toast.error("Gagal menyimpan target.");
+      toast.error("Failed to save target.");
     } finally {
       setIsSavingTarget(false);
     }
@@ -102,12 +102,12 @@ export default function ProfilePage() {
         await logout();
         router.push('/');
       } else {
-        toast.error("Gagal menghapus akun.");
+        toast.error("Failed to delete account.");
       }
     } catch (error: any) {
-      // TANGKAP ERROR RE-AUTH DI SINI
+      // HANDLE RE-AUTH ERRORS HERE
       if (error?.message?.includes('requires-recent-login')) {
-        toast.error("Keamanan Sistem: Silakan Logout dan Login kembali sebelum menghapus akun Anda.");
+        toast.error("System Security: Please Logout and Login again before deleting your account.");
       } else {
         toast.error("System error during deletion.");
       }

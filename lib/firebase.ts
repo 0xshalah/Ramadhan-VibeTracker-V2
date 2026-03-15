@@ -65,27 +65,27 @@ export const loginWithGoogle = async (): Promise<User & { role: string }> => {
   let userRole = 'student'; 
 
   if (userSnap.exists()) {
-    // PENGGUNA LAMA (Bisa langsung update karena 'allow update' diizinkan jika bukan field krusial)
+    // RETURNING USER (Update lastLogin if allowed)
     try {
         await updateDoc(userRef, { lastLogin: serverTimestamp() });
         userRole = userSnap.data()?.role || 'student';
     } catch(e) {
-        // console.warn("Gagal update lastLogin (mungkin firestore rules terlalu ketat), melanjutkan login...", e);warn
+        // lastLogin update failed, continuing login...
         userRole = userSnap.data()?.role || 'student';
     }
   } else {
-    // PENGGUNA BARU: Eksekusi BYPASS SPARK PLAN
-    // console.log("[AUTH] Pengguna baru terdeteksi. Menghubungi Server Sync...");log
+    // NEW USER: Execute Server-side Provisioning
+    // console.log("[AUTH] New user detected. Contacting Sync Server...");
     
-    // 1. Dapatkan Token Keamanan Klien
+    // 1. Get Security Token
     const idToken = await user.getIdToken();
 
-    // 2. Tembakkan Payload ke Next.js Backend
+    // 2. Provision via Backend API
     const response = await fetch('/api/auth/sync', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${idToken}` // Kunci masuk ke API kita
+        'Authorization': `Bearer ${idToken}`
       },
       body: JSON.stringify({
         displayName: user.displayName,
@@ -94,12 +94,12 @@ export const loginWithGoogle = async (): Promise<User & { role: string }> => {
     });
 
     if (!response.ok) {
-      throw new Error(`Gagal menyinkronkan data pengguna baru. Server merespons: ${response.status}`);
+      throw new Error(`Failed to synchronize new user. Server responded: ${response.status}`);
     }
 
     const data = await response.json();
     userRole = data.role || 'student';
-    // console.log("[AUTH] Profil berhasil dibuat di Server!");log
+    // console.log("[AUTH] Profile successfully provisioned on Server!");
   }
 
   return Object.assign(user, { role: userRole });

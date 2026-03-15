@@ -64,29 +64,29 @@ export default function StudentAnalyticsPage() {
     // Create a robust intervention notification
     const notifPayload = {
       id: Date.now().toString(),
-      title: "Pesan dari Guru 📝",
-      body: `Assalamu'alaikum ${student?.displayName?.split(' ')[0] || ''}, tolong tingkatkan laporan ibadah harianmu. Semangat!`,
-      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      title: "Teacher Message 📝",
+      body: `Assalamu'alaikum ${student?.displayName?.split(' ')[0] || ''}, please increase your daily worship report. Keep up the spirit!`,
+      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       isRead: false
     };
 
     try {
       await saveNotification(studentId, notifPayload as any);
-      toast.success('Pesan intervensi terkirim ke Inbox Siswa!');
+      toast.success('Intervention message sent to student!');
     } catch (e) {
-      toast.error('Gagal mengirim intervensi.');
+      toast.error('Failed to send intervention.');
     }
   };
 
   const handleAssignTask = async () => {
-    const taskMsg = window.prompt("Masukkan instruksi tugas khusus:");
+    const taskMsg = window.prompt("Enter special task instructions:");
     if (!taskMsg || !studentId) return;
 
     const taskData = {
       id: Date.now().toString(),
-      title: "📋 Tugas Baru dari Guru",
+      title: "📋 New Teacher Task",
       body: taskMsg,
-      time: new Date().toLocaleTimeString('id-ID'),
+      time: new Date().toLocaleTimeString('en-US'),
       isRead: false,
       createdAt: new Date().toISOString()
     };
@@ -94,10 +94,10 @@ export default function StudentAnalyticsPage() {
     try {
       const { saveStudentTask } = await import('@/lib/firebase');
       const success = await saveStudentTask(studentId as string, taskData);
-      if (success) toast.success("Tugas terkirim ke database siswa!");
+      if (success) toast.success("Task sent to student database!");
       else throw new Error("Database failed");
     } catch (e) {
-      toast.error('Gagal merilis tugas khusus.');
+      toast.error('Failed to release special task.');
     }
   };
 

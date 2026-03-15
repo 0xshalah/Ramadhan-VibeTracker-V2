@@ -13,7 +13,7 @@ function WidgetFallback() {
   return (
     <div className="p-4 bg-red-50/10 border border-red-500/50 rounded-2xl text-center w-full h-full min-h-[120px] flex flex-col justify-center items-center">
       <span className="material-symbols-outlined text-red-500">warning</span>
-      <p className="text-xs text-slate-500 mt-2">Gagal memuat Charity Hub.</p>
+      <p className="text-xs text-slate-500 mt-2">Failed to load Charity Hub.</p>
     </div>
   );
 }
@@ -66,7 +66,7 @@ function SadaqahContent() {
     fetchImpact();
   }, [user]);
 
-  // 1. Deteksi Status dari URL (redirect dari Mayar)
+  // 1. Detect Status from URL (redirect from Mayar)
   useEffect(() => {
     const processSuccess = async () => {
       const status = searchParams.get('status');
@@ -74,7 +74,7 @@ function SadaqahContent() {
         setShowSuccess(true);
         toast.success('Donation successful!');
         
-        // Cek apakah ada nominal yang ditunda di localstorage
+        // Check for pending amount in localstorage
         const pendingAmountStr = localStorage.getItem('vibe_pending_sadaqah');
         if (pendingAmountStr) {
           const amountText = parseInt(pendingAmountStr, 10);
@@ -88,7 +88,7 @@ function SadaqahContent() {
           }
         }
         
-        // Bersihkan URL agar tidak trigger lagi saat refresh
+        // Clean URL
         window.history.replaceState({}, '', window.location.pathname);
       }
     };
@@ -105,7 +105,7 @@ function SadaqahContent() {
     if (!selectedAmount || !user) return;
     setIsProcessing(true);
     
-    // Simpan amount ke localstorage untuk di process setelah success redirect
+    // Store pending amount
     localStorage.setItem('vibe_pending_sadaqah', selectedAmount.toString());
 
     try {
@@ -122,19 +122,19 @@ function SadaqahContent() {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Gagal membuat link pembayaran');
+        throw new Error(data.error || 'Failed to generate payment link');
       }
 
-      // Redirect user ke halaman Mayar!
+      // Redirect to Mayar
       if (data.url) {
         window.location.href = data.url;
       } else {
-        throw new Error("URL Pembayaran kosong");
+        throw new Error("Payment URL is missing");
       }
 
     } catch (error: any) {
       console.error("Checkout Error:", error);
-      toast.error(error.message || 'Sistem pembayaran sedang gangguan');
+      toast.error(error.message || 'Payment system is currently unavailable');
       setIsProcessing(false);
       localStorage.removeItem('vibe_pending_sadaqah');
     }
@@ -161,7 +161,7 @@ function SadaqahContent() {
             <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 p-6 rounded-2xl flex items-center justify-between">
                 <div>
                 <h2 className="text-emerald-600 dark:text-emerald-400 text-sm font-semibold uppercase tracking-wider">Your Total Impact This Month</h2>
-                <p className="text-4xl font-bold text-slate-800 dark:text-white mt-2">Rp {totalImpact.toLocaleString('id-ID')}</p>
+                <p className="text-4xl font-bold text-slate-800 dark:text-white mt-2">Rp {totalImpact.toLocaleString('en-US')}</p>
                 </div>
                 <div className="text-5xl opacity-50 drop-shadow-sm">✨</div>
             </div>
@@ -180,7 +180,7 @@ function SadaqahContent() {
                 >
                     <div className="text-3xl mb-3 drop-shadow-sm">{tier.icon}</div>
                     <h3 className="text-lg font-medium text-slate-800 dark:text-white">{tier.label}</h3>
-                    <p className="text-emerald-600 dark:text-emerald-400 font-mono font-bold mt-1">Rp {tier.amount.toLocaleString('id-ID')}</p>
+                    <p className="text-emerald-600 dark:text-emerald-400 font-mono font-bold mt-1">Rp {tier.amount.toLocaleString('en-US')}</p>
                 </button>
                 ))}
             </div>
@@ -191,7 +191,7 @@ function SadaqahContent() {
                 onClick={handleCheckout}
                 className="w-full py-4 bg-slate-800 dark:bg-white text-white dark:text-black font-bold rounded-xl disabled:opacity-50 transition-transform active:scale-[0.98] cursor-pointer"
             >
-                {isProcessing ? 'Generating Secure Link...' : `Donate Rp ${selectedAmount.toLocaleString('id-ID')} Now`}
+                {isProcessing ? 'Generating Secure Link...' : `Donate Rp ${selectedAmount.toLocaleString('en-US')} Now`}
             </button>
             </div>
         </main>

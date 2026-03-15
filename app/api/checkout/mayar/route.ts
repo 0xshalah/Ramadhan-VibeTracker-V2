@@ -2,40 +2,43 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const { amount, email, name } = await request.json();
+    const { amount, email, name, mobile } = await request.json();
 
-    // 1. Validasi Input dari Frontend
+    // 1. Mandatory Input Validation
     if (!amount || !email) {
-      return NextResponse.json({ error: 'Amount dan Email wajib diisi' }, { status: 400 });
+      return NextResponse.json({ error: 'Amount and Email are required' }, { status: 400 });
     }
 
     const apiKey = process.env.MAYAR_API_KEY;
     if (!apiKey) {
-      console.error("[MAYAR] API Key tidak ditemukan di environment variables!");
+      console.error("[MAYAR] API Key missing in environment variables!");
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    // 2. Format Payload sesuai standar ketat Mayar
+    // 2. Headless API Payload Construction
+    // Mayar HL v1 requirements: name, amount, customer_name, customer_email, customer_mobile
     const mayarPayload = {
-      name: `Sadaqah Ramadhan - Rp ${amount.toLocaleString('id-ID')}`, // Nama Produk/Tagihan
-      amount: Number(amount),
-      description: `Daily Charity from ${name || email}`,
-      customer_name: name || "Hamba Allah", // Mayar sering mewajibkan ini
+      name: `Ramadan Charity - Rp ${Number(amount).toLocaleString('en-US')}`,
+      amount: Math.floor(Number(amount)),
+      description: `Sadaqah contribution from ${name || email}`,
+      customer_name: (name && name !== "Anonymous") ? name : "Blessed Donor",
       customer_email: email,
-      redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success`, // Kembali ke dashboard
+      customer_mobile: mobile || "081234567890", // Fallback mobile for validation
+      redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success`,
       metadata: {
         app: "VibeTracker-V2",
-        type: "Sadaqah"
+        type: "Sadaqah",
+        platform: "Web-Enterprise"
       }
     };
 
-    // 3. Tembak API Mayar
+    // 3. Mayar API Invocation
     const mayarResponse = await fetch('https://api.mayar.id/hl/v1/payment/create', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`, // WAJIB ADA KATA 'Bearer '
+        'Authorization': `Bearer ${apiKey.trim()}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(mayarPayload)
@@ -43,26 +46,25 @@ export async function POST(request: Request) {
 
     const data = await mayarResponse.json();
 
-    // 4. Tangani Penolakan (Rejection) dari Mayar
+    // 4. Enhanced Error Handling
     if (!mayarResponse.ok) {
-      console.error("[MAYAR API REJECTED]", JSON.stringify(data, null, 2));
-      const errorMessage = data?.message || data?.error || 'Mayar API menolak request ini';
-      return NextResponse.json({ error: errorMessage, details: data }, { status: mayarResponse.status });
+      console.error("[MAYAR REJECTION]", JSON.stringify(data, null, 2));
+      return NextResponse.json({ 
+        error: data?.message || 'Payment gateway rejected the request',
+        details: data 
+      }, { status: mayarResponse.status });
     }
 
-    // 5. Ekstrak Link Pembayaran (Mayar bisa menaruh link di data.link atau data.data.link)
+    // 5. URL Extraction
     const paymentUrl = data?.data?.link || data?.link || data?.url;
-
     if (!paymentUrl) {
-      console.error("[MAYAR API ERROR] Link pembayaran tidak ditemukan di response:", data);
-      return NextResponse.json({ error: 'Gagal mendapatkan link pembayaran dari Mayar' }, { status: 500 });
+      throw new Error('Payment link generation failed');
     }
 
-    // 6. Kembalikan URL ke Frontend
     return NextResponse.json({ url: paymentUrl }, { status: 200 });
 
   } catch (error: any) {
-    console.error("[CHECKOUT FATAL ERROR]", error.message);
-    return NextResponse.json({ error: 'Gagal memproses pembayaran ke server' }, { status: 500 });
+    console.error("[CHECKOUT FATAL]", error.message);
+    return NextResponse.json({ error: 'Internal server error processing payment' }, { status: 500 });
   }
 }

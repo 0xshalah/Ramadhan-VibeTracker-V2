@@ -31,7 +31,7 @@ function WidgetFallback() {
   return (
     <div className="p-4 bg-red-50/10 border border-red-500/50 rounded-2xl text-center w-full h-full min-h-[120px] flex flex-col justify-center items-center">
       <span className="material-symbols-outlined text-red-500">warning</span>
-      <p className="text-xs text-slate-500 mt-2">Widget gagal dimuat.</p>
+      <p className="text-xs text-slate-500 mt-2">Widget failed to load.</p>
     </div>
   );
 }
@@ -206,7 +206,7 @@ export default function StudentDashboard() {
         // Show toast for new tasks
         snapshot.docChanges().forEach((change) => {
           if (change.type === "added" && !isInitialLoad.current) {
-            toast.info(`📋 Tugas Baru: ${change.doc.data().task}`);
+            toast.info(`📋 New Task: ${change.doc.data().task}`);
           }
         });
       });
@@ -235,7 +235,7 @@ export default function StudentDashboard() {
           id: Date.now().toString(),
           title: payload.notification?.title || 'System Update',
           body: payload.notification?.body || '',
-          time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
           isRead: false
         };
         
@@ -265,8 +265,8 @@ export default function StudentDashboard() {
         if (timeToPrayer > 0) {
           const tId = setTimeout(() => {
             if (Notification.permission === 'granted') {
-              new Notification(`Waktunya Sholat ${name}`, {
-                body: `Mari tunaikan ibadah sholat ${name} tepat waktu. ✨`,
+              new Notification(`Prayer Time: ${name}`, {
+                body: `It's time for ${name} prayer. Level up your consistency! ✨`,
                 icon: '/favicon.ico'
               });
             }
@@ -328,7 +328,7 @@ export default function StudentDashboard() {
       if (perm === 'granted' && messaging) {
         const token = await getToken(messaging, { vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY });
         if (token && user) await saveNotificationToken(user.uid, token);
-        toast("Notifikasi pengingat sholat diaktifkan! ✨");
+        toast("Prayer reminders enabled! ✨");
       }
     } catch (err) {
       // console.error(err);error
@@ -390,19 +390,17 @@ export default function StudentDashboard() {
         </ErrorBoundary>
         
         <main className="flex-1 overflow-y-auto scroll-smooth relative">
-          {notifPermission === 'default' && !isNotifDismissed && (
             <div className="bg-indigo-600 text-white text-xs px-6 py-3 flex justify-between items-center shadow-md">
-              <span>Aktifkan pengingat waktu sholat lokal?</span>
+              <span>Enable local prayer reminders?</span>
               <div className="flex gap-2">
                 <button onClick={enableNotifications} className="cursor-pointer bg-white text-indigo-600 px-4 py-1.5 rounded-full font-bold hover:bg-slate-100 transition-colors">
-                  Aktifkan
+                  Enable
                 </button>
                 <button onClick={dismissNotificationBanner} className="text-white/70 hover:text-white px-2 py-1.5 font-medium transition-colors">
-                  Tutup
+                  Dismiss
                 </button>
               </div>
             </div>
-          )}
 
           <div className="absolute top-4 right-8 z-50 flex items-center gap-2">
              {syncStatus === 'saving' && (
@@ -444,7 +442,7 @@ export default function StudentDashboard() {
                   totalDays={30} 
                   history={streakHistory}
                   onNodeClick={(day, data) => {
-                    toast.info(`Membuka Detail Ibadah Hari ke-${day}`);
+                    toast.info(`Opening Worship Details: Day ${day}`);
                     setSelectedDayStats({ day, ...data });
                   }}
                 />
@@ -491,7 +489,7 @@ export default function StudentDashboard() {
                   recited={duaRecited}
                   onMarkRecited={() => {
                     setDuaRecited(true);
-                    toast.success("Masha Allah! Poin Vibe ditambahkan! ✨");
+                    toast.success("Masha Allah! Vibe points added! ✨");
                   }}
                 />
               </ErrorBoundary>
@@ -501,13 +499,13 @@ export default function StudentDashboard() {
                 <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-6">
                   <h3 className="font-bold text-amber-500 flex items-center gap-2 mb-4">
                     <span className="material-symbols-outlined text-sm">assignment_late</span>
-                    Tugas Khusus Guru
+                    Teacher Assigned Tasks
                   </h3>
                   <div className="space-y-3">
                     {customTasks.filter(t => t.status === 'pending').map(t => (
                       <div key={t.id} className="p-3 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-amber-500/20">
                         <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{t.task}</p>
-                        <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">Oleh: {t.assignedBy}</p>
+                        <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider">By: {t.assignedBy}</p>
                       </div>
                     ))}
                   </div>
@@ -580,13 +578,13 @@ export default function StudentDashboard() {
       <Modal
         isOpen={!!selectedDayStats}
         onClose={() => setSelectedDayStats(null)}
-        title={`Summary Hari ke-${selectedDayStats?.day}`}
+        title={`Summary Day ${selectedDayStats?.day}`}
       >
         {selectedDayStats && (
           <div className="space-y-6">
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-blue-500/10 p-4 rounded-2xl text-center">
-                <p className="text-[10px] uppercase font-bold text-blue-500/70 mb-1">Sholat</p>
+                <p className="text-[10px] uppercase font-bold text-blue-500/70 mb-1">Prayer</p>
                 <p className="text-xl font-black text-blue-500">{selectedDayStats.prayers}/5</p>
               </div>
               <div className="bg-emerald-500/10 p-4 rounded-2xl text-center">
@@ -615,7 +613,7 @@ export default function StudentDashboard() {
               onClick={() => setSelectedDayStats(null)}
               className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-all"
             >
-              Tutup Detail
+              Close Details
             </button>
           </div>
         )}

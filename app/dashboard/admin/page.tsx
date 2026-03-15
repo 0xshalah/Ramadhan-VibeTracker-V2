@@ -148,7 +148,7 @@ function AdminDashboardContent() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to process request');
-      toast.success(`Request ${action === 'approve' ? 'disetujui' : 'ditolak'}!`);
+      toast.success(`Request ${action === 'approve' ? 'approved' : 'rejected'}!`);
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -270,7 +270,7 @@ function AdminDashboardContent() {
         <h2 className="text-xl font-bold text-white">TestSprite SecOps Monitor</h2>
       </div>
       <p className="text-sm text-indigo-200/80 max-w-xl">
-        Sistem ini diuji secara otonom oleh agen AI TestSprite. Integritas RBAC, keamanan Firebase Custom Claims, dan ketahanan Webhook Donasi dijamin oleh validasi CI/CD berkelanjutan.
+        This system is autonomously tested by the TestSprite AI agent. RBAC integrity, Firebase Custom Claims security, and Donation Webhook resilience are guaranteed by continuous CI/CD validation.
       </p>
     </div>
 

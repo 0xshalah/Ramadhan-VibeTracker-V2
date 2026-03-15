@@ -2,90 +2,91 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import * as admin from 'firebase-admin';
 
-// 1. Inisialisasi Firebase Admin (The Master Key)
-// PENTING: Di environment Vercel/Production, Anda harus memasukkan FIREBASE_PROJECT_ID, 
-// FIREBASE_CLIENT_EMAIL, dan FIREBASE_PRIVATE_KEY dari Service Account Anda.
+// Initialize Firebase Admin for background credit processing
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      // Handle format private key yang sering rusak karena escape characters (\n)
       privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
     }),
   });
 }
 
-const db = admin.firestore();
+const adminDb = admin.firestore();
 
 export async function POST(request: Request) {
   try {
-    // Ambil raw body sebagai string untuk verifikasi Signature
     const rawBody = await request.text();
-    const headers = request.headers;
-    
-    // 2. Ekstraksi Signature dari Mayar
-    // Sesuaikan header ini dengan dokumentasi resmi Mayar (biasanya 'x-mayar-signature' atau 'mayar-signature')
-    const mayarSignature = headers.get('x-mayar-signature') || headers.get('mayar-signature'); 
+    const signature = request.headers.get('x-mayar-signature') || request.headers.get('mayar-signature');
     const secret = process.env.MAYAR_WEBHOOK_SECRET;
 
-    if (!mayarSignature || !secret) {
-      console.error("[WEBHOOK] Missing signature or secret");
-      return NextResponse.json({ error: 'Unauthorized Access' }, { status: 401 });
-    }
-
-    // 3. Verifikasi Tanda Tangan Kriptografi (HMAC SHA256)
-    // Ini memastikan payload 100% berasal dari server Mayar dan tidak dimodifikasi di jalan.
-    const expectedSignature = crypto
-      .createHmac('sha256', secret)
-      .update(rawBody)
-      .digest('hex');
-
-    if (expectedSignature !== mayarSignature) {
-      console.warn("[SECURITY] Webhook signature mismatch! Possible spoofing attack.");
-      return NextResponse.json({ error: 'Invalid Signature' }, { status: 403 });
-    }
-
-    // 4. Parsing Payload yang sudah dijamin asli
-    const payload = JSON.parse(rawBody);
-
-    // Pastikan event ini adalah transaksi sukses
-    if (payload.status === 'SUCCESS' || payload.status === 'SETTLED') {
-      const { customer, id: transactionId, amount } = payload.data;
-      const userEmail = customer.email;
-
-      // 5. Resolusi Pengguna (Cari UID berdasarkan email)
-      const usersRef = db.collection('users');
-      const snapshot = await usersRef.where('email', '==', userEmail).limit(1).get();
-
-      if (snapshot.empty) {
-        // [IDEMPOTENCY] Jika user belum terdaftar, simpan ke 'unclaimed_donations'
-        // Nanti saat user mendaftar, Cloud Function onUserCreate akan menarik data ini (Fase 2)
-        await db.collection('unclaimed_donations').doc(transactionId).set({
-          email: userEmail,
-          amount: amount,
-          status: 'verified',
-          timestamp: admin.firestore.FieldValue.serverTimestamp()
-        });
-        console.log(`[WEBHOOK] Unclaimed donation saved for: ${userEmail}`);
-      } else {
-        // 6. Tulis langsung ke subkoleksi pengguna yang TERKUNCI
-        // Karena kita menggunakan Admin SDK, operasi ini mengabaikan 'allow write: if false'
-        const userDoc = snapshot.docs[0];
-        await db.collection('users').doc(userDoc.id).collection('sadaqah').doc(transactionId).set({
-          amount: amount,
-          status: 'verified',
-          timestamp: admin.firestore.FieldValue.serverTimestamp(),
-          source: 'mayar_webhook'
-        });
-        console.log(`[WEBHOOK] Sadaqah verified for user: ${userDoc.id}`);
+    // 1. Signature Verification (HMAC SHA256)
+    if (secret && signature) {
+      const hmac = crypto.createHmac('sha256', secret);
+      const digest = hmac.update(rawBody).digest('hex');
+      
+      if (signature !== digest) {
+        console.error("[SECURITY] Invalid webhook signature detected.");
+        return NextResponse.json({ error: 'Forbidden: Invalid Signature' }, { status: 403 });
       }
     }
 
-    return NextResponse.json({ success: true, message: 'Webhook processed' }, { status: 200 });
+    const payload = JSON.parse(rawBody);
+    
+    // Support both HL v1 structure (payload.data) and potential direct structure
+    const status = payload.status || payload.data?.status;
+    const customer_email = payload.customer_email || payload.data?.customer?.email;
+    const amount = payload.amount || payload.data?.amount;
+    const transactionId = payload.id || payload.data?.id;
 
-  } catch (error) {
-    console.error("[WEBHOOK ERROR]", error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    // 2. Business Logic Execution on 'success' or 'paid'
+    if (status === 'success' || status === 'paid' || status === 'SUCCESS' || status === 'SETTLED') {
+      if (!customer_email) {
+          console.warn("[WEBHOOK] Transaction success but no email found in payload.");
+          return NextResponse.json({ acknowledged: true }, { status: 200 });
+      }
+
+      const userQuery = await adminDb.collection('users').where('email', '==', customer_email).limit(1).get();
+      
+      if (!userQuery.empty) {
+        const userDoc = userQuery.docs[0];
+        const batch = adminDb.batch();
+        const userRef = adminDb.collection('users').doc(userDoc.id);
+        const sadaqahRef = userRef.collection('sadaqah').doc(transactionId || String(Date.now()));
+
+        // Increment impact and award XP (500 bonus for donation)
+        batch.update(userRef, {
+          impactSadaqah: admin.firestore.FieldValue.increment(Number(amount)),
+          totalXP: admin.firestore.FieldValue.increment(500) 
+        });
+
+        batch.set(sadaqahRef, {
+          amount: Number(amount),
+          status: 'verified',
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          provider: 'Mayar',
+          transactionId: transactionId
+        });
+
+        await batch.commit();
+        console.log(`[SYNC] Donation successful: ${amount} applied to ${customer_email}`);
+      } else {
+        // Idempotency: Save to unclaimed_donations
+        await adminDb.collection('unclaimed_donations').doc(transactionId || String(Date.now())).set({
+          email: customer_email,
+          amount: Number(amount),
+          status: 'verified',
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          transactionId: transactionId
+        });
+        console.log(`[WEBHOOK] Unclaimed donation saved for: ${customer_email}`);
+      }
+    }
+
+    return NextResponse.json({ acknowledged: true }, { status: 200 });
+  } catch (error: any) {
+    console.error("[WEBHOOK ERROR]", error.message);
+    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
 }
