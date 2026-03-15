@@ -7,6 +7,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { ErrorBoundary } from 'react-error-boundary';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 type UserRow = {
   uid: string;
@@ -127,8 +128,9 @@ function AdminDashboardContent() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to process request');
+      toast.success(`Request ${action === 'approve' ? 'disetujui' : 'ditolak'}!`);
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setIsProcessingRequest(null);
     }
@@ -153,8 +155,8 @@ function AdminDashboardContent() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      alert(`✅ ${data.message}`);
-    } catch (err: any) { alert(`❌ ${err.message}`); }
+      toast.success(`✅ ${data.message}`);
+    } catch (err: any) { toast.error(`❌ ${err.message}`); }
     finally { setIsSeeding(false); }
   };
 
@@ -169,8 +171,8 @@ function AdminDashboardContent() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      alert(`✅ ${data.message}`);
-    } catch (err: any) { alert(`❌ ${err.message}`); }
+      toast.success(`✅ ${data.message}`);
+    } catch (err: any) { toast.error(`❌ ${err.message}`); }
     finally { setIsPurging(false); }
   };
 

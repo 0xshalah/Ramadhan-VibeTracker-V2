@@ -7,6 +7,8 @@ export const useVibeSync = ({
   targetTilawah,
   sholat,
   sunnah,
+  tasbih,
+  duaRecited,
   verifiedSadaqah,
   loadingContext,
   isInitialLoad
@@ -21,10 +23,10 @@ export const useVibeSync = ({
       const todayId = getLocalTodayId();
       
       // Materialize Vibe Points to Payload
-      const sunnahDoneCount = (sunnah.tarawih ? 1 : 0) + (sunnah.sahur ? 1 : 0) + (verifiedSadaqah ? 1 : 0);
+      const sunnahDoneCount = (sunnah.tarawih ? 1 : 0) + (sunnah.sahur ? 1 : 0) + (verifiedSadaqah ? 1 : 0) + (duaRecited ? 1 : 0);
       const sunnahBonusXP = sunnahDoneCount * 5;
       
-      const payload = { tilawah, targetTilawah, sholat, sunnah, earnedXP: sunnahBonusXP };
+      const payload = { tilawah, targetTilawah, sholat, sunnah, tasbih, duaRecited, earnedXP: sunnahBonusXP };
       
       // Debounce saving
        const timer = setTimeout(async () => {
@@ -38,13 +40,13 @@ export const useVibeSync = ({
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [user, tilawah, targetTilawah, sholat, sunnah, verifiedSadaqah, loadingContext, isInitialLoad]);
+  }, [user, tilawah, targetTilawah, sholat, sunnah, tasbih, duaRecited, verifiedSadaqah, loadingContext, isInitialLoad]);
 
   // PREVENT ACCIDENTAL CLOSE WHEN SAVING
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (syncStatus === 'saving') {
-        const payload = { tilawah, targetTilawah, sholat, sunnah };
+        const payload = { tilawah, targetTilawah, sholat, sunnah, tasbih, duaRecited };
         const todayId = getLocalTodayId();
         updateUserProgress(user?.uid, todayId, payload); // Force fire
         e.preventDefault();
@@ -53,7 +55,7 @@ export const useVibeSync = ({
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [syncStatus, tilawah, targetTilawah, sholat, sunnah, user]);
+  }, [syncStatus, tilawah, targetTilawah, sholat, sunnah, tasbih, duaRecited, user]);
 
   return { syncStatus, xpBurstTrigger };
 };

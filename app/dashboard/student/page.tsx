@@ -14,6 +14,7 @@ import XPBurst from './components/XPBurst';
 import Modal from './components/Modal';
 import JourneyCanvas from './components/JourneyCanvas';
 import AIChatPanel from './components/AIChatPanel';
+import TasbihCounter from './components/TasbihCounter';
 import { useVibeStore } from '@/store/useVibeStore';
 import { toast } from 'sonner';
 import { Sparkles } from 'lucide-react';
@@ -48,6 +49,8 @@ export default function StudentDashboard() {
 
   // LOGIC STATE
   const [tilawah, setTilawah] = useState(0);
+  const [tasbih, setTasbih] = useState(0);
+  const [duaRecited, setDuaRecited] = useState(false);
   const [targetTilawah, setTargetTilawah] = useState(20);
   
   const [sholat, setSholat] = useState<DailyProgress['sholat']>({
@@ -72,6 +75,7 @@ export default function StudentDashboard() {
   const [notifications, setNotifications] = useState<Array<{id: string|number, title: string, body: string, time: string}>>([]);
   const [customTasks, setCustomTasks] = useState<Array<any>>([]);
   const [isNotifDismissed, setIsNotifDismissed] = useState(false);
+  const [selectedDayStats, setSelectedDayStats] = useState<any>(null);
 
   useEffect(() => {
     if ('Notification' in window) setNotifPermission(Notification.permission);
@@ -81,7 +85,7 @@ export default function StudentDashboard() {
   const isInitialLoad = useRef(true);
 
   const { syncStatus, xpBurstTrigger } = useVibeSync({
-    user, tilawah, targetTilawah, sholat, sunnah, verifiedSadaqah, loadingContext, isInitialLoad
+    user, tilawah, targetTilawah, sholat, sunnah, tasbih, duaRecited, verifiedSadaqah, loadingContext, isInitialLoad
   });
 
   // AUTH OBSERVER & DB FETCHING
@@ -94,6 +98,8 @@ export default function StudentDashboard() {
         const cloudData = await getUserProgress(currentUser.uid, todayId);
         if (cloudData) {
           if (cloudData.tilawah !== undefined) setTilawah(cloudData.tilawah);
+          if (cloudData.tasbih !== undefined) setTasbih(cloudData.tasbih);
+          if (cloudData.duaRecited !== undefined) setDuaRecited(cloudData.duaRecited);
           if (cloudData.sholat) setSholat(cloudData.sholat);
           if (cloudData.sunnah) setSunnah(cloudData.sunnah);
         }
@@ -291,7 +297,7 @@ export default function StudentDashboard() {
   
   const corePct = Math.min(Math.round((sholatPct * 0.5) + (tilawahPct * 0.5)), 100);
   
-  const sunnahDoneCount = (sunnah.tarawih ? 1 : 0) + (sunnah.sahur ? 1 : 0) + (verifiedSadaqah ? 1 : 0);
+  const sunnahDoneCount = (sunnah.tarawih ? 1 : 0) + (sunnah.sahur ? 1 : 0) + (verifiedSadaqah ? 1 : 0) + (duaRecited ? 1 : 0);
   const sunnahBonusXP = sunnahDoneCount * 5;
 
   const handlePrayerToggle = (key: keyof DailyProgress['sholat']) => setSholat(prev => ({ ...prev, [key]: !prev[key] }));
@@ -404,7 +410,12 @@ export default function StudentDashboard() {
             <div className="col-span-12 lg:col-span-8 space-y-6">
               
               <ErrorBoundary FallbackComponent={WidgetFallback}>
-                <JourneyCanvas currentDay={hijriDayInt || 1} totalDays={30} />
+                <JourneyCanvas 
+                  currentDay={hijriDayInt || 1} 
+                  totalDays={30} 
+                  history={streakHistory}
+                  onNodeClick={(day, data) => setSelectedDayStats({ day, ...data })}
+                />
               </ErrorBoundary>
 
               <ErrorBoundary FallbackComponent={WidgetFallback}>
@@ -425,6 +436,13 @@ export default function StudentDashboard() {
                     onUpdateTarget={handleUpdateTarget}
                   />
                 </ErrorBoundary>
+                <ErrorBoundary FallbackComponent={WidgetFallback}>
+                  <TasbihCounter 
+                    tasbih={tasbih} 
+                    onIncrement={() => setTasbih(p => p + 1)} 
+                    onReset={() => setTasbih(0)} 
+                  />
+                </ErrorBoundary>
               </div>
             </div>
 
@@ -436,7 +454,14 @@ export default function StudentDashboard() {
               {sunnahBonusXP > 0 && <XPBurst points={sunnahBonusXP} trigger={xpBurstTrigger} />}
 
               <ErrorBoundary FallbackComponent={WidgetFallback}>
-                <DuaCard prayerTimes={prayerTimes} />
+                <DuaCard 
+                  prayerTimes={prayerTimes} 
+                  recited={duaRecited}
+                  onMarkRecited={() => {
+                    setDuaRecited(true);
+                    toast.success("Masha Allah! Poin Vibe ditambahkan! ✨");
+                  }}
+                />
               </ErrorBoundary>
               
               {/* Custom Tasks Widget */}
@@ -516,6 +541,50 @@ export default function StudentDashboard() {
              </div>
              <p className="font-bold text-slate-800 dark:text-white">No new notifications</p>
              <p className="text-sm text-sage-500">Prayer reminders and updates will appear here.</p>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={!!selectedDayStats}
+        onClose={() => setSelectedDayStats(null)}
+        title={`Summary Hari ke-${selectedDayStats?.day}`}
+      >
+        {selectedDayStats && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-blue-500/10 p-4 rounded-2xl text-center">
+                <p className="text-[10px] uppercase font-bold text-blue-500/70 mb-1">Sholat</p>
+                <p className="text-xl font-black text-blue-500">{selectedDayStats.prayers}/5</p>
+              </div>
+              <div className="bg-emerald-500/10 p-4 rounded-2xl text-center">
+                <p className="text-[10px] uppercase font-bold text-emerald-500/70 mb-1">Tilawah</p>
+                <p className="text-xl font-black text-emerald-500">{selectedDayStats.tilawah}</p>
+              </div>
+              <div className="bg-purple-500/10 p-4 rounded-2xl text-center">
+                <p className="text-[10px] uppercase font-bold text-purple-500/70 mb-1">Sunnah</p>
+                <p className="text-xl font-black text-purple-500">{selectedDayStats.sunnah}</p>
+              </div>
+            </div>
+            
+            <div className="bg-slate-50 dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700">
+               <h4 className="font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+                 <span className="material-symbols-outlined text-orange-400">workspace_premium</span>
+                 Achievement Bonus
+               </h4>
+               <p className="text-sm text-slate-500 dark:text-slate-400">
+                 {selectedDayStats.completed 
+                   ? `Masha Allah! Kamu berhasil mempertahankan streak dan mendapatkan bonus +${selectedDayStats.streak * 10} XP di hari ini.`
+                   : "Data hari ini belum lengkap atau masih terkunci. Tetap semangat istiqomah!"}
+               </p>
+            </div>
+            
+            <button 
+              onClick={() => setSelectedDayStats(null)}
+              className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-all"
+            >
+              Tutup Detail
+            </button>
           </div>
         )}
       </Modal>

@@ -23,6 +23,8 @@ export const DailyProgressSchema = z.object({
   earnedXP: z.number().nonnegative().default(0),
   sholat: SholatSchema.default({ subuh: false, dzuhur: false, ashar: false, maghrib: false, isya: false }),
   sunnah: SunnahSchema.default({ tarawih: false, sahur: false, sadaqah: false }),
+  tasbih: z.number().nonnegative().default(0),
+  duaRecited: z.boolean().default(false),
 });
 
 export type DailyProgress = z.infer<typeof DailyProgressSchema>;

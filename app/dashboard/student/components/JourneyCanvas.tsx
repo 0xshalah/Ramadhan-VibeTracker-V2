@@ -108,40 +108,43 @@ const nodeTypes = { dayNode: DayNode };
 interface JourneyCanvasProps {
   currentDay: number;
   totalDays?: number;
+  history?: any[];
+  onNodeClick: (day: number, data: DayNodeData) => void;
 }
 
-export default function JourneyCanvas({ currentDay, totalDays = 30 }: JourneyCanvasProps) {
-  // Generate mock data for daily achievements
+export default function JourneyCanvas({ currentDay, totalDays = 30, history = [], onNodeClick }: JourneyCanvasProps) {
+  // Generate data for daily achievements using history if available
   const nodes: Node<DayNodeData>[] = useMemo(() => {
     return Array.from({ length: totalDays }).map((_, i) => {
       const day = i + 1;
-      const completed = day < currentDay;
+      const dateStr = new Date();
+      dateStr.setDate(dateStr.getDate() - (currentDay - day));
+      const dateId = dateStr.toISOString().split('T')[0];
+      
+      const dayHistory = history.find(h => h.dateId === dateId);
+      const completed = day < currentDay || !!dayHistory;
 
-      // Generate mock data based on day status
-      let prayers = 0, tilawah = 0, sunnah = 0, streak = 0;
+      // Use historical data or fallback to mock
+      let prayers = dayHistory?.sholat ? Object.values(dayHistory.sholat).filter(v => v).length : 0;
+      let tilawah = dayHistory?.tilawah || 0;
+      let sunnah = dayHistory?.sunnah ? (dayHistory.sunnah.tarawih ? 1 : 0) + (dayHistory.sunnah.sahur ? 1 : 0) + (dayHistory.sunnah.sadaqah ? 1 : 0) : 0;
+      let streak = day <= 7 ? 0 : day <= 14 ? 1 : day <= 21 ? 2 : 3;
 
-      if (completed) {
-        // Past days: simulate achievement completion
+      if (!dayHistory && day < currentDay) {
+        // Fallback for past days without history (mock)
         prayers = Math.min(5, Math.floor(Math.random() * 6));
         tilawah = Math.min(20, Math.floor(Math.random() * 21));
         sunnah = Math.min(3, Math.floor(Math.random() * 4));
-        streak = day <= 7 ? 0 : day <= 14 ? 1 : day <= 21 ? 2 : 3;
-      } else if (day === currentDay) {
-        // Current day: partial progress
-        prayers = Math.min(5, Math.floor(Math.random() * 3) + 1);
-        tilawah = Math.min(20, Math.floor(Math.random() * 10) + 1);
-        sunnah = Math.floor(Math.random() * 2);
-        streak = day <= 7 ? 0 : day <= 14 ? 1 : day <= 21 ? 2 : 3;
       }
 
       return {
         id: `day-${day}`,
         type: 'dayNode',
-        position: { x: (i % 5) * 220, y: Math.floor(i / 5) * 180 }, // Pola Zig-zag
+        position: { x: (i % 5) * 220, y: Math.floor(i / 5) * 180 },
         data: { day, completed, prayers, tilawah, sunnah, streak }
       };
     });
-  }, [currentDay, totalDays]);
+  }, [currentDay, totalDays, history]);
 
   // Menghubungkan antar hari dengan garis panah
   const edges: Edge[] = useMemo(() => {
@@ -178,7 +181,14 @@ export default function JourneyCanvas({ currentDay, totalDays = 30 }: JourneyCan
       </div>
 
       <div className="h-[500px] w-full rounded-2xl overflow-hidden border border-slate-700">
-        <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView colorMode="dark">
+        <ReactFlow 
+          nodes={nodes} 
+          edges={edges} 
+          nodeTypes={nodeTypes} 
+          onNodeClick={(_, node) => onNodeClick(node.data.day, node.data as DayNodeData)}
+          fitView 
+          colorMode="dark"
+        >
           <Background color="#334155" gap={16} />
           <Controls />
           <MiniMap

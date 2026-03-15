@@ -13,8 +13,8 @@ export default function ProfilePage() {
   const { user, totalXP, streak, setUser } = useVibeStore();
   const [quranTarget, setQuranTarget] = useState(12);
   const [isProcessingAvatar, setIsProcessingAvatar] = useState(false);
+  const [isSavingTarget, setIsSavingTarget] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const initialMount = useRef(true);
   const router = useRouter();
 
   // Initialize from store
@@ -24,29 +24,23 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  // Debounced Auto-Save for Quran Target
-  useEffect(() => {
-    if (initialMount.current) {
-      initialMount.current = false;
-      return;
-    }
-    
+  // Debounced Auto-Save removed in favor of manual Save button as requested for V2
+  // But let's keep the initialization logic
+  
+  const handleSaveTarget = async () => {
     if (!user) return;
-
-    const timeoutId = setTimeout(async () => {
-      try {
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, { targetTilawah: quranTarget });
-        // Optionally update global store too
-        setUser({ ...user, targetTilawah: quranTarget } as any);
-        toast.success(`Daily target saved: ${quranTarget} pages`, { position: 'bottom-center' });
-      } catch (error) {
-        toast.error("Failed to save target. Please try again.");
-      }
-    }, 1000); // 1 second debounce
-
-    return () => clearTimeout(timeoutId);
-  }, [quranTarget, user, setUser]);
+    setIsSavingTarget(true);
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, { targetTilawah: quranTarget });
+      setUser({ ...user, targetTilawah: quranTarget } as any);
+      toast.success("Target Tilawah diperbarui! 🎯");
+    } catch (e) {
+      toast.error("Gagal menyimpan target.");
+    } finally {
+      setIsSavingTarget(false);
+    }
+  };
 
   const handleGenerateAvatar = async () => {
     if (!user) return;
@@ -73,24 +67,25 @@ export default function ProfilePage() {
 
   const handleDeleteAccount = async () => {
     if (!user) return;
-    
-    if (!window.confirm("Danger Zone! Are you absolutely sure you want to permanently delete your account and all its data? This cannot be undone.")) {
-      return;
-    }
-
+    if (!window.confirm("Danger Zone! Are you absolutely sure?")) return;
     setIsDeleting(true);
     try {
       const success = await deleteUserAccount(user);
       if (success) {
-        toast.success("Account successfully deleted. Goodbye! 🌅");
+        toast.success("Account deleted. Goodbye! 🌅");
         setUser(null);
         await logout();
         router.push('/');
       } else {
-        toast.error("Failed to delete account. Please re-login and try again.");
+        toast.error("Gagal menghapus akun.");
       }
-    } catch (error) {
-       toast.error("System error during deletion.");
+    } catch (error: any) {
+      // TANGKAP ERROR RE-AUTH DI SINI
+      if (error?.message?.includes('requires-recent-login')) {
+        toast.error("Keamanan Sistem: Silakan Logout dan Login kembali sebelum menghapus akun Anda.");
+      } else {
+        toast.error("System error during deletion.");
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -156,7 +151,16 @@ export default function ProfilePage() {
                 <span className="material-symbols-outlined text-emerald-500">menu_book</span>
                 <h3 className="font-bold text-white text-lg">Daily Quran Target</h3>
               </div>
-              <span className="bg-slate-700 text-emerald-400 px-4 py-1.5 rounded-full text-sm font-bold border border-emerald-500/20">{quranTarget} Pages</span>
+              <div className="flex items-center gap-2">
+                <span className="bg-slate-700 text-emerald-400 px-4 py-1.5 rounded-full text-sm font-bold border border-emerald-500/20">{quranTarget} Pages</span>
+                <button 
+                  onClick={handleSaveTarget} 
+                  disabled={isSavingTarget} 
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-sm font-bold transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {isSavingTarget ? '...' : 'Save'}
+                </button>
+              </div>
             </div>
             <input 
               type="range" min="1" max="30" 
