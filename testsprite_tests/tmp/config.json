@@ -1,0 +1,17 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "executionArgs": {
+    "projectName": "new hackathon testsprite",
+    "projectPath": "c:\\Users\\Shalahuddin\\Documents\\new hackathon testsprite",
+    "testIds": [],
+    "additionalInstruction": "Execute the following 3 penetration scenarios and generate a report:\n1. Skenario A (Webhook Forgery): Test /api/webhook/mayar with a fake payload and no Signature Header. Expect the API to reject with HTTP 400 or 401.\n2. Skenario B (Privilege Escalation): Attempt to access PATCH /api/admin/role-request using a student's JWT token. Verify that Custom Claims block this with HTTP 403.\n3. Skenario C (Stress Test Fallback): Call /api/auth/sync 50 times in 1 second to test the application's bootstrap robustness.",
+    "serverMode": "production",
+    "envs": {
+      "API_KEY": "sk-user-pBXRtrZ3nPiakcuNKC2a5n0kDcHjfSsrDfiy-EsASBBOYurhDsS0ZIjPaECGXVF_r_EpzRvKS9xuDAu1l6DgQ9mMyKYFoXi8_VQ9T4NpkwjmjXPjU21dC1ULt3rEfKlLWkQ"
+    }
+  },
+  "serverPort": 7980
+}
