@@ -1,0 +1,8 @@
+{"timestamp":"2026-03-15T13:16:02.021Z","level":"debug","message":"Generate code and execute params","context":{"projectName":"new hackathon testsprite","projectPath":"c:\\Users\\Shalahuddin\\Documents\\new hackathon testsprite","testIds":[],"serverMode":"development"}}
+{"timestamp":"2026-03-15T13:16:02.045Z","level":"error","message":"checkPortListening tcp error: 3000 localhost\nAggregateError"}
+{"timestamp":"2026-03-15T13:16:02.548Z","level":"error","message":"checkPortListening tcp error: 3000 localhost\nAggregateError"}
+{"timestamp":"2026-03-15T13:16:03.052Z","level":"error","message":"checkPortListening tcp error: 3000 localhost\nAggregateError"}
+{"timestamp":"2026-03-15T13:16:03.556Z","level":"error","message":"checkPortListening tcp error: 3000 localhost\nAggregateError"}
+{"timestamp":"2026-03-15T13:16:04.057Z","level":"info","message":"checkPortListening tcp failed, trying http fallback: 3000 localhost"}
+{"timestamp":"2026-03-15T13:17:21.898Z","level":"debug","message":"Generate code and execute params","context":{"projectName":"new hackathon testsprite","projectPath":"c:\\Users\\Shalahuddin\\Documents\\new hackathon testsprite","testIds":[],"serverMode":"production"}}
+{"timestamp":"2026-03-15T13:17:44.840Z","level":"debug","message":"Generate code and execute params","context":{"projectName":"new hackathon testsprite","projectPath":"c:\\Users\\Shalahuddin\\Documents\\new hackathon testsprite","testIds":[],"serverMode":"production"}}

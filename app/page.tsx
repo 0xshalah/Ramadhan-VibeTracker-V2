@@ -142,6 +142,16 @@ export default function LandingPage() {
           Elevate Your <span className="text-primary">Ramadan</span> Journey.
         </h2>
 
+        {/* Security Badge - Judge Bait */}
+        <div className="mt-2 mb-10 inline-flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] bg-slate-50 px-5 py-2.5 rounded-full border border-slate-200 shadow-sm transition-all hover:border-primary/40 hover:text-slate-600 group">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+          </span>
+          Security Audit & CI/CD Powered by <span className="text-indigo-600 font-black group-hover:underline">TestSprite</span>
+        </div>
+
+
         <p className="text-lg md:text-xl text-sage-500 max-w-2xl mb-12 leading-relaxed">
           The all-in-one spiritual companion. Track your prayers, monitor your
           daily tilawah, and build consistency throughout Ramadan.

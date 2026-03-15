@@ -1,0 +1,61 @@
+version: "2"
+type: frontend
+tech_stack:
+  - TypeScript
+  - Next.js (App Router)
+  - Tailwind CSS
+  - Firebase (Auth, Firestore, Messaging)
+routes:
+  - path: /
+    file: app/page.tsx
+    auth_required: false
+    description: Welcome page with role selection
+  - path: /dashboard/student
+    file: app/dashboard/student/page.tsx
+    auth_required: true
+    description: Student main dashboard
+  - path: /dashboard/admin
+    file: app/dashboard/admin/page.tsx
+    auth_required: true
+    description: Super Admin Command Center
+  - path: /dashboard/teacher
+    file: app/dashboard/teacher/page.tsx
+    auth_required: true
+    description: Teacher/Scholar dashboard
+  - path: /dashboard/student/sadaqah
+    file: app/dashboard/student/sadaqah/page.tsx
+    auth_required: true
+    description: Sadaqah Hub with Mayar payment integration
+features:
+  - name: Role Request System
+    description: Students apply for teacher/staff roles with admin approval workflow
+    files:
+      - app/dashboard/student/page.tsx
+      - app/api/admin/role-request/route.ts
+    entry_route: /dashboard/student
+    api_calls:
+      - method: POST
+        endpoint: /api/admin/role-request
+      - method: PATCH
+        endpoint: /api/admin/role-request
+    auth_required: true
+  - name: Sadaqah Mayar Integration
+    description: Real-time donation processing via Mayar payment gateway
+    files:
+      - app/dashboard/student/sadaqah/page.tsx
+      - app/api/checkout/mayar/route.ts
+      - app/api/webhook/mayar/route.ts
+    entry_route: /dashboard/student/sadaqah
+    api_calls:
+      - method: POST
+        endpoint: /api/checkout/mayar
+      - method: POST
+        endpoint: /api/webhook/mayar
+    auth_required: true
+  - name: Admin Audit Log
+    description: Real-time terminal-style logging of system activities
+    files:
+      - app/dashboard/admin/page.tsx
+    entry_route: /dashboard/admin
+    auth_required: true
+known_limitations: []
