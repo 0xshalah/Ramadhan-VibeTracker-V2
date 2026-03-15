@@ -19,24 +19,9 @@ export default function LandingPage() {
     try {
       const loggedUser = await loginWithGoogle();
 
-      // [RBAC] Smart Redirect with Role Escalation Guard
+      // [RBAC] STRICT GATEWAY LOGIC
       if (mode === 'staff') {
-        // Staff Gateway: Only teachers/admins/parents may enter
-        if (loggedUser.role === 'admin') {
-          router.push("/dashboard/admin");
-        } else if (loggedUser.role === 'teacher') {
-          router.push("/dashboard/teacher");
-        } else if (loggedUser.role === 'parent') {
-          router.push("/dashboard/parent");
-          // Role Escalation Blocked: Student clicked Staff Login
-          // Instead of redirecting immediately, show the Request Access modal
-          setRequestTargetUser(loggedUser);
-          setShowRoleRequest(true);
-          setIsLoading(false);
-          return; // Stop execution here
-        }
-      } else {
-        // Student Gateway: Route based on actual role
+        // Staff Gateway: Only teachers, admins, or parents may enter
         if (loggedUser.role === 'admin') {
           router.push("/dashboard/admin");
         } else if (loggedUser.role === 'teacher') {
@@ -44,11 +29,30 @@ export default function LandingPage() {
         } else if (loggedUser.role === 'parent') {
           router.push("/dashboard/parent");
         } else {
+          // Blocked: Student clicked Staff Login
+          setRequestTargetUser(loggedUser);
+          setShowRoleRequest(true);
+          setIsLoading(false);
+          return; // Stop execution
+        }
+      } else if (mode === 'student') {
+        // Student Gateway: STRICTLY FOR STUDENTS ONLY
+        if (loggedUser.role === 'admin' || loggedUser.role === 'teacher') {
+          toast.error("Access Denied", {
+            description: "Staff and Admins cannot use the Student portal. Please use the Staff Login."
+          });
+          // Force logout immediately to prevent session hijacking
+          await import('@/lib/firebase').then(m => m.logout());
+          setIsLoading(false);
+          return; 
+        } else if (loggedUser.role === 'parent') {
+           router.push("/dashboard/parent");
+        } else {
+          // Allow student
           router.push("/dashboard/student");
         }
       }
     } catch (error) {
-      // console.error("Login failed", error);error
       toast.error('Login Failed', {
         description: 'Could not connect to Google. Please try again.',
       });

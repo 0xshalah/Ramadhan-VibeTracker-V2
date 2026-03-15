@@ -207,30 +207,33 @@ function AdminDashboardContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
         <div className="text-center">
-          <span className="material-symbols-outlined text-5xl text-indigo-400 animate-spin">settings</span>
-          <p className="mt-4 text-slate-400 font-bold">Loading Admin Console...</p>
+          <span className="material-symbols-outlined text-5xl text-indigo-500 animate-spin">settings</span>
+          <p className="mt-4 text-slate-500 dark:text-slate-400 font-bold tracking-widest uppercase text-sm">Initializing Secure Console...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-display" style={{ fontFamily: 'Lexend, sans-serif' }}>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white transition-colors duration-300 font-sans pb-20">
+      
       {/* Top Bar */}
-      <header className="border-b border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 bg-slate-950/90 backdrop-blur-xl z-50">
+      <header className="border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl z-50 transition-colors duration-300 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
             <span className="material-symbols-outlined text-white text-xl">admin_panel_settings</span>
           </div>
           <div>
-            <h1 className="text-lg font-black tracking-tight">VibeTracker Admin</h1>
-            <p className="text-xs text-slate-500">Super Admin Console</p>
+            <h1 className="text-lg font-black tracking-tight text-slate-800 dark:text-white">Command Center</h1>
+            <p className="text-[10px] uppercase font-bold tracking-widest text-slate-500 dark:text-slate-400">Enterprise Edition</p>
           </div>
         </div>
+        
+        {/* Quick Actions (Theme & Logout) */}
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/teacher" className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-sm font-bold transition-all">
+          <Link href="/dashboard/teacher" className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl text-sm font-bold transition-all text-slate-700 dark:text-white">
             <span className="material-symbols-outlined text-[16px]">school</span>
             Teacher View
           </Link>
@@ -238,7 +241,7 @@ function AdminDashboardContent() {
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
             <span className="text-xs font-bold text-indigo-400">{adminName}</span>
           </div>
-          <button onClick={logout} className="p-2.5 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-all cursor-pointer">
+          <button onClick={logout} className="p-2.5 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500/20 transition-all cursor-pointer border-none">
             <span className="material-symbols-outlined text-[18px]">logout</span>
           </button>
         </div>
@@ -319,7 +322,7 @@ function AdminDashboardContent() {
             { label: 'Admins', value: stats.totalAdmins, icon: 'shield_person', color: 'from-purple-500 to-indigo-500' },
             { label: 'Global XP', value: stats.totalXPGlobal.toLocaleString(), icon: 'stars', color: 'from-pink-500 to-rose-500' },
           ].map(stat => (
-            <div key={stat.label} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-all">
+            <div key={stat.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm transition-colors">
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-3`}>
                 <span className="material-symbols-outlined text-white text-lg">{stat.icon}</span>
               </div>
@@ -439,7 +442,7 @@ function AdminDashboardContent() {
                     <button 
                       onClick={() => handleRoleAction(req.email, 'reject')}
                       disabled={processingId === req.email}
-                      className="flex-1 md:flex-none px-4 py-2 bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="flex-1 md:flex-none px-4 py-2 bg-rose-500/10 text-rose-500 dark:bg-rose-500/20 dark:text-rose-400 hover:bg-rose-500/20 dark:hover:bg-rose-500/30 font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 border-none cursor-pointer"
                     >
                       <span className="material-symbols-outlined text-[16px]">cancel</span> Reject
                     </button>
@@ -451,15 +454,15 @@ function AdminDashboardContent() {
         )}
 
         {/* User Management Table */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm transition-colors">
           {/* Table Header */}
           <div className="p-5 border-b border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h2 className="text-lg font-black flex items-center gap-2">
-                <span className="material-symbols-outlined text-indigo-400">database</span>
+              <h2 className="text-lg font-black flex items-center gap-2 text-slate-800 dark:text-white">
+                <span className="material-symbols-outlined text-indigo-500">database</span>
                 User Management
               </h2>
-              <p className="text-xs text-slate-500">{filteredUsers.length} of {users.length} users shown</p>
+              <p className="text-xs text-slate-400">{filteredUsers.length} of {users.length} users shown</p>
             </div>
             <div className="flex items-center gap-3 w-full md:w-auto">
               {/* Search */}
@@ -470,14 +473,14 @@ function AdminDashboardContent() {
                   placeholder="Search name or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 transition-colors"
                 />
               </div>
               {/* Role Filter */}
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
-                className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+                className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
               >
                 <option value="all">All Roles</option>
                 <option value="student">Students</option>
@@ -490,20 +493,20 @@ function AdminDashboardContent() {
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs text-slate-500 uppercase tracking-wider border-b border-slate-800">
-                  <th className="px-5 py-3 font-bold">#</th>
-                  <th className="px-5 py-3 font-bold">User</th>
-                  <th className="px-5 py-3 font-bold">Role</th>
-                  <th className="px-5 py-3 font-bold">XP</th>
-                  <th className="px-5 py-3 font-bold">Streak</th>
-                  <th className="px-5 py-3 font-bold">Last Login</th>
-                  <th className="px-5 py-3 font-bold">Actions</th>
+              <thead className="bg-slate-50 dark:bg-slate-950/50 border-b border-slate-200 dark:border-slate-800 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                <tr className="text-left">
+                  <th className="px-5 py-4 font-bold">#</th>
+                  <th className="px-5 py-4 font-bold">User</th>
+                  <th className="px-5 py-4 font-bold">Role</th>
+                  <th className="px-5 py-4 font-bold">XP</th>
+                  <th className="px-5 py-4 font-bold">Streak</th>
+                  <th className="px-5 py-4 font-bold">Last Login</th>
+                  <th className="px-5 py-4 font-bold">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map((user, i) => (
-                  <tr key={user.uid} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
+                  <tr key={user.uid} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
                     <td className="px-5 py-4 text-slate-500 font-bold">{i + 1}</td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
@@ -515,8 +518,8 @@ function AdminDashboardContent() {
                           )}
                         </div>
                         <div>
-                          <p className="font-bold text-white leading-tight">{user.displayName}</p>
-                          <p className="text-xs text-slate-500">{user.email}</p>
+                          <p className="font-bold text-slate-800 dark:text-white leading-tight">{user.displayName}</p>
+                          <p className="text-xs text-slate-400">{user.email}</p>
                         </div>
                       </div>
                     </td>
@@ -565,13 +568,13 @@ function AdminDashboardContent() {
 
 function FallbackAdminError({ error, resetErrorBoundary }: { error: Error, resetErrorBoundary: () => void }) {
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
-      <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-8 max-w-md text-center">
-        <span className="material-symbols-outlined text-red-400 text-4xl mb-4">error</span>
-        <h3 className="font-bold text-red-400 mb-2">Admin Console Error</h3>
-        <p className="text-sm text-red-300/80 mb-4">{error.message}</p>
-        <button onClick={resetErrorBoundary} className="px-4 py-2 bg-red-500/20 text-red-400 rounded-xl text-sm font-bold hover:bg-red-500/30 transition-all">
-          Retry
+    <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center p-6 transition-colors duration-300">
+      <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-3xl p-8 max-w-md text-center shadow-xl">
+        <span className="material-symbols-outlined text-red-500 dark:text-red-400 text-4xl mb-4">error</span>
+        <h3 className="font-bold text-slate-800 dark:text-red-400 mb-2">Admin Console Error</h3>
+        <p className="text-sm text-slate-600 dark:text-red-300/80 mb-6">{error.message}</p>
+        <button onClick={resetErrorBoundary} className="w-full px-4 py-3 bg-red-600 dark:bg-red-500/20 text-white dark:text-red-400 rounded-xl text-sm font-bold hover:bg-red-500 transition-all border-none cursor-pointer">
+          Retry Protocol
         </button>
       </div>
     </div>
