@@ -19,7 +19,9 @@ export default function LandingPage() {
       // [RBAC] Smart Redirect with Role Escalation Guard
       if (mode === 'staff') {
         // Staff Gateway: Only teachers/admins/parents may enter
-        if (loggedUser.role === 'teacher' || loggedUser.role === 'admin') {
+        if (loggedUser.role === 'admin') {
+          router.push("/dashboard/admin");
+        } else if (loggedUser.role === 'teacher') {
           router.push("/dashboard/teacher");
         } else if (loggedUser.role === 'parent') {
           router.push("/dashboard/parent");
@@ -33,7 +35,9 @@ export default function LandingPage() {
         }
       } else {
         // Student Gateway: Route based on actual role
-        if (loggedUser.role === 'teacher' || loggedUser.role === 'admin') {
+        if (loggedUser.role === 'admin') {
+          router.push("/dashboard/admin");
+        } else if (loggedUser.role === 'teacher') {
           router.push("/dashboard/teacher");
         } else if (loggedUser.role === 'parent') {
           router.push("/dashboard/parent");
