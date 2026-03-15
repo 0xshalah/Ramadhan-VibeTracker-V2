@@ -31,6 +31,7 @@
 - **🕌 Geolocation-Aware Prayer Times** — Dynamic prayer schedule using the Aladhan API with absolute GPS fallback protection.
 - **📊 Consistency Heatmap & Analytics** — GitHub-style contribution calendar visualizing 30-day worship activity with deep-dive student analytics.
 - **🔐 Bullet-Proof Mayar Integration** — Custom **Native HTTPS Bypass** architecture to prevent framework-level caching conflicts (409 resolution) and ensure 100% payment link reliability.
+- **🌍 Full English Internationalization** — Complete system-wide translation to English for global accessibility and standard technical compliance.
 - **👮 Dual-Layer Type Safety** — TypeScript for compile-time protection + Zod for runtime data validation against corrupted Firestore payloads.
 
 ## 🛠️ Architecture
