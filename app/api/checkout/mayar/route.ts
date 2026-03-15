@@ -18,14 +18,14 @@ export async function POST(request: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
     // 2. Headless API Payload Construction
-    // Mayar HL v1 requirements: name, amount, customer_name, customer_email, customer_mobile
+    // FIX: Aligned field names with Mayar's validation requirements ('email' and 'mobile')
     const mayarPayload = {
-      name: `Ramadan Charity - Rp ${Number(amount).toLocaleString('en-US')}`,
+      name: `Ramadan Charity - Rp ${Number(amount).toLocaleString('en-US')}`, // Product Name
       amount: Math.floor(Number(amount)),
       description: `Sadaqah contribution from ${name || email}`,
       customer_name: (name && name !== "Anonymous") ? name : "Blessed Donor",
-      customer_email: email,
-      customer_mobile: mobile || "081234567890", // Fallback mobile for validation
+      email: email, // FIX: Changed from customer_email to email
+      mobile: mobile || "081234567890", // FIX: Changed from customer_mobile to mobile
       redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success`,
       metadata: {
         app: "VibeTracker-V2",

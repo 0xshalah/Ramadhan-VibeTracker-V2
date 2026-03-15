@@ -105,7 +105,7 @@ function SadaqahContent() {
     if (!selectedAmount || !user) return;
     setIsProcessing(true);
     
-    // Store pending amount
+    // Store pending amount for later verification
     localStorage.setItem('vibe_pending_sadaqah', selectedAmount.toString());
 
     try {
@@ -115,13 +115,15 @@ function SadaqahContent() {
         body: JSON.stringify({
           amount: selectedAmount,
           email: user.email,
-          name: user.displayName || 'VibeTracker Student'
+          name: user.displayName || 'VibeTracker Student',
+          mobile: '081234567890' // Add default mobile to avoid Mayar validation errors
         })
       });
 
       const data = await response.json();
       
       if (!response.ok) {
+        // Show specific error from Mayar if available
         throw new Error(data.error || 'Failed to generate payment link');
       }
 
