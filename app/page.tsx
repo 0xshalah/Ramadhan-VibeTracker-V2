@@ -42,7 +42,7 @@ export default function LandingPage() {
         }
       }
     } catch (error) {
-      console.error("Login failed", error);
+      // console.error("Login failed", error);error
       toast.error('Login Failed', {
         description: 'Could not connect to Google. Please try again.',
       });

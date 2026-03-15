@@ -41,7 +41,7 @@ export const usePrayerTimes = () => {
              toast("Menggunakan zona waktu Batam (Default). Aktifkan GPS untuk akurasi lokasi.");
           }
         } catch (error) {
-          console.error("Failed fetching Aladhan API", error);
+          // console.error("Failed fetching Aladhan API", error);error
         }
       };
 
@@ -52,13 +52,13 @@ export const usePrayerTimes = () => {
           },
           (error) => {
             // [FIX] Jangan diam saja, beritahu UI
-            console.warn("GPS Denied.", error);
+            // console.warn("GPS Denied.", error);warn
             getFromAPI(1.0456, 104.0305, true); // Fallback Batam
             toast("⚠️ GPS Ditolak. Menggunakan zona waktu Batam. Mohon izinkan lokasi.");
           }
         );
       } else {
-        console.warn("Geolocation is not supported by this browser. Fallback to default.");
+        // console.warn("Geolocation is not supported by this browser. Fallback to default.");warn
         getFromAPI();
       }
     }

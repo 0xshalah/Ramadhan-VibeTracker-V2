@@ -58,12 +58,12 @@ export const loginWithGoogle = async (): Promise<User & { role: string }> => {
         await updateDoc(userRef, { lastLogin: serverTimestamp() });
         userRole = userSnap.data()?.role || 'student';
     } catch(e) {
-        console.warn("Gagal update lastLogin (mungkin firestore rules terlalu ketat), melanjutkan login...", e);
+        // console.warn("Gagal update lastLogin (mungkin firestore rules terlalu ketat), melanjutkan login...", e);warn
         userRole = userSnap.data()?.role || 'student';
     }
   } else {
     // PENGGUNA BARU: Eksekusi BYPASS SPARK PLAN
-    console.log("[AUTH] Pengguna baru terdeteksi. Menghubungi Server Sync...");
+    // console.log("[AUTH] Pengguna baru terdeteksi. Menghubungi Server Sync...");log
     
     // 1. Dapatkan Token Keamanan Klien
     const idToken = await user.getIdToken();
@@ -87,7 +87,7 @@ export const loginWithGoogle = async (): Promise<User & { role: string }> => {
 
     const data = await response.json();
     userRole = data.role || 'student';
-    console.log("[AUTH] Profil berhasil dibuat di Server!");
+    // console.log("[AUTH] Profil berhasil dibuat di Server!");log
   }
 
   return Object.assign(user, { role: userRole });
@@ -110,7 +110,7 @@ export const getUserProgress = async (uid: string, dateId: string): Promise<Dail
     }
     return null;
   } catch (error) {
-    console.error("Error fetching user progress:", error);
+    // console.error("Error fetching user progress:", error);error
     return null;
   }
 };
@@ -125,7 +125,7 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
     }
     return null;
   } catch (error) {
-    console.error("Error fetching user profile:", error);
+    // console.error("Error fetching user profile:", error);error
     return null;
   }
 };
@@ -146,7 +146,7 @@ export const getUserWeeklyProgress = async (uid: string): Promise<(DailyProgress
         : { dateId: past7Days[index], ...DailyProgressSchema.parse({}) }
     );
   } catch (error) {
-    console.error("Error fetching weekly progress:", error);
+    // console.error("Error fetching weekly progress:", error);error
     return [];
   }
 };
@@ -189,11 +189,11 @@ export const getLeaderboardLive = (callback: (entries: (UserProfile & { uid: str
         : [];
       callback(top100);
     } else {
-      console.warn('[LEADERBOARD] metadata/leaderboard_global document does not exist yet.');
+      // console.warn('[LEADERBOARD] metadata/leaderboard_global document does not exist yet.');warn
       callback([]);
     }
   }, (error) => {
-    console.warn('[LEADERBOARD] onSnapshot error:', error.message);
+    // console.warn('[LEADERBOARD] onSnapshot error:', error.message);warn
     callback([]);
   });
 };
@@ -205,7 +205,7 @@ export const getMyChildren = async (parentEmail: string): Promise<(UserProfile &
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserProfile & { uid: string }));
   } catch (error) {
-    console.error("Error fetching children:", error);
+    // console.error("Error fetching children:", error);error
     return [];
   }
 };
@@ -219,7 +219,7 @@ export const getWorshipHistory = async (uid: string): Promise<(DocumentData & { 
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ dateId: d.id, ...d.data() }));
   } catch (err) {
-    console.error("Error fetching worship history:", err);
+    // console.error("Error fetching worship history:", err);error
     return [];
   }
 };
@@ -246,7 +246,7 @@ export const updateUserProgress = async (uid: string, dateId: string, data: Reco
 
     await setDoc(userRef, profilePayload, { merge: true });
   } catch (error) {
-    console.error("Error updating user progress:", error);
+    // console.error("Error updating user progress:", error);error
   }
 };
 
@@ -258,7 +258,7 @@ export const updateUserSettings = async (uid: string, settings: Record<string, u
       updatedAt: serverTimestamp()
     });
   } catch (error) {
-    console.error("Error updating user settings:", error);
+    // console.error("Error updating user settings:", error);error
   }
 };
 
@@ -281,7 +281,7 @@ export const saveNotification = async (uid: string, notification: AppNotificatio
       await deleteDoc(oldestDoc.ref);
     }
   } catch (error) {
-    console.error("[ARCHIVER] Failed to seal notification:", error);
+    // console.error("[ARCHIVER] Failed to seal notification:", error);error
   }
 };
 
@@ -292,7 +292,7 @@ export const getUserNotifications = async (uid: string): Promise<(DocumentData &
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch (error) {
-    console.error("[ARCHIVER] Error fetching history:", error);
+    // console.error("[ARCHIVER] Error fetching history:", error);error
     return [];
   }
 };
@@ -305,8 +305,8 @@ export const saveNotificationToken = async (uid: string, fcmToken: string): Prom
       notificationsEnabled: true,
       lastTokenUpdate: new Date().toISOString()
     }, { merge: true });
-    console.log("[FCM] Token synced to Firestore for user:", uid);
+    // console.log("[FCM] Token synced to Firestore for user:", uid);log
   } catch (error) {
-    console.error("[FCM] Error saving token:", error);
+    // console.error("[FCM] Error saving token:", error);error
   }
 };

@@ -164,16 +164,16 @@ export default function StudentDashboard() {
         try {
           if ('serviceWorker' in navigator) {
             const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-            console.log('[FCM] SW registered:', registration.scope);
+            // console.log('[FCM] SW registered:', registration.scope);log
           }
         } catch (error) {
-          console.error("[FCM] Notification setup failed:", error);
+          // console.error("[FCM] Notification setup failed:", error);error
         }
       };
       initMessaging();
 
       const unsubscribe = onMessage(messaging, async (payload) => {
-        console.log('[FCM] Foreground message received:', payload);
+        // console.log('[FCM] Foreground message received:', payload);log
         const newNotif = {
           id: Date.now().toString(),
           title: payload.notification?.title || 'System Update',
@@ -274,7 +274,7 @@ export default function StudentDashboard() {
         toast("Notifikasi pengingat sholat diaktifkan! ✨");
       }
     } catch (err) {
-      console.error(err);
+      // console.error(err);error
     }
   };
 

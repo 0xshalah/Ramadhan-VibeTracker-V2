@@ -35,7 +35,7 @@ export default function StudentAnalyticsPage() {
         }
         setWeeklyData(weekly);
       } catch (err) {
-        console.error('[STUDENT_ANALYTICS] Fetch error:', err);
+        // console.error('[STUDENT_ANALYTICS] Fetch error:', err);error
       } finally {
         setLoading(false);
       }

@@ -51,7 +51,7 @@ export default function SadaqahHub() {
       // Berhasil membuat link, belokkan navigasi (Redirect)
       window.location.href = data.url;
     } catch (error: any) {
-      console.error(error);
+      // console.error(error);error
       toast.error(error.message || 'Payment system unavailable');
       setIsProcessing(false);
     }
