@@ -236,6 +236,68 @@ function AdminDashboardContent() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* The Super Admin ID Card */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 mb-8 flex flex-col md:flex-row items-center gap-6 shadow-sm">
+          <div className="relative w-20 h-20 shrink-0">
+            <img 
+              src={auth.currentUser?.photoURL || "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin"} 
+              alt="Admin Avatar" 
+              className="w-full h-full rounded-2xl object-cover border-2 border-indigo-100 dark:border-slate-700"
+            />
+            <button 
+              onClick={() => document.getElementById('admin-photo-upload')?.click()}
+              className="absolute -bottom-2 -right-2 bg-indigo-500 hover:bg-indigo-400 text-white w-8 h-8 rounded-full shadow-lg flex items-center justify-center transition-all cursor-pointer border-none"
+            >
+              <span className="material-symbols-outlined text-[16px]">edit</span>
+            </button>
+            <input 
+              id="admin-photo-upload" 
+              type="file" 
+              accept="image/*" 
+              className="hidden" 
+              onChange={(e) => {
+                 const file = e.target.files?.[0];
+                 if(file && file.size < 512 * 1024) {
+                   const reader = new FileReader();
+                   reader.onloadend = async () => {
+                     const base64 = reader.result as string;
+                     try {
+                        if(auth.currentUser) {
+                          const { updateProfile } = await import('firebase/auth');
+                          const { doc, updateDoc } = await import('firebase/firestore');
+                          await updateProfile(auth.currentUser, { photoURL: base64 });
+                          await updateDoc(doc(db, 'users', auth.currentUser.uid), { photoURL: base64 });
+                          toast.success("Admin photo updated! Refresh to see changes globally.");
+                        }
+                     } catch(err) { toast.error("Upload failed"); }
+                   };
+                   reader.readAsDataURL(file);
+                 } else {
+                   toast.error("File must be under 500KB");
+                 }
+              }}
+            />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold text-slate-800 dark:text-white">{auth.currentUser?.displayName || 'Super Administrator'}</h2>
+              <span className="bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest border border-indigo-200 dark:border-indigo-500/30">
+                Command Level
+              </span>
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{auth.currentUser?.email}</p>
+            <p className="text-xs font-medium text-slate-400 dark:text-slate-50 mt-2 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              System fully operational and synchronized.
+            </p>
+          </div>
+          <div className="ml-auto flex gap-3">
+             <button onClick={async () => { await logout(); router.push('/'); }} className="bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 px-4 py-2 rounded-xl text-sm font-bold hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors flex items-center gap-2 border-none cursor-pointer">
+               <span className="material-symbols-outlined text-[18px]">logout</span>
+               Terminate Session
+             </button>
+          </div>
+        </div>
         {/* System Stats */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           {[

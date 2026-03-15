@@ -19,9 +19,14 @@ export default function ProfilePage() {
   
   const [prefs, setPrefs] = useState({ prayerReminders: true, subuhWakeup: false });
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatar, setAvatar] = useState<string | null>(null);
 
   // Initialize from store
   useEffect(() => {
+    if (user) {
+      setAvatar(user.photoURL || null);
+    }
     if (user && (user as any).targetTilawah) {
       setQuranTarget((user as any).targetTilawah);
     }
@@ -75,7 +80,7 @@ export default function ProfilePage() {
       const seed = Math.random().toString(36).substring(7);
       const randomAvatarUrl = `https://api.dicebear.com/9.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf,ffd5dc`;
       
-      const success = await updateUserAvatar(user, randomAvatarUrl);
+      const success = await updateUserAvatar(user.uid, randomAvatarUrl);
       if (success) {
         // Optimistically update store
         setUser({ ...user, photoURL: randomAvatarUrl } as any);
@@ -88,6 +93,36 @@ export default function ProfilePage() {
     } finally {
       setIsProcessingAvatar(false);
     }
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Batasi ukuran gambar (max 500KB) agar Firestore tidak penuh
+    if (file.size > 512 * 1024) {
+      toast.error("File is too large! Maximum 500KB allowed.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64String = reader.result as string;
+      setAvatar(base64String); 
+      
+      try {
+        const success = await updateUserAvatar(user.uid, base64String);
+        if (success) {
+          toast.success("Profile photo updated! 📸");
+          setUser({ ...user, photoURL: base64String } as any);
+        } else {
+          toast.error("Failed to save photo.");
+        }
+      } catch (e) {
+        toast.error("Error uploading photo.");
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleDeleteAccount = async () => {
@@ -128,24 +163,39 @@ export default function ProfilePage() {
       <main className="max-w-2xl mx-auto p-6 space-y-8 mt-4">
         {/* Identity Header */}
         <section className="flex flex-col items-center">
-          <div className="relative">
-            <div className="w-32 h-32 rounded-full border-4 border-slate-800 bg-slate-700 flex items-center justify-center overflow-hidden shadow-xl">
-              {user?.photoURL ? <img src={user.photoURL} alt="User" className="w-full h-full object-cover"/> : <span className="material-symbols-outlined text-6xl text-slate-500">person</span>}
-            </div>
+          <div className="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-4 group">
+            <img 
+              src={avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=fallback"} 
+              alt="Profile" 
+              className="w-full h-full rounded-full object-cover border-4 border-white dark:border-slate-900 shadow-xl"
+            />
+            <button 
+              onClick={() => fileInputRef.current?.click()} 
+              disabled={isProcessingAvatar}
+              className="absolute bottom-0 right-0 bg-emerald-500 hover:bg-emerald-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110 cursor-pointer border-none"
+            >
+              <span className="material-symbols-outlined text-[16px]">photo_camera</span>
+            </button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleFileUpload} 
+              accept="image/png, image/jpeg, image/jpg" 
+              className="hidden" 
+            />
+          </div>
+          <h2 className="text-2xl font-bold mt-4">{user?.displayName || 'Student'}</h2>
+          <div className="flex flex-col items-center gap-2 mt-2">
             <button 
               onClick={handleGenerateAvatar}
               disabled={isProcessingAvatar}
-              className="absolute bottom-1 right-1 bg-emerald-500 p-2 rounded-full text-white hover:bg-emerald-600 shadow-lg transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center"
+              className="text-xs font-bold text-emerald-500 hover:text-emerald-400 flex items-center gap-1 bg-transparent border-none cursor-pointer"
             >
-              {isProcessingAvatar ? (
-                <span className="material-symbols-outlined text-sm animate-spin">refresh</span>
-              ) : (
-                <span className="material-symbols-outlined text-sm">photo_camera</span>
-              )}
+              <span className="material-symbols-outlined text-sm">casino</span>
+              Generate Random Avatar
             </button>
           </div>
-          <h2 className="text-2xl font-bold mt-4">{user?.displayName || 'Student'}</h2>
-          <p className="text-slate-400 text-sm">{user?.email || 'email@notfound.com'}</p>
+          <p className="text-slate-400 text-sm mt-3">{user?.email || 'email@notfound.com'}</p>
         </section>
 
         {/* Lifetime Stats */}

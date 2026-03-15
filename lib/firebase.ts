@@ -171,13 +171,16 @@ export const syncSadaqahImpact = async (uid: string, amount: number) => {
   }
 };
 
-export const updateUserAvatar = async (user: User, photoURL: string) => {
+export const updateUserAvatar = async (uid: string, photoURL: string) => {
   try {
-    // 1. Update Firebase Auth Profile
-    await updateProfile(user, { photoURL });
+    const currentUser = auth.currentUser;
+    // 1. Update Firebase Auth Profile if it's the current user
+    if (currentUser && currentUser.uid === uid) {
+      await updateProfile(currentUser, { photoURL });
+    }
     
     // 2. Update Firestore User Document
-    await updateDoc(doc(db, 'users', user.uid), { photoURL });
+    await updateDoc(doc(db, 'users', uid), { photoURL });
     
     return true;
   } catch (error) {
