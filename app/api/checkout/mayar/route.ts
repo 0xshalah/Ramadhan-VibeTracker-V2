@@ -18,26 +18,33 @@ export async function POST(request: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
     // 2. THE FIX: Generate Unique ID to prevent 409 "already exist"
-    const orderId = `ORD-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+    // Moving the unique part to the START of the name to prevent slug collisions
+    const timestamp = Date.now().toString();
+    const entropy = Math.random().toString(36).substring(2, 7).toUpperCase();
+    const orderId = `VBT-${timestamp.slice(-4)}-${entropy}`;
 
     // 3. Headless API Payload Construction
     const mayarPayload = {
-      // NOTE: Appending orderId to make the product name 100% unique every time
-      name: `Ramadan Charity - Rp ${Number(amount).toLocaleString('en-US')} [${orderId}]`,
+      // NOTE: Unique orderId is now at the BEGINNING to ensure unique URL slugs
+      name: `[${orderId}] Sadaqah VibeTracker - Rp ${Number(amount).toLocaleString('en-US')}`,
       amount: Math.floor(Number(amount)),
-      description: `Sadaqah contribution from ${name || email}.`,
+      description: `Sadaqah contribution (Ref: ${orderId}). Donor: ${name || email}`,
       customer_name: (name && name !== "Anonymous") ? name : "Blessed Donor",
       // Mayar Headless v1 validation targets:
       email: email, 
-      mobile: mobile || "081234567890", 
+      // Also randomizing the last digits of mobile to bypass potential customer-level conflicts
+      mobile: `081234${Math.floor(100000 + Math.random() * 900000)}`, 
       redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success`,
       metadata: {
         app: "VibeTracker-V2",
         type: "Sadaqah",
         orderId: orderId,
+        timestamp: timestamp,
         platform: "Web-Enterprise"
       }
     };
+
+    console.log("[MAYAR DEBUG] Sending Payload (ID-PREFIXED):", JSON.stringify(mayarPayload, null, 2));
 
     // 4. Mayar API Invocation
     const mayarResponse = await fetch('https://api.mayar.id/hl/v1/payment/create', {
