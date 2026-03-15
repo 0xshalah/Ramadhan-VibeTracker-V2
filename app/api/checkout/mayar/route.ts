@@ -17,24 +17,24 @@ export async function POST(request: Request) {
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    // 2. Generate a Unique Identifier (The Anti-409 Fix)
-    // This forces Mayar to treat every checkout click as a brand new payment request.
-    const uniqueOrderId = `ORD-${Date.now().toString().slice(-5)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    // 2. THE FIX: Generate Unique ID to prevent 409 "already exist"
+    const orderId = `ORD-${Date.now().toString().slice(-6)}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
 
     // 3. Headless API Payload Construction
     const mayarPayload = {
-      // THE FIX: Appending the uniqueOrderId to the 'name' field
-      name: `Ramadan Charity - Rp ${Number(amount).toLocaleString('en-US')} [${uniqueOrderId}]`, 
+      // NOTE: Appending orderId to make the product name 100% unique every time
+      name: `Ramadan Charity - Rp ${Number(amount).toLocaleString('en-US')} [${orderId}]`,
       amount: Math.floor(Number(amount)),
-      description: `Sadaqah contribution from ${name || email}. ID: ${uniqueOrderId}`,
+      description: `Sadaqah contribution from ${name || email}.`,
       customer_name: (name && name !== "Anonymous") ? name : "Blessed Donor",
+      // Mayar Headless v1 validation targets:
       email: email, 
       mobile: mobile || "081234567890", 
       redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success`,
       metadata: {
         app: "VibeTracker-V2",
         type: "Sadaqah",
-        orderId: uniqueOrderId,
+        orderId: orderId,
         platform: "Web-Enterprise"
       }
     };
