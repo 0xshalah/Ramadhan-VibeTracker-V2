@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       customer_email: email,
       customer_mobile: "081234567890",
 
-      redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success`,
+      redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success&oid=${atomicId}`,
       metadata: {
         atomicId: atomicId,
         v: "4.0"
