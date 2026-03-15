@@ -24,18 +24,18 @@
 
 ## 🚀 Key Features
 
-- **🧠 AI Spiritual Companion** — Integration with Alibaba Cloud Qwen-Turbo LLM for personalized worship insights and motivation based on daily activity patterns.
+- **🧠 AI Spiritual Companion** — Powered by Alibaba Cloud Qwen AI for personalized worship insights and motivation based on daily activity patterns.
 - **🛡️ Zero-Trust RBAC & Dual Gateway** — Multi-tier role-based access control protecting Student, Teacher, and Super Admin gateways. Includes a `whitelisted_staff` architecture to prevent role escalation.
-- **👨‍🏫 Global Teacher & Admin Portals** — Real-time live monitoring of student progress with materialized view aggregation for cost-efficient leaderboards.
+- **👨‍🏫 Global Teacher & Admin Portals** — Real-time live monitoring of student progress with materialized view aggregation for high-performance leaderboards.
 - **🔄 Vibe Engine (Zustand + Firebase)** — Two-way state synchronization with debounced auto-save, ensuring worship data is never lost.
-- **🕌 Geolocation-Aware Prayer Times** — Dynamic prayer schedule using the Aladhan API (Kemenag RI Method 20) with GPS fallback protection.
-- **📊 Consistency Heatmap & Analytics** — GitHub-style contribution calendar visualizing 30-day worship activity, individual deep-dive student analytics.
-- **🔐 Enterprise Security** — 4-layer API defense (Auth → Rate Limiting → Payload Validation → LLM), Cloud Functions, and HMAC webhook verification for digital Sadaqah.
+- **🕌 Geolocation-Aware Prayer Times** — Dynamic prayer schedule using the Aladhan API with absolute GPS fallback protection.
+- **📊 Consistency Heatmap & Analytics** — GitHub-style contribution calendar visualizing 30-day worship activity with deep-dive student analytics.
+- **🔐 Bullet-Proof Mayar Integration** — Custom **Native HTTPS Bypass** architecture to prevent framework-level caching conflicts (409 resolution) and ensure 100% payment link reliability.
 - **👮 Dual-Layer Type Safety** — TypeScript for compile-time protection + Zod for runtime data validation against corrupted Firestore payloads.
 
 ## 🛠️ Architecture
 
-Built on the **Next.js 14 App Router** with clear separation between client-side logic and serverless API routes.
+Built on the **Next.js 14 App Router** with clear separation between client-side logic and hardened server-side API routes.
 
 ```mermaid
 graph TD;
@@ -49,6 +49,7 @@ graph TD;
     API_Insight[API /api/insight] -->|Bearer Auth + Rate Limit| LLM[Alibaba Cloud Qwen AI];
     API_Insight -->|Upstash Redis| RateLimit[Sliding Window 3req/10s];
     
+    Checkout[API /api/checkout/mayar] -->|Native HTTPS Bypass| MayarGate[Mayar Headless API];
     Webhook[Mayar Webhook] -->|HMAC SHA-256| Firestore_Donations[Firestore];
 ```
 
@@ -57,10 +58,10 @@ graph TD;
 | Layer | Implementation | Responsibility |
 |-------|------|----------------|
 | **Core UI** | `app/dashboard/*/` | Dynamic Routing, Next.js App Router, Tailwind Styles |
-| **Logic Hooks** | `hooks/usePrayerTimes.js`, `useVibeSync.js` | Geolocation, Debounced network calls, API orchestration |
+| **Logic Hooks** | `hooks/` | Geolocation, Debounced network calls, API orchestration |
 | **State Mngr** | `store/useVibeStore.ts` | Zustand global state with strict TypeScript interface |
 | **Data Layer** | `lib/firebase.ts` | Firestore read/write, Real-time `onSnapshot` listeners |
-| **Edge API** | `app/api/*/route.ts` | Auth Whitelist Sync, Secure LLM Proxy, Webhooks |
+| **Edge API** | `app/api/*/route.ts` | Auth Whitelist Sync, Secure LLM Proxy, Hardened Payments |
 | **Validation** | `lib/schemas.ts` | Zod runtime schemas acting as absolute source of truth |
 
 ## 📦 Installation
