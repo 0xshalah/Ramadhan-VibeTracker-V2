@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   try {
+    // [SECURITY ENFORCER] Validasi Auth Token di Header
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized Access Denied' }, { status: 401 });
+    }
+
     const { progressData } = await request.json();
     
     const apiKey = process.env.ALIBABA_CLOUD_API_KEY;
