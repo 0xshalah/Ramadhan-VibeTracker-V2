@@ -171,20 +171,20 @@ export const syncSadaqahImpact = async (uid: string, amount: number) => {
   }
 };
 
-export const updateUserAvatar = async (uid: string, photoURL: string) => {
+export const updateUserAvatar = async (uid: string, base64Photo: string) => {
   try {
-    const currentUser = auth.currentUser;
-    // 1. Update Firebase Auth Profile if it's the current user
-    if (currentUser && currentUser.uid === uid) {
-      await updateProfile(currentUser, { photoURL });
+    // 1. Update Firebase Auth Profile
+    if (auth.currentUser) {
+      await updateProfile(auth.currentUser, { photoURL: base64Photo });
     }
     
     // 2. Update Firestore User Document
-    await updateDoc(doc(db, 'users', uid), { photoURL });
+    const userRef = doc(db, 'users', uid);
+    await updateDoc(userRef, { photoURL: base64Photo });
     
     return true;
   } catch (error) {
-    console.error("Failed to update avatar:", error);
+    console.error("[PROFILE] Failed to update avatar:", error);
     return false;
   }
 };
