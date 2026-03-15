@@ -70,7 +70,7 @@ exports.updateGlobalLeaderboard = functions.firestore
 
       const userEntry = {
         uid: userId,
-        displayName: newData.displayName || 'Hamba Allah',
+        displayName: newData.displayName || 'User',
         photoURL: newData.photoURL || '',
         totalXP: newTotalXP,
         role: newData.role || 'student'

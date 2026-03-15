@@ -51,12 +51,22 @@ export const usePrayerTimes = (fallbackLat = null, fallbackLng = null) => {
             getFromAPI(position.coords.latitude, position.coords.longitude, false);
           },
           (error) => {
-            // [FIX] Jangan diam saja, beritahu UI
-            // console.warn("GPS Denied.", error);warn
-            const finalLat = fallbackLat !== null ? fallbackLat : 1.0456;
-            const finalLng = fallbackLng !== null ? fallbackLng : 104.0305;
-            getFromAPI(finalLat, finalLng, true); // Fallback Profile/Batam
-            toast(`⚠️ GPS Ditolak. Menggunakan zona waktu ${fallbackLat !== null ? 'Profil' : 'Batam (Default)'}. Mohon izinkan lokasi.`);
+            // [FIX] Coba tebak dari Timezone OS/Browser
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            let tzLat = fallbackLat;
+            let tzLng = fallbackLng;
+
+            if (tzLat === null && tzLng === null) {
+              if (tz === 'Asia/Jakarta') { tzLat = -6.2088; tzLng = 106.8456; }
+              else if (tz === 'Asia/Makassar') { tzLat = -5.1477; tzLng = 119.4327; } // WITA
+              else if (tz === 'Asia/Jayapura') { tzLat = -2.5337; tzLng = 140.7181; } // WIT
+              else if (tz === 'Asia/Singapore') { tzLat = 1.3521; tzLng = 103.8198; }
+              else { tzLat = 1.0456; tzLng = 104.0305; } // Default Batam
+            }
+
+            const isBatamFallback = tzLat === 1.0456;
+            getFromAPI(tzLat, tzLng, isBatamFallback); // Fallback Profile/Timezone/Batam
+            toast(`⚠️ GPS Ditolak. Menggunakan zona waktu ${fallbackLat !== null ? 'Profil' : (isBatamFallback ? 'Batam (Default)' : tz)}. Mohon izinkan lokasi.`);
           }
         );
       } else {

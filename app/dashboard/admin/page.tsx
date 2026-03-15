@@ -29,6 +29,8 @@ type SystemStats = {
 
 function AdminDashboardContent() {
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [roleRequests, setRoleRequests] = useState<any[]>([]);
+  const [isProcessingRequest, setIsProcessingRequest] = useState<string | null>(null);
   const [stats, setStats] = useState<SystemStats>({ totalUsers: 0, totalStudents: 0, totalTeachers: 0, totalAdmins: 0, totalXPGlobal: 0 });
   const [loading, setLoading] = useState(true);
   const [adminName, setAdminName] = useState('');
@@ -46,6 +48,17 @@ function AdminDashboardContent() {
         return;
       }
       setAdminName(profile.displayName || u.displayName || 'Admin');
+
+      // Listen to pending role requests
+      const requestsRef = collection(db, 'role_requests');
+      const qReq = query(requestsRef, where('status', '==', 'pending'));
+      const unsubReq = onSnapshot(qReq, (snap) => {
+        const reqs: any[] = [];
+        snap.docs.forEach(doc => {
+          reqs.push({ id: doc.id, ...doc.data() });
+        });
+        setRoleRequests(reqs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      });
 
       // Real-time listener on all users
       const usersRef = collection(db, 'users');
@@ -92,11 +105,31 @@ function AdminDashboardContent() {
         // We will let the user see a blank table but at least they won't be stuck loading
       });
 
-      return () => unsub();
+      return () => {
+        unsub();
+        unsubReq();
+      };
     });
 
     return () => unsubAuth();
   }, [router]);
+
+  const handleRoleAction = async (email: string, action: 'approve' | 'reject') => {
+    setIsProcessingRequest(email);
+    try {
+      const res = await fetch('/api/admin/role-request', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, action, adminUid: auth.currentUser?.uid })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to process request');
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setIsProcessingRequest(null);
+    }
+  };
 
   const filteredUsers = users.filter(u => {
     const matchRole = roleFilter === 'all' || u.role === roleFilter;
@@ -164,6 +197,47 @@ function AdminDashboardContent() {
             </div>
           ))}
         </div>
+
+        {/* Pending Approvals Queue */}
+        {roleRequests.length > 0 && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+            <h2 className="text-xl font-bold flex items-center gap-2 mb-4 text-amber-500">
+              <span className="material-symbols-outlined">how_to_reg</span>
+              Pending Staff Approvals
+            </h2>
+            <div className="grid gap-4">
+              {roleRequests.map(req => (
+                <div key={req.id} className="bg-slate-900 border border-amber-500/20 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-amber-500/50 transition-colors">
+                  <div>
+                    <h3 className="font-bold text-white">{req.displayName}</h3>
+                    <p className="text-sm text-slate-400">{req.email}</p>
+                    <p className="text-xs text-amber-500 mt-1 uppercase tracking-wider font-bold">Requests: {req.requestedRole}</p>
+                  </div>
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                    <button 
+                      onClick={() => handleRoleAction(req.email, 'approve')}
+                      disabled={isProcessingRequest === req.email}
+                      className="flex-1 md:flex-none px-4 py-2 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {isProcessingRequest === req.email ? (
+                        <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+                      ) : (
+                        <><span className="material-symbols-outlined text-[16px]">check_circle</span> Approve</>
+                      )}
+                    </button>
+                    <button 
+                      onClick={() => handleRoleAction(req.email, 'reject')}
+                      disabled={isProcessingRequest === req.email}
+                      className="flex-1 md:flex-none px-4 py-2 bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 font-bold rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">cancel</span> Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* User Management Table */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">

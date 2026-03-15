@@ -38,22 +38,11 @@ export async function POST(request: Request) {
 
     if (!userSnap.exists) {
       // ═══════════════════════════════════════════════════════
-      // THE WHITELIST CHECK (Anti-Catch-22 / RBAC Deadlock Breaker)
+      // DEFAULT ASSIGNMENT (Appoval Queue System Phase 15)
       // ═══════════════════════════════════════════════════════
-      // Before blindly stamping everyone as 'student', check if the
-      // Admin has pre-registered this email in the `whitelisted_staff`
-      // collection via Firebase Console. If found, assign their role.
-      let assignedRole = 'student'; // Default aman untuk publik
-
-      if (email) {
-        const staffRef = db.collection('whitelisted_staff').doc(email);
-        const staffSnap = await staffRef.get();
-
-        if (staffSnap.exists) {
-          assignedRole = staffSnap.data()?.role || 'teacher';
-          console.log(`[AUTH SYNC] Staff Whitelist Matched! Assigning role: ${assignedRole} for ${email}`);
-        }
-      }
+      // All new users default to 'student'. To escalate, they must 
+      // request access via the Staff Login Gateway.
+      const assignedRole = 'student';
 
       // 5. Buat Dokumen Pengguna dengan Role yang Dinamis
       await userRef.set({

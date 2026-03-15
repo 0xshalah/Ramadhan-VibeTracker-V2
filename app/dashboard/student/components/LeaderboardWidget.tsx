@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useVibeStore } from '@/store/useVibeStore';
 
@@ -17,13 +17,31 @@ export default function LeaderboardWidget() {
   const [loading, setLoading] = useState(true);
   const currentUser = useVibeStore((state) => state.user);
 
-  // THE 1-READ MIRACLE: 1000 klien membaca 1 dokumen = 1 Document Read
+  // THE 1-READ MIRACLE with CLIENT-SIDE FALLBACK
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'metadata', 'leaderboard_global'), (snapshot) => {
-      if (snapshot.exists()) {
+      if (snapshot.exists() && Array.isArray(snapshot.data().top100) && snapshot.data().top100.length > 0) {
         setTopUsers(snapshot.data().top100 || []);
+        setLoading(false);
+      } else {
+        // [FALLBACK] Cloud Function not deployed — query users directly
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, orderBy('totalXP', 'desc'), limit(10));
+        getDocs(q).then((snap) => {
+          const fallback: LeaderboardEntry[] = snap.docs.map(d => {
+            const data = d.data();
+            return {
+              uid: d.id,
+              displayName: data.displayName || 'Anonymous',
+              photoURL: data.photoURL || '',
+              totalXP: data.totalXP || 0,
+              role: data.role || 'student',
+            };
+          });
+          setTopUsers(fallback);
+          setLoading(false);
+        }).catch(() => setLoading(false));
       }
-      setLoading(false);
     });
     return () => unsub();
   }, []);

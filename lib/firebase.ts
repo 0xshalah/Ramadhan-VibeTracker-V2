@@ -175,25 +175,37 @@ export const getLeaderboardLive = (callback: (entries: (UserProfile & { uid: str
   // This reduces Firestore reads from 20 → 1 per leaderboard view.
   const docRef = doc(db, 'metadata', 'leaderboard_global');
   return onSnapshot(docRef, (snapshot) => {
-    if (snapshot.exists()) {
+    if (snapshot.exists() && Array.isArray(snapshot.data().top100) && snapshot.data().top100.length > 0) {
       const data = snapshot.data();
-      const top100: (UserProfile & { uid: string })[] = Array.isArray(data.top100)
-        ? data.top100.map((entry: Record<string, unknown>) => ({
+      const top100: (UserProfile & { uid: string })[] = data.top100.map((entry: Record<string, unknown>) => ({
             uid: (entry.uid as string) || '',
             displayName: (entry.displayName as string) || 'Anonymous',
             photoURL: (entry.photoURL as string) || null,
             totalXP: (entry.totalXP as number) || 0,
             streak: (entry.streak as number) || 0,
             role: 'student' as const,
-          } as UserProfile & { uid: string }))
-        : [];
+          } as UserProfile & { uid: string }));
       callback(top100);
     } else {
-      // console.warn('[LEADERBOARD] metadata/leaderboard_global document does not exist yet.');warn
-      callback([]);
+      // [FALLBACK] Cloud Function not deployed yet — query users directly
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, orderBy('totalXP', 'desc'), limit(100));
+      getDocs(q).then((snap) => {
+        const fallbackEntries: (UserProfile & { uid: string })[] = snap.docs.map(d => {
+          const data = d.data();
+          return {
+            uid: d.id,
+            displayName: data.displayName || 'Anonymous',
+            photoURL: data.photoURL || null,
+            totalXP: data.totalXP || 0,
+            streak: data.streak || 0,
+            role: (data.role || 'student') as 'student',
+          } as UserProfile & { uid: string };
+        });
+        callback(fallbackEntries);
+      }).catch(() => callback([]));
     }
   }, (error) => {
-    // console.warn('[LEADERBOARD] onSnapshot error:', error.message);warn
     callback([]);
   });
 };
