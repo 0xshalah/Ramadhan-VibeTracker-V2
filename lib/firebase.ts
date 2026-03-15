@@ -3,6 +3,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, User, updateProf
 import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, deleteDoc, writeBatch, addDoc, serverTimestamp, orderBy, limit, onSnapshot, updateDoc, Unsubscribe, DocumentData, increment } from "firebase/firestore";
 import { getMessaging, Messaging } from "firebase/messaging";
 import { DailyProgressSchema, UserProfileSchema, type DailyProgress, type UserProfile, type AppNotification } from "./schemas";
+import { useVibeStore } from '@/store/useVibeStore';
 
 // ═══════════════════════════════════════════════════════
 // INITIALIZATION
@@ -23,6 +24,12 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
+
+// [THE FIX] Force Google to always show the account selection screen
+// This prevents automatic login to the previous account after logout.
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 // Messaging (Client-side only)
 export const messaging: Messaging | null = typeof window !== 'undefined' ? getMessaging(app) : null;
@@ -94,7 +101,24 @@ export const loginWithGoogle = async (): Promise<User & { role: string }> => {
 };
 
 
-export const logout = (): Promise<void> => signOut(auth);
+export const logout = async (): Promise<boolean> => {
+  try {
+    // 1. Terminate Firebase session
+    await signOut(auth);
+    
+    // 2. Clear Global Store (resets UI residues)
+    const store = useVibeStore.getState();
+    if (store.setUser) store.setUser(null);
+    if (store.setUserRole) store.setUserRole('student');
+    if (store.setSadaqah) store.setSadaqah(false);
+    if (store.setTotalXP) store.setTotalXP(0);
+    
+    return true;
+  } catch (error) {
+    console.error("Logout failed:", error);
+    return false;
+  }
+};
 
 // ═══════════════════════════════════════════════════════
 // DATA FETCHERS (with Zod Runtime Validation)
