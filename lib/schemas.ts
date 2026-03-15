@@ -43,6 +43,9 @@ export const UserProfileSchema = z.object({
   classCode: z.string().optional(),
   managedClass: z.string().optional(),
   dailyXP: z.record(z.string(), z.number()).optional(),
+  totalXP: z.number().nonnegative().optional(),
+  streak: z.number().nonnegative().optional(),
+  lastActivity: z.string().optional(),
   lastLogin: z.string().optional(),
 });
 

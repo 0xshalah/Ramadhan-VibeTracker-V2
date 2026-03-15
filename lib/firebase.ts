@@ -169,6 +169,25 @@ export const getMyStudentsLive = (classCode: string, callback: (students: (UserP
   });
 };
 
+export const getLeaderboardLive = (callback: (entries: (UserProfile & { uid: string })[]) => void): Unsubscribe => {
+  const q = query(
+    collection(db, 'users'),
+    where('role', '==', 'student'),
+    orderBy('totalXP', 'desc'),
+    limit(20)
+  );
+  return onSnapshot(q, (snapshot) => {
+    const entries = snapshot.docs.map(d => {
+      const raw = d.data();
+      return { uid: d.id, ...raw } as UserProfile & { uid: string };
+    });
+    callback(entries);
+  }, (error) => {
+    console.warn('[LEADERBOARD] onSnapshot error (index may be needed):', error.message);
+    callback([]);
+  });
+};
+
 // Alias for backwards compatibility
 export const getMyChildren = async (parentEmail: string): Promise<(UserProfile & { uid: string })[]> => {
   try {
