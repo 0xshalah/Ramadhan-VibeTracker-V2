@@ -17,35 +17,29 @@ export async function POST(request: Request) {
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    // 2. THE ATOMIC FIX: Pure Randomness + Cache Bypass
-    const atomicId = Math.random().toString(36).substring(2, 15).toUpperCase() + Date.now().toString().slice(-4);
-    
-    // 3. Headless API Payload Construction
-    const mayarPayload: any = {
-      // name is often used as a unique slug. We use a pure random ID here.
-      name: `SADAQAH-${atomicId}`, 
-      amount: Math.floor(Number(amount)),
-      description: `Ramadan Donation Ref: ${atomicId}`,
-      customer_name: (name && name !== "Anonymous") ? name : "Blessed Donor",
-      
-      // Required fields at root
-      email: email, 
-      mobile: "081234567890", // Static valid mobile to avoid formatting rejection
-      
-      // Secondary fields for backup
-      customer_email: email,
-      customer_mobile: "081234567890",
+    // 2. THE MINIMALIST FIX: Maximum Uniqueness, Minimal Fields
+    const hexId = Math.random().toString(16).substring(2, 14).toUpperCase();
+    const trulyRandomMobile = `08${Math.floor(1000000000 + Math.random() * 9000000000)}`;
 
-      redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success&oid=${atomicId}`,
+    // 3. Headless API Payload Construction
+    // We remove redundant fields and extra prefixes that might trigger slug collisions
+    const mayarPayload: any = {
+      name: `TX${hexId}`, 
+      amount: Math.floor(Number(amount)),
+      description: `Donation ${hexId}`,
+      customer_name: name || "Blessed Donor",
+      email: email, 
+      mobile: trulyRandomMobile, 
+      redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success&trx=${hexId}`,
       metadata: {
-        atomicId: atomicId,
-        v: "4.0"
+        hexId: hexId,
+        source: "VBT-V2"
       }
     };
 
-    console.log("[MAYAR ATOMIC FIX] Payload:", JSON.stringify(mayarPayload, null, 2));
+    console.log("[MAYAR MINIMALIST FIX] Payload:", JSON.stringify(mayarPayload, null, 2));
 
-    // 4. Mayar API Invocation with NO-CACHE headers
+    // 4. Mayar API Invocation with NO-CACHE
     const mayarResponse = await fetch('https://api.mayar.id/hl/v1/payment/create', {
       method: 'POST',
       headers: {
@@ -53,11 +47,9 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(mayarPayload),
-      // CRITICAL: Force Next.js to NOT cache this specific API call
-      cache: 'no-store',
-      // @ts-ignore
-      next: { revalidate: 0 }
-    } as any);
+      // Fix: Only use cache: 'no-store' to avoid Next.js warnings
+      cache: 'no-store'
+    });
 
     const data = await mayarResponse.json();
 
