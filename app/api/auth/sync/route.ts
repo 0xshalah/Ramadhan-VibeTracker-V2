@@ -16,15 +16,14 @@ const db = admin.firestore();
 
 export async function POST(request: Request) {
   try {
-    // 2. Validasi Bearer Token (Sangat Krusial!)
-    // Kita harus memastikan yang memanggil API ini benar-benar user yang sedang login di Firebase Auth klien.
+    // 2. Validasi Bearer Token
     const authHeader = request.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized Access' }, { status: 401 });
     }
 
     const idToken = authHeader.split('Bearer ')[1];
-    
+
     // Verifikasi Token ke Google Server
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const uid = decodedToken.uid;
@@ -38,39 +37,60 @@ export async function POST(request: Request) {
     const userSnap = await userRef.get();
 
     if (!userSnap.exists) {
-      // THE CREATE LOGIC
+      // ═══════════════════════════════════════════════════════
+      // THE WHITELIST CHECK (Anti-Catch-22 / RBAC Deadlock Breaker)
+      // ═══════════════════════════════════════════════════════
+      // Before blindly stamping everyone as 'student', check if the
+      // Admin has pre-registered this email in the `whitelisted_staff`
+      // collection via Firebase Console. If found, assign their role.
+      let assignedRole = 'student'; // Default aman untuk publik
+
+      if (email) {
+        const staffRef = db.collection('whitelisted_staff').doc(email);
+        const staffSnap = await staffRef.get();
+
+        if (staffSnap.exists) {
+          assignedRole = staffSnap.data()?.role || 'teacher';
+          console.log(`[AUTH SYNC] Staff Whitelist Matched! Assigning role: ${assignedRole} for ${email}`);
+        }
+      }
+
+      // 5. Buat Dokumen Pengguna dengan Role yang Dinamis
       await userRef.set({
         email: email,
-        displayName: displayName || 'Siswa Baru',
+        displayName: displayName || 'New User',
         photoURL: photoURL || '',
-        role: 'student', // TERKUNCI: Paksa role default di server. Klien tidak bisa hack ini.
+        role: assignedRole, // Dynamically locked based on Whitelist!
         totalXP: 0,
         streak: 0,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         lastLogin: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      // 5. Klaim Donasi yang Tertunda (Idempotency Resolver)
-      // Jika user pernah transfer via Mayar sebelum mendaftar, pindahkan datanya sekarang!
-      const unclaimedRef = db.collection('unclaimed_donations').where('email', '==', email);
-      const unclaimedSnap = await unclaimedRef.get();
+      // 6. Klaim Donasi yang Tertunda (Idempotency Resolver)
+      if (email) {
+        const unclaimedRef = db.collection('unclaimed_donations').where('email', '==', email);
+        const unclaimedSnap = await unclaimedRef.get();
 
-      if (!unclaimedSnap.empty) {
-        const batch = db.batch();
-        unclaimedSnap.docs.forEach(doc => {
-          const targetRef = db.collection('users').doc(uid).collection('sadaqah').doc(doc.id);
-          batch.set(targetRef, { ...doc.data(), claimedAt: admin.firestore.FieldValue.serverTimestamp() });
-          batch.delete(doc.ref); // Hapus dari antrean
-        });
-        await batch.commit();
-        console.log(`[AUTH SYNC] Berhasil mengklaim donasi untuk: ${email}`);
+        if (!unclaimedSnap.empty) {
+          const batch = db.batch();
+          unclaimedSnap.docs.forEach(doc => {
+            const targetRef = db.collection('users').doc(uid).collection('sadaqah').doc(doc.id);
+            batch.set(targetRef, { ...doc.data(), claimedAt: admin.firestore.FieldValue.serverTimestamp() });
+            batch.delete(doc.ref);
+          });
+          await batch.commit();
+          console.log(`[AUTH SYNC] Claimed pending donations for: ${email}`);
+        }
       }
 
-      console.log(`[AUTH SYNC] Pengguna baru terdaftar: ${email}`);
-      return NextResponse.json({ success: true, message: 'User created successfully', role: 'student' }, { status: 201 });
+      console.log(`[AUTH SYNC] New user registered as '${assignedRole}': ${email}`);
+      return NextResponse.json({ success: true, message: 'User created successfully', role: assignedRole }, { status: 201 });
     }
 
-    return NextResponse.json({ success: true, message: 'User already exists' }, { status: 200 });
+    // Existing user — return their current role
+    const existingRole = userSnap.data()?.role || 'student';
+    return NextResponse.json({ success: true, message: 'User already exists', role: existingRole }, { status: 200 });
 
   } catch (error) {
     console.error("[AUTH SYNC ERROR]", error);
