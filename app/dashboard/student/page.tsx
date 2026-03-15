@@ -414,7 +414,10 @@ export default function StudentDashboard() {
                   currentDay={hijriDayInt || 1} 
                   totalDays={30} 
                   history={streakHistory}
-                  onNodeClick={(day, data) => setSelectedDayStats({ day, ...data })}
+                  onNodeClick={(day, data) => {
+                    toast.info(`Membuka Detail Ibadah Hari ke-${day}`);
+                    setSelectedDayStats({ day, ...data });
+                  }}
                 />
               </ErrorBoundary>
 

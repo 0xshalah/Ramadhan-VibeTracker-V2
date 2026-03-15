@@ -79,23 +79,23 @@ export default function StudentAnalyticsPage() {
   };
 
   const handleAssignTask = async () => {
-    if (!studentId) return;
-    const taskText = window.prompt("Masukkan instruksi tugas khusus untuk siswa ini:");
-    if (!taskText || taskText.trim() === "") return;
+    const taskMsg = window.prompt("Masukkan instruksi tugas khusus:");
+    if (!taskMsg || !studentId) return;
+
+    const taskData = {
+      id: Date.now().toString(),
+      title: "📋 Tugas Baru dari Guru",
+      body: taskMsg,
+      time: new Date().toLocaleTimeString('id-ID'),
+      isRead: false,
+      createdAt: new Date().toISOString()
+    };
 
     try {
-      const { collection, addDoc } = await import('firebase/firestore');
-      const { db } = await import('@/lib/firebase');
-      
-      const tasksRef = collection(db, 'users', studentId, 'custom_tasks');
-      await addDoc(tasksRef, {
-        task: taskText.trim(),
-        assignedAt: new Date().toISOString(),
-        status: 'pending',
-        assignedBy: auth.currentUser?.email || 'Teacher'
-      });
-      
-      toast.success(`Tugas khusus berhasil dikirim ke dashboard siswa!`);
+      const { saveStudentTask } = await import('@/lib/firebase');
+      const success = await saveStudentTask(studentId as string, taskData);
+      if (success) toast.success("Tugas terkirim ke database siswa!");
+      else throw new Error("Database failed");
     } catch (e) {
       toast.error('Gagal merilis tugas khusus.');
     }

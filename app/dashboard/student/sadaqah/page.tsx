@@ -120,11 +120,21 @@ function SadaqahContent() {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to generate secure link');
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Gagal membuat link pembayaran');
+      }
 
-      window.location.href = data.url;
+      // Redirect user ke halaman Mayar!
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("URL Pembayaran kosong");
+      }
+
     } catch (error: any) {
-      toast.error(error.message || 'Payment system unavailable');
+      console.error("Checkout Error:", error);
+      toast.error(error.message || 'Sistem pembayaran sedang gangguan');
       setIsProcessing(false);
       localStorage.removeItem('vibe_pending_sadaqah');
     }

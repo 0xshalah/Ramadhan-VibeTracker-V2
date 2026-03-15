@@ -41,6 +41,10 @@ export const UserProfileSchema = z.object({
   photoURL: z.string().nullable().optional(),
   role: z.enum(['student', 'teacher', 'parent', 'admin']).default('student'),
   targetTilawah: z.number().min(1).optional(),
+  preferences: z.object({
+    prayerReminders: z.boolean().default(true),
+    subuhWakeup: z.boolean().default(false),
+  }).optional(),
   parentEmail: z.string().email().optional().or(z.literal('')),
   classCode: z.string().optional(),
   managedClass: z.string().optional(),

@@ -368,3 +368,23 @@ export const saveNotificationToken = async (uid: string, fcmToken: string): Prom
     // console.error("[FCM] Error saving token:", error);error
   }
 };
+
+export const updateUserPreferences = async (uid: string, prefs: any) => {
+  try {
+    const userRef = doc(db, 'users', uid);
+    await updateDoc(userRef, { preferences: prefs });
+    return true;
+  } catch (e) { return false; }
+};
+
+export const saveStudentTask = async (studentId: string, task: any) => {
+  try {
+    const notifRef = collection(db, 'users', studentId, 'notifications');
+    await addDoc(notifRef, {
+      ...task,
+      timestamp: serverTimestamp(),
+      createdAt: getTimestamp(),
+    });
+    return true;
+  } catch (e) { return false; }
+};

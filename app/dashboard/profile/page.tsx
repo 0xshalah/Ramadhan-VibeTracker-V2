@@ -14,13 +14,19 @@ export default function ProfilePage() {
   const [quranTarget, setQuranTarget] = useState(12);
   const [isProcessingAvatar, setIsProcessingAvatar] = useState(false);
   const [isSavingTarget, setIsSavingTarget] = useState(false);
+  const [isSavingPrefs, setIsSavingPrefs] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  const [prefs, setPrefs] = useState({ prayerReminders: true, subuhWakeup: false });
   const router = useRouter();
 
   // Initialize from store
   useEffect(() => {
     if (user && (user as any).targetTilawah) {
       setQuranTarget((user as any).targetTilawah);
+    }
+    if (user && (user as any).preferences) {
+      setPrefs((user as any).preferences);
     }
   }, [user]);
 
@@ -39,6 +45,25 @@ export default function ProfilePage() {
       toast.error("Gagal menyimpan target.");
     } finally {
       setIsSavingTarget(false);
+    }
+  };
+  
+  const handleTogglePref = async (key: 'prayerReminders' | 'subuhWakeup') => {
+    if (!user) return;
+    const newPrefs = { ...prefs, [key]: !prefs[key] };
+    setPrefs(newPrefs);
+    setIsSavingPrefs(true);
+    try {
+      const { updateUserPreferences } = await import('@/lib/firebase');
+      const success = await updateUserPreferences(user.uid, newPrefs);
+      if (success) {
+        setUser({ ...user, preferences: newPrefs } as any);
+        toast.success("Settings updated! ✨");
+      }
+    } catch (e) {
+      toast.error("Failed to update settings.");
+    } finally {
+      setIsSavingPrefs(false);
     }
   };
 
@@ -187,7 +212,13 @@ export default function ProfilePage() {
                 <p className="text-xs text-slate-400 mt-1">Get notified for each prayer time</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={prefs.prayerReminders} 
+                  onChange={() => handleTogglePref('prayerReminders')}
+                  disabled={isSavingPrefs}
+                />
                 <div className="w-14 h-7 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500"></div>
               </label>
             </div>
@@ -200,7 +231,13 @@ export default function ProfilePage() {
                 <p className="text-xs text-slate-400 mt-1">Enable alarm 15 mins before Subuh</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={prefs.subuhWakeup}
+                  onChange={() => handleTogglePref('subuhWakeup')}
+                  disabled={isSavingPrefs}
+                />
                 <div className="w-14 h-7 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500"></div>
               </label>
             </div>
