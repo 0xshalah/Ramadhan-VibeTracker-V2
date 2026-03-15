@@ -95,3 +95,68 @@ exports.updateGlobalLeaderboard = functions.firestore
       }, { merge: true });
     });
   });
+
+// ============================================================================
+// ⏰ CRON JOBS: THE VIBE AUTOMATION ENGINE (Requires Blaze Plan)
+// ============================================================================
+
+// 1. STREAK DECAY ENGINE (Berjalan setiap 23:59 WIB)
+// Menghukum siswa yang tidak beribadah dengan me-reset streak mereka menjadi 0.
+exports.dailyStreakDecay = functions.pubsub.schedule('59 23 * * *')
+  .timeZone('Asia/Jakarta')
+  .onRun(async (context) => {
+    const today = new Date().toISOString().split('T')[0];
+    const usersRef = db.collection('users');
+    const snapshot = await usersRef.where('role', '==', 'student').get();
+
+    const batch = db.batch();
+    let resetCount = 0;
+
+    snapshot.docs.forEach(doc => {
+      const userData = doc.data();
+      // Jika lastActivity bukan hari ini, reset streak!
+      if (!userData.lastActivity || !userData.lastActivity.startsWith(today)) {
+        batch.update(doc.ref, { streak: 0 });
+        resetCount++;
+      }
+    });
+
+    if (resetCount > 0) {
+      await batch.commit();
+      console.log(`[DECAY ENGINE] Mereset streak untuk ${resetCount} siswa yang bolos ibadah.`);
+    }
+    return null;
+  });
+
+// 2. SUBUH PUSH NOTIFICATION (Berjalan setiap 04:00 WIB)
+// Membangunkan seluruh siswa yang memiliki FCM Token.
+exports.subuhReminder = functions.pubsub.schedule('00 04 * * *')
+  .timeZone('Asia/Jakarta')
+  .onRun(async (context) => {
+    const usersRef = db.collection('users');
+    // Hanya ambil siswa yang menyalakan notifikasi dan memiliki token
+    const snapshot = await usersRef
+      .where('role', '==', 'student')
+      .where('notificationsEnabled', '==', true)
+      .get();
+
+    const tokens = [];
+    snapshot.docs.forEach(doc => {
+      if (doc.data().fcmToken) tokens.push(doc.data().fcmToken);
+    });
+
+    if (tokens.length > 0) {
+      const payload = {
+        notification: {
+          title: '🌙 Waktu Sahur Berakhir!',
+          body: 'Segera bersiap untuk Sholat Subuh. Jangan putus streak-mu hari ini!',
+        },
+        tokens: tokens, // Targetkan ke array tokens ini
+      };
+
+      const response = await admin.messaging().sendMulticast(payload);
+      console.log(`[NOTIF ENGINE] Berhasil mengirim ${response.successCount} notifikasi Subuh.`);
+    }
+    return null;
+  });
+
