@@ -8,7 +8,7 @@ import { updateUserAvatar, deleteUserAccount, logout, auth } from '@/lib/firebas
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
-  const { userRole, setUser, setUserRole } = useVibeStore();
+  const { userRole, setUser, setUserRole, photoURL: storePhoto, setPhotoURL } = useVibeStore();
   const [user, setLocalUser] = useState<any>(null);
   const [quranTarget, setQuranTarget] = useState(12);
   const [avatar, setAvatar] = useState("");
@@ -17,23 +17,33 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((u) => {
+    const unsubscribe = auth.onAuthStateChanged(async (u) => {
       if (u) {
         setLocalUser(u);
-        setAvatar(u.photoURL || "");
+        
+        // [FIX] Fetch high-res profile from Firestore
+        const { getUserProfile } = await import('@/lib/firebase');
+        const profile = await getUserProfile(u.uid);
+        if (profile?.photoURL) {
+          setAvatar(profile.photoURL);
+          setPhotoURL(profile.photoURL);
+        } else {
+          setAvatar(u.photoURL || "");
+          setPhotoURL(u.photoURL || null);
+        }
       } else {
         router.push('/');
       }
     });
     return () => unsubscribe();
-  }, [router]);
+  }, [router, setPhotoURL]);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
-    if (file.size > 1024 * 1024) {
-      toast.error("File is too large! Maximum 1MB allowed.");
+    if (file.size > 512 * 1024) {
+      toast.error("File items is too large! Maximum 500KB allowed for Firestore safety.");
       return;
     }
 
@@ -46,6 +56,8 @@ export default function ProfilePage() {
         loading: 'Saving profile photo...',
         success: (success) => {
           if (!success) throw new Error('Database update failed');
+          // Update global store so Sidebar/Header reflect the change
+          setPhotoURL(base64String);
           return "Profile photo updated successfully! 📸";
         },
         error: "Failed to save photo."

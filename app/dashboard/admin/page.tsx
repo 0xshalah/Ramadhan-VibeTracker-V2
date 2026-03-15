@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { auth, db, getUserProfile, logout } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import { useVibeStore } from '@/store/useVibeStore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -52,6 +53,7 @@ function AdminDashboardContent() {
   const [isSeeding, setIsSeeding] = useState(false);
   const [isPurging, setIsPurging] = useState(false);
   const [showSimPanel, setShowSimPanel] = useState(false);
+  const { photoURL: storePhoto, setPhotoURL } = useVibeStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -64,6 +66,13 @@ function AdminDashboardContent() {
         return;
       }
       setAdminName(profile.displayName || u.displayName || 'Admin');
+      
+      // [FIX] Sync store with high-res photo
+      if (profile.photoURL) {
+        setPhotoURL(profile.photoURL);
+      } else {
+        setPhotoURL(u.photoURL || null);
+      }
 
       // Listen to pending role requests
       const requestsRef = collection(db, 'role_requests');
@@ -240,7 +249,7 @@ function AdminDashboardContent() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 mb-8 flex flex-col md:flex-row items-center gap-6 shadow-sm">
           <div className="relative w-20 h-20 shrink-0">
             <img 
-              src={auth.currentUser?.photoURL || "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin"} 
+              src={storePhoto || "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin"} 
               alt="Admin Avatar" 
               className="w-full h-full rounded-2xl object-cover border-2 border-indigo-100 dark:border-slate-700"
             />
@@ -263,13 +272,16 @@ function AdminDashboardContent() {
                      const base64 = reader.result as string;
                      try {
                         if(auth.currentUser) {
-                          const { updateProfile } = await import('firebase/auth');
-                          const { doc, updateDoc } = await import('firebase/firestore');
-                          await updateProfile(auth.currentUser, { photoURL: base64 });
-                          await updateDoc(doc(db, 'users', auth.currentUser.uid), { photoURL: base64 });
-                          toast.success("Admin photo updated! Refresh to see changes globally.");
+                          const { updateUserAvatar } = await import('@/lib/firebase');
+                          const success = await updateUserAvatar(auth.currentUser.uid, base64);
+                          if (success) {
+                            setPhotoURL(base64);
+                            toast.success("Admin photo updated! ✨");
+                          } else {
+                            toast.error("Upload failed");
+                          }
                         }
-                     } catch(err) { toast.error("Upload failed"); }
+                     } catch(err) { toast.error("System error during upload"); }
                    };
                    reader.readAsDataURL(file);
                  } else {

@@ -8,9 +8,7 @@ interface SidebarProps {
 
 export default function Sidebar({ onLogout }: SidebarProps) {
   // Eliminasi Prop Drilling: Subscribe langsung ke store
-  const totalXP = useVibeStore((state) => state.totalXP);
-  const user = useVibeStore((state) => state.user);
-  const userRole = useVibeStore((state) => state.userRole);
+  const { totalXP, user, userRole, photoURL: storePhoto } = useVibeStore();
 
   return (
     <aside className="w-72 bg-white dark:bg-slate-900 border-r border-sage-200 dark:border-slate-800 flex-col hidden lg:flex">
@@ -67,8 +65,8 @@ export default function Sidebar({ onLogout }: SidebarProps) {
       <div className="p-6 border-t border-sage-100 dark:border-slate-800">
         <div className="bg-sage-50 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-sage-200 dark:bg-slate-700 overflow-hidden shrink-0">
-            {user?.photoURL ? (
-              <img className="w-full h-full object-cover" alt="Student profile avatar" src={user.photoURL} />
+            {storePhoto ? (
+              <img className="w-full h-full object-cover" alt="Student profile avatar" src={storePhoto} />
             ) : (
               <span className="material-symbols-outlined w-full h-full flex items-center justify-center text-sage-400">person</span>
             )}

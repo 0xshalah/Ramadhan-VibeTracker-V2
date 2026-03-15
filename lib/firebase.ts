@@ -173,18 +173,22 @@ export const syncSadaqahImpact = async (uid: string, amount: number) => {
 
 export const updateUserAvatar = async (uid: string, base64Photo: string) => {
   try {
-    // 1. Update Firebase Auth Profile
-    if (auth.currentUser) {
-      await updateProfile(auth.currentUser, { photoURL: base64Photo });
-    }
+    // [FIX] REMOVED Auth Update because of 2048 char limit on photoURL
+    // Base64 strings are too large for the Auth object.
     
-    // 2. Update Firestore User Document
+    // 1. Update Firestore User Document
+    console.log("[PROFILE] Updating Firestore Document for UID:", uid);
     const userRef = doc(db, 'users', uid);
     await updateDoc(userRef, { photoURL: base64Photo });
     
+    console.log("[PROFILE] Avatar sync success!");
     return true;
-  } catch (error) {
-    console.error("[PROFILE] Failed to update avatar:", error);
+  } catch (error: any) {
+    console.error("[PROFILE] Failed to update avatar. Error details:", error);
+    // Log specifically if it's a size issue (though Firestore doesn't always give a clear size error)
+    if (error?.code === 'resource-exhausted' || error?.message?.includes('too large')) {
+      console.error("[PROFILE] CRITICAL: Base64 string might be exceeding Firestore 1MB doc limit.");
+    }
     return false;
   }
 };
