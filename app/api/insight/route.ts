@@ -1,22 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { Redis } from '@upstash/redis';
-import { Ratelimit } from '@upstash/ratelimit';
-
-// [ENTERPRISE] Inisialisasi Redis untuk Rate Limiting
-let ratelimit: Ratelimit | null = null;
-if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-  const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-  });
-
-  ratelimit = new Ratelimit({
-    redis: redis,
-    limiter: Ratelimit.slidingWindow(3, '10 s'),
-    analytics: true,
-  });
-}
+import { ratelimit } from '@/lib/ratelimit';
 
 // 1. Zod Schema untuk memblokir payload sampah yang menguras token
 const ProgressContextSchema = z.object({
@@ -35,25 +19,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized Access Denied' }, { status: 401 });
     }
 
-    // [LAYER 2] Rate Limiting (jika Redis tersedia)
-    if (ratelimit) {
-      const identifier = authHeader.split('Bearer ')[1]?.substring(0, 32) || 'anonymous';
-      const { success, limit, reset, remaining } = await ratelimit.limit(`ratelimit_insight_${identifier}`);
+    // [LAYER 2] Rate Limiting
+    const identifier = authHeader.split('Bearer ')[1]?.substring(0, 32) || 'anonymous';
+    const { success, limit, reset, remaining } = await ratelimit.limit(`ratelimit_insight_${identifier}`);
 
-      if (!success) {
-        console.warn(`[SECURITY] Rate limit exceeded for identifier: ${identifier.substring(0, 8)}...`);
-        return NextResponse.json(
-          { insight: "Sabar, spiritualitas butuh ketenangan. Tunggu sejenak sebelum meminta insight baru. 🧘" },
-          {
-            status: 429,
-            headers: {
-              'X-RateLimit-Limit': limit.toString(),
-              'X-RateLimit-Remaining': remaining.toString(),
-              'X-RateLimit-Reset': reset.toString()
-            }
+    if (!success) {
+      console.warn(`[SECURITY] Rate limit exceeded for identifier: ${identifier.substring(0, 8)}...`);
+      return NextResponse.json(
+        { insight: "Sabar, spiritualitas butuh ketenangan. Tunggu sejenak sebelum meminta insight baru. 🧘" },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': limit.toString(),
+            'X-RateLimit-Remaining': remaining.toString(),
+            'X-RateLimit-Reset': reset.toString()
           }
-        );
-      }
+        }
+      );
     }
 
     const apiKey = process.env.ALIBABA_CLOUD_API_KEY;

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { ratelimit } from '@/lib/ratelimit';
 import * as admin from 'firebase-admin';
 
 // 1. Inisialisasi Admin SDK (Gunakan pola yang sama dengan Webhook Mayar)
@@ -16,6 +17,14 @@ const db = admin.firestore();
 
 export async function POST(request: Request) {
   try {
+    // [RATE LIMITING]
+    const ip = request.headers.get("x-forwarded-for") ?? "127.0.0.1";
+    const { success } = await ratelimit.limit(ip);
+    
+    if (!success) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     // 2. Validasi Bearer Token
     const authHeader = request.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
