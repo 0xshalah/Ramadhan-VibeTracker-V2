@@ -17,29 +17,30 @@ export async function POST(request: Request) {
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    // 2. THE MINIMALIST FIX: Maximum Uniqueness, Minimal Fields
-    const hexId = Math.random().toString(16).substring(2, 14).toUpperCase();
+    // 2. THE NUCLEAR FIX: Truly random across ALL fields
+    const randomId = Math.random().toString(36).substring(2, 12).toUpperCase();
+    const trulyRandomEmail = `donor-${randomId}@example.com`;
     const trulyRandomMobile = `08${Math.floor(1000000000 + Math.random() * 9000000000)}`;
+    const trulyRandomName = `Donor ${randomId}`;
 
     // 3. Headless API Payload Construction
-    // We remove redundant fields and extra prefixes that might trigger slug collisions
     const mayarPayload: any = {
-      name: `TX${hexId}`, 
+      name: `TRX-${Date.now()}-${randomId}`, 
       amount: Math.floor(Number(amount)),
-      description: `Donation ${hexId}`,
-      customer_name: name || "Blessed Donor",
-      email: email, 
+      description: `Ramadan Donation Ref: ${randomId}`,
+      customer_name: trulyRandomName,
+      email: trulyRandomEmail, 
       mobile: trulyRandomMobile, 
-      redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success&trx=${hexId}`,
+      redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success&test=${randomId}`,
       metadata: {
-        hexId: hexId,
-        source: "VBT-V2"
+        randomId: randomId,
+        isNuclearTest: true
       }
     };
 
-    console.log("[MAYAR MINIMALIST FIX] Payload:", JSON.stringify(mayarPayload, null, 2));
+    console.log("[MAYAR NUCLEAR TEST] Payload:", JSON.stringify(mayarPayload, null, 2));
 
-    // 4. Mayar API Invocation with NO-CACHE
+    // 4. Mayar API Invocation
     const mayarResponse = await fetch('https://api.mayar.id/hl/v1/payment/create', {
       method: 'POST',
       headers: {
@@ -47,7 +48,6 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(mayarPayload),
-      // Fix: Only use cache: 'no-store' to avoid Next.js warnings
       cache: 'no-store'
     });
 
