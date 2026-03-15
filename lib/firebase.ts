@@ -50,16 +50,44 @@ export const loginWithGoogle = async (): Promise<User & { role: string }> => {
   const userRef = doc(db, 'users', user.uid);
   const userSnap = await getDoc(userRef);
 
-  let userRole = 'student'; // Default aman
+  let userRole = 'student'; 
 
   if (userSnap.exists()) {
-    // PENGGUNA LAMA: Lakukan update (diizinkan oleh rules)
-    await updateDoc(userRef, { lastLogin: getTimestamp() });
-    userRole = userSnap.data().role || 'student';
+    // PENGGUNA LAMA (Bisa langsung update karena 'allow update' diizinkan jika bukan field krusial)
+    try {
+        await updateDoc(userRef, { lastLogin: serverTimestamp() });
+        userRole = userSnap.data()?.role || 'student';
+    } catch(e) {
+        console.warn("Gagal update lastLogin (mungkin firestore rules terlalu ketat), melanjutkan login...", e);
+        userRole = userSnap.data()?.role || 'student';
+    }
   } else {
-    // PENGGUNA BARU: JANGAN lakukan setDoc!
-    // Klien tidak punya izin 'create'. Cloud Functions yang akan membuatnya di background.
-    console.log("[AUTH] Pengguna baru terdeteksi. Menunggu Cloud Functions melakukan inisialisasi...");
+    // PENGGUNA BARU: Eksekusi BYPASS SPARK PLAN
+    console.log("[AUTH] Pengguna baru terdeteksi. Menghubungi Server Sync...");
+    
+    // 1. Dapatkan Token Keamanan Klien
+    const idToken = await user.getIdToken();
+
+    // 2. Tembakkan Payload ke Next.js Backend
+    const response = await fetch('/api/auth/sync', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}` // Kunci masuk ke API kita
+      },
+      body: JSON.stringify({
+        displayName: user.displayName,
+        photoURL: user.photoURL
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gagal menyinkronkan data pengguna baru. Server merespons: ${response.status}`);
+    }
+
+    const data = await response.json();
+    userRole = data.role || 'student';
+    console.log("[AUTH] Profil berhasil dibuat di Server!");
   }
 
   return Object.assign(user, { role: userRole });
