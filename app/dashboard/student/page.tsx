@@ -137,8 +137,16 @@ export default function StudentDashboard() {
           const data = doc.data();
           if (data.status !== 'SUCCESS') return false;
           
-          const donationTime = data.claimedAt ? new Date(data.claimedAt).getTime() : 
-                              (data.timestamp?.toDate ? data.timestamp.toDate().getTime() : 0);
+          // Handle both 'claimedAt' (from Auth Sync) and 'timestamp' (from Webhook)
+          let donationTime = 0;
+          if (data.claimedAt && typeof data.claimedAt.toDate === 'function') {
+            donationTime = data.claimedAt.toDate().getTime();
+          } else if (data.timestamp && typeof data.timestamp.toDate === 'function') {
+            donationTime = data.timestamp.toDate().getTime();
+          } else if (data.claimedAt || data.timestamp) {
+            // Fallback if they are stored as strings somehow
+            donationTime = new Date(data.claimedAt || data.timestamp).getTime();
+          }
                               
           return (now - donationTime) <= 86400000; 
         });

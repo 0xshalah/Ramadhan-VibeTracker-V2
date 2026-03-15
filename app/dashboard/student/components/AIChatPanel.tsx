@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { MessageSquare, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { auth } from '@/lib/firebase';
 import type { InsightPayload } from '@/lib/schemas';
 
 interface AIChatPanelProps {
@@ -27,15 +28,27 @@ export default function AIChatPanel({ progressData }: AIChatPanelProps) {
     setInput('');
 
     try {
+      const idToken = await auth.currentUser?.getIdToken();
+      if (!idToken) throw new Error("Unauthorized");
+
       const res = await fetch('/api/insight', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
         body: JSON.stringify({ progressData, userMessage: input })
       });
+      
       const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Insight failure");
+      }
+      
       setMessages([...newMsgs, { role: 'ai', content: data.insight }]);
-    } catch {
-      toast.error("AI is resting. Try again later.");
+    } catch (e: any) {
+      toast.error(e.message === "Unauthorized" ? "Silakan login ulang." : "AI is resting. Try again later.");
     }
   };
 
