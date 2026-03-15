@@ -10,6 +10,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
   // Eliminasi Prop Drilling: Subscribe langsung ke store
   const totalXP = useVibeStore((state) => state.totalXP);
   const user = useVibeStore((state) => state.user);
+  const userRole = useVibeStore((state) => state.userRole);
 
   return (
     <aside className="w-72 bg-white dark:bg-slate-900 border-r border-sage-200 dark:border-slate-800 flex-col hidden lg:flex">
@@ -43,6 +44,25 @@ export default function Sidebar({ onLogout }: SidebarProps) {
           <span className="material-symbols-outlined fill-1">person</span>
           <span>Profile</span>
         </Link>
+
+        {/* Conditional Role-Based Navigation */}
+        {(userRole === 'admin' || userRole === 'teacher') && (
+          <>
+            <div className="border-t border-sage-200 dark:border-slate-700 my-2" />
+            {userRole === 'admin' && (
+              <Link href="/dashboard/admin" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-indigo-50 hover:dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 font-semibold transition-colors">
+                <span className="material-symbols-outlined fill-1">admin_panel_settings</span>
+                <span>Admin Console</span>
+              </Link>
+            )}
+            {(userRole === 'admin' || userRole === 'teacher') && (
+              <Link href="/dashboard/teacher" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-amber-50 hover:dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 font-semibold transition-colors">
+                <span className="material-symbols-outlined fill-1">school</span>
+                <span>Teacher Dashboard</span>
+              </Link>
+            )}
+          </>
+        )}
       </nav>
       <div className="p-6 border-t border-sage-100 dark:border-slate-800">
         <div className="bg-sage-50 dark:bg-slate-800 p-4 rounded-2xl flex items-center gap-3">

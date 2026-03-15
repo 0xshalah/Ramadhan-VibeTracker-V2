@@ -3,12 +3,14 @@ import { User } from 'firebase/auth';
 
 interface VibeState {
   user: User | null;
+  userRole: string;
   totalXP: number;
   streak: number;
   verifiedSadaqah: boolean;
 
   // Actions
   setUser: (user: User | null) => void;
+  setUserRole: (role: string) => void;
   setTotalXP: (xp: number) => void;
   addXP: (amount: number) => void;
   setSadaqah: (status: boolean) => void;
@@ -16,11 +18,13 @@ interface VibeState {
 
 export const useVibeStore = create<VibeState>((set) => ({
   user: null,
+  userRole: 'student',
   totalXP: 0,
   streak: 0,
   verifiedSadaqah: false,
 
   setUser: (user) => set({ user }),
+  setUserRole: (role) => set({ userRole: role }),
   setTotalXP: (xp) => set({ totalXP: xp }),
   addXP: (amount) => set((state) => ({ totalXP: state.totalXP + amount })),
   setSadaqah: (status) => set({ verifiedSadaqah: status }),

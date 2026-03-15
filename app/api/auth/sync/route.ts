@@ -38,11 +38,19 @@ export async function POST(request: Request) {
 
     if (!userSnap.exists) {
       // ═══════════════════════════════════════════════════════
-      // DEFAULT ASSIGNMENT (Appoval Queue System Phase 15)
+      // AUTO-ADMIN BOOTSTRAP + APPROVAL QUEUE (Phase 19)
       // ═══════════════════════════════════════════════════════
-      // All new users default to 'student'. To escalate, they must 
-      // request access via the Staff Login Gateway.
-      const assignedRole = 'student';
+      // Super Admin emails are auto-promoted on first login to break
+      // the "chicken-and-egg" bootstrapping deadlock. All other users
+      // default to 'student' and must request escalation.
+      const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+      const isSuperAdmin = email ? superAdminEmails.includes(email.toLowerCase()) : false;
+      const assignedRole = isSuperAdmin ? 'admin' : 'student';
+
+      // If super admin, also set Custom Claims for JWT-level security
+      if (isSuperAdmin) {
+        await admin.auth().setCustomUserClaims(uid, { role: 'admin' });
+      }
 
       // 5. Buat Dokumen Pengguna dengan Role yang Dinamis
       await userRef.set({

@@ -42,6 +42,7 @@ export default function StudentDashboard() {
   const verifiedSadaqah = useVibeStore((state) => state.verifiedSadaqah);
   const setSadaqah = useVibeStore((state) => state.setSadaqah);
   const setTotalXP = useVibeStore((state) => state.setTotalXP);
+  const setUserRole = useVibeStore((state) => state.setUserRole);
   
   const [loadingContext, setLoadingContext] = useState(true);
 
@@ -105,6 +106,10 @@ export default function StudentDashboard() {
           if (profile.dailyXP) {
             const totalAccumulated = Object.values(profile.dailyXP).reduce((a, b) => (a as number) + (b as number), 0);
             setTotalXP(totalAccumulated as number);
+          }
+          // [PHASE 19] Sync role to Zustand Store for Sidebar Conditional Navigation
+          if (profile.role) {
+            setUserRole(profile.role);
           }
         }
         
