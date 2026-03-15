@@ -36,6 +36,9 @@ function AdminDashboardContent() {
   const [adminName, setAdminName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [isSeeding, setIsSeeding] = useState(false);
+  const [isPurging, setIsPurging] = useState(false);
+  const [showSimPanel, setShowSimPanel] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -139,6 +142,38 @@ function AdminDashboardContent() {
     return matchRole && matchSearch;
   });
 
+  const handleSeedData = async () => {
+    if (!confirm('Inject 15 demo users for leaderboard simulation?')) return;
+    setIsSeeding(true);
+    try {
+      const res = await fetch('/api/admin/seed-leaderboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminUid: auth.currentUser?.uid, count: 15 })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      alert(`✅ ${data.message}`);
+    } catch (err: any) { alert(`❌ ${err.message}`); }
+    finally { setIsSeeding(false); }
+  };
+
+  const handlePurgeSeed = async () => {
+    if (!confirm('Remove ALL seeded demo users?')) return;
+    setIsPurging(true);
+    try {
+      const res = await fetch('/api/admin/seed-leaderboard', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminUid: auth.currentUser?.uid })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      alert(`✅ ${data.message}`);
+    } catch (err: any) { alert(`❌ ${err.message}`); }
+    finally { setIsPurging(false); }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950">
@@ -196,6 +231,35 @@ function AdminDashboardContent() {
               <p className="text-xs text-slate-500 font-bold mt-1">{stat.label}</p>
             </div>
           ))}
+        </div>
+
+        {/* Simulation Controls (Hidden Power) */}
+        <div className="mb-8">
+          <button onClick={() => setShowSimPanel(!showSimPanel)} className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-400 transition-colors cursor-pointer">
+            <span className="material-symbols-outlined text-[14px]">{showSimPanel ? 'expand_less' : 'science'}</span>
+            {showSimPanel ? 'Hide Simulation Controls' : 'Demo Simulation'}
+          </button>
+          {showSimPanel && (
+            <div className="mt-3 bg-slate-900 border border-dashed border-indigo-500/30 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center gap-4">
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-indigo-400 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[16px]">science</span>
+                  Leaderboard Simulation Engine
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">Inject anonymous demo users with randomized XP to showcase leaderboard at scale during presentations.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button onClick={handleSeedData} disabled={isSeeding} className="px-4 py-2.5 bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 font-bold rounded-xl transition-all disabled:opacity-50 text-sm flex items-center gap-2 cursor-pointer">
+                  {isSeeding ? <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span> : <span className="material-symbols-outlined text-[16px]">group_add</span>}
+                  Seed 15 Users
+                </button>
+                <button onClick={handlePurgeSeed} disabled={isPurging} className="px-4 py-2.5 bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 font-bold rounded-xl transition-all disabled:opacity-50 text-sm flex items-center gap-2 cursor-pointer">
+                  {isPurging ? <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span> : <span className="material-symbols-outlined text-[16px]">delete_sweep</span>}
+                  Purge Seed Data
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Pending Approvals Queue */}
