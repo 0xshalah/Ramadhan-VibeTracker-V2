@@ -9,8 +9,8 @@ const withPWA = withPWAInit({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Config Anda yang sudah ada...
-  // next-pwa akan secara otomatis mendeteksi folder worker/index.ts
+  // Your existing config...
+  // next-pwa will automatically detect the worker/index.ts folder
 };
 
 export default withPWA(nextConfig);
