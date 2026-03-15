@@ -48,13 +48,23 @@ export const loginWithGoogle = async (): Promise<User & { role: string }> => {
   const user = result.user;
 
   const userRef = doc(db, 'users', user.uid);
-  await setDoc(userRef, { lastLogin: getTimestamp() }, { merge: true });
-
   const userSnap = await getDoc(userRef);
-  const userRole: string = userSnap.exists() ? (userSnap.data().role || 'student') : 'student';
+
+  let userRole = 'student'; // Default aman
+
+  if (userSnap.exists()) {
+    // PENGGUNA LAMA: Lakukan update (diizinkan oleh rules)
+    await updateDoc(userRef, { lastLogin: getTimestamp() });
+    userRole = userSnap.data().role || 'student';
+  } else {
+    // PENGGUNA BARU: JANGAN lakukan setDoc!
+    // Klien tidak punya izin 'create'. Cloud Functions yang akan membuatnya di background.
+    console.log("[AUTH] Pengguna baru terdeteksi. Menunggu Cloud Functions melakukan inisialisasi...");
+  }
 
   return Object.assign(user, { role: userRole });
 };
+
 
 export const logout = (): Promise<void> => signOut(auth);
 
@@ -132,6 +142,17 @@ export const getMyStudentsLive = (classCode: string, callback: (students: (UserP
 };
 
 // Alias for backwards compatibility
+export const getMyChildren = async (parentEmail: string): Promise<(UserProfile & { uid: string })[]> => {
+  try {
+    const q = query(collection(db, 'users'), where('role', '==', 'student'), where('parentEmail', '==', parentEmail));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserProfile & { uid: string }));
+  } catch (error) {
+    console.error("Error fetching children:", error);
+    return [];
+  }
+};
+
 export const getDetailedHistory = async (uid: string) => getWorshipHistory(uid);
 
 export const getWorshipHistory = async (uid: string): Promise<(DocumentData & { dateId: string })[]> => {

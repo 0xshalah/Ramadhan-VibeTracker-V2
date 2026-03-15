@@ -1,22 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { loginWithGoogle } from '@/lib/firebase';
 
 export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter(); // SPA Router
 
   const handleLogin = async () => {
     setIsLoading(true);
     try {
       const loggedUser = await loginWithGoogle();
-      // [RBAC] Smart Redirect "The Sorting Hat"
+      
+      // [RBAC] Smart Redirect menggunakan Next Router (Tanpa Reload)
       if (loggedUser.role === 'teacher') {
-        window.location.href = "/dashboard/teacher";
+        router.push("/dashboard/teacher");
       } else if (loggedUser.role === 'parent') {
-        window.location.href = "/dashboard/parent";
+        router.push("/dashboard/parent");
       } else {
-        window.location.href = "/dashboard/student";
+        router.push("/dashboard/student");
       }
     } catch (error) {
       console.error("Login failed", error);
@@ -39,11 +42,11 @@ export default function LandingPage() {
         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-sage-500">
           <a
             href="#features"
-            className="hover:text-primary transition-colors"
+            className="hover:text-primary transition-colors cursor-pointer"
           >
             Features
           </a>
-          <a href="#about" className="hover:text-primary transition-colors">
+          <a href="#about" className="hover:text-primary transition-colors cursor-pointer">
             About
           </a>
         </div>
@@ -71,7 +74,7 @@ export default function LandingPage() {
           <button
             onClick={handleLogin}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 px-6 py-4 rounded-xl font-bold text-lg hover:shadow-lg hover:border-primary/50 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
+            className="cursor-pointer w-full flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 px-6 py-4 rounded-xl font-bold text-lg hover:shadow-lg hover:border-primary/50 transition-all active:scale-95 disabled:opacity-70"
           >
             {isLoading ? (
               <span className="material-symbols-outlined animate-spin">
