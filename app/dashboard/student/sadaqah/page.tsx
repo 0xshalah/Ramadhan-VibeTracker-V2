@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useVibeStore } from '@/store/useVibeStore';
 import Sidebar from '../components/Sidebar';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -16,10 +17,50 @@ function WidgetFallback() {
   );
 }
 
-export default function SadaqahHub() {
+// --- Success Modal Component ---
+function SuccessModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+      <div className="bg-white dark:bg-slate-900 border border-emerald-500/30 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+        <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+          <span className="material-symbols-outlined text-5xl text-emerald-500">check_circle</span>
+        </div>
+        <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Jazakallah Khairan!</h2>
+        <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm">
+          Your donation has been verified. May it bring blessings to you and those in need. ✨
+        </p>
+        <button 
+          onClick={onClose}
+          className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all active:scale-95 cursor-pointer"
+        >
+          Return to Dashboard
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// --- Main Content (Wrapped in Suspense for useSearchParams) ---
+function SadaqahContent() {
   const { user } = useVibeStore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [selectedAmount, setSelectedAmount] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // 1. Deteksi Status dari URL (redirect dari Mayar)
+  useEffect(() => {
+    const status = searchParams.get('status');
+    if (status === 'success') {
+      setShowSuccess(true);
+      toast.success('Donation successful!');
+      // Bersihkan URL agar tidak trigger lagi saat refresh
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [searchParams]);
 
   const tiers = [
     { label: "Share a Meal", amount: 25000, icon: "🍲" },
@@ -43,15 +84,10 @@ export default function SadaqahHub() {
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to generate secure link');
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate secure link');
-      }
-
-      // Berhasil membuat link, belokkan navigasi (Redirect)
       window.location.href = data.url;
     } catch (error: any) {
-      // console.error(error);error
       toast.error(error.message || 'Payment system unavailable');
       setIsProcessing(false);
     }
@@ -69,8 +105,10 @@ export default function SadaqahHub() {
 
         <main className="flex-1 overflow-y-auto scroll-smooth relative p-8">
             <div className="max-w-4xl mx-auto space-y-8 mt-4">
-            <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Charity Hub 💸</h1>
-            <p className="text-sage-500 dark:text-slate-400">Purify your wealth and secure your eternal rewards.</p>
+            <header>
+              <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Charity Hub 💸</h1>
+              <p className="text-sage-500 dark:text-slate-400">Purify your wealth and secure your eternal rewards.</p>
+            </header>
 
             {/* Impact Dashboard Widget */}
             <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 p-6 rounded-2xl flex items-center justify-between">
@@ -87,7 +125,7 @@ export default function SadaqahHub() {
                 <button
                     key={tier.amount}
                     onClick={() => setSelectedAmount(tier.amount)}
-                    className={`p-6 rounded-2xl border transition-all cursor-pointer ${
+                    className={`p-6 rounded-2xl border transition-all cursor-pointer text-left ${
                     selectedAmount === tier.amount 
                         ? 'bg-emerald-100 dark:bg-emerald-600/20 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' 
                         : 'bg-white dark:bg-slate-800/50 border-sage-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-slate-500'
@@ -95,7 +133,7 @@ export default function SadaqahHub() {
                 >
                     <div className="text-3xl mb-3 drop-shadow-sm">{tier.icon}</div>
                     <h3 className="text-lg font-medium text-slate-800 dark:text-white">{tier.label}</h3>
-                    <p className="text-emerald-600 dark:text-emerald-400 font-mono font-bold mt-1">Rp {tier.amount.toLocaleString()}</p>
+                    <p className="text-emerald-600 dark:text-emerald-400 font-mono font-bold mt-1">Rp {tier.amount.toLocaleString('id-ID')}</p>
                 </button>
                 ))}
             </div>
@@ -106,11 +144,26 @@ export default function SadaqahHub() {
                 onClick={handleCheckout}
                 className="w-full py-4 bg-slate-800 dark:bg-white text-white dark:text-black font-bold rounded-xl disabled:opacity-50 transition-transform active:scale-[0.98] cursor-pointer"
             >
-                {isProcessing ? 'Generating Secure Link...' : `Donate Rp ${selectedAmount.toLocaleString()} Now`}
+                {isProcessing ? 'Generating Secure Link...' : `Donate Rp ${selectedAmount.toLocaleString('id-ID')} Now`}
             </button>
             </div>
         </main>
+
+        {/* Success Modal */}
+        <SuccessModal isOpen={showSuccess} onClose={() => { setShowSuccess(false); router.push('/dashboard/student'); }} />
       </div>
     </>
+  );
+}
+
+export default function SadaqahHub() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen bg-slate-950 flex items-center justify-center text-white">
+        <span className="material-symbols-outlined text-4xl animate-spin">progress_activity</span>
+      </div>
+    }>
+      <SadaqahContent />
+    </Suspense>
   );
 }
