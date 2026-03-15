@@ -86,6 +86,10 @@ function AdminDashboardContent() {
           totalXPGlobal: globalXP,
         });
         setLoading(false);
+      }, (error) => {
+        console.error("[ADMIN CONSOLE] Listener Error:", error);
+        setLoading(false);
+        // We will let the user see a blank table but at least they won't be stuck loading
       });
 
       return () => unsub();

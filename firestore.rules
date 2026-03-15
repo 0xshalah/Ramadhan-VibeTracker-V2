@@ -32,8 +32,8 @@ service cloud.firestore {
     match /users/{userId} {
 
       // READ: Only the owner can read their own full profile.
-      // Teachers can read student profiles within their class (handled via Cloud Functions or custom claims later).
-      allow read: if isOwner(userId);
+      // Admins (Super Admins) have full read access to all user profiles to power the Admin Dashboard.
+      allow read: if isOwner(userId) || (isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
 
       // CREATE: Blocked from client. User documents are created
       // exclusively by the Cloud Function `onUserCreate` trigger (Phase 2).
