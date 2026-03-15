@@ -1,33 +1,139 @@
-# 🌙 Ramadhan VibeTracker V2: Enterprise Spiritual Ecosystem
-> **"Build with AI. Test with TestSprite."** - Architecting absolute spiritual integrity.
+<div align="center">
+  
+  <img src="https://img.icons8.com/fluency/144/null/mosque.png" alt="Ramadhan VibeTracker Logo" width="100"/>
 
-![Next.js](https://img.shields.io/badge/Architecture-Next.js%2014-black?style=for-the-badge&logo=next.js) ![Firebase](https://img.shields.io/badge/Backend-Firebase_Cloud-FFCA28?style=for-the-badge&logo=firebase&logoColor=black) ![TestSprite](https://img.shields.io/badge/Quality_Assurance-TestSprite_AI-7C3AED?style=for-the-badge)
+  # 🌙 Ramadhan VibeTracker V2
+  
+  **Interactive AI Ecosystem for Spiritual Consistency**
 
-## 🚀 The Vision
-VibeTracker V2 is not just a checklist; it's a synchronous, multi-role ecosystem designed to eliminate **Mock Gamification**. By integrating real-time payment webhooks for Sadaqah, AI-powered spiritual insights via Alibaba Qwen, and high-fidelity animations using Anime.js, we've built a platform where every "Vibe Point" is earned through verified devotion.
+  [![Next.js](https://img.shields.io/badge/Next.js-14.2-black?style=flat-square&logo=nextdotjs)](https://nextjs.org/)
+  [![React](https://img.shields.io/badge/React-18.3-blue?style=flat-square&logo=react)](https://reactjs.org/)
+  [![Firebase](https://img.shields.io/badge/Firebase-10.14-FFCA28?style=flat-square&logo=firebase)](https://firebase.google.com/)
+  [![Zustand](https://img.shields.io/badge/Zustand-5.0-brown?style=flat-square&logo=bear)](https://zustand-demo.pmnd.rs/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+  [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
 
-## 🤖 Why TestSprite?
-In spiritual tracking, **Data Integrity is Sacred**. TestSprite AI handled the heavy lifting of our testing lifecycle to ensure:
-1. **Webhook Survivability:** Simulating Mayar Payment Gateway payloads to verify our server-side "Unclaimed Donation Resolver" works under high-latency serverless environments.
-2. **Timezone Resilience:** Stress-testing our `LocalTodayId` logic across global offsets (WIB/WIT/UTC) to prevent "Zero-Day Streak Crashing."
-3. **RBAC Security:** Hardening our Role-Based Access Control to prevent Students from bypassing URL routes into Teacher/Parent portals.
-
-## 💎 Core Architecture Highlights
-* **JourneyCanvas (React Flow):** A dynamic 30-day roadmap that visualizes your spiritual ascent using graph-based nodes.
-* **AI Spiritual Companion:** An Alibaba Cloud Qwen-powered sidebar that reflects on your specific worship data for personalized motivation.
-* **Truthful Gamification:** Real-time XP Burst animations (Anime.js) triggered only by verified Firestore data commits.
-* **Hybrid Sync Engine:** Two-way binding with smart debounce to prevent database exhaustion while maintaining a "Saved" state feel.
-
-## 🛠 Tech Stack
-- **Frontend:** Next.js 14, Tailwind CSS, Anime.js, React Flow.
-- **Backend:** Firebase (Auth, Firestore, Cloud Messaging), Node.js (API Routes).
-- **AI:** Alibaba Cloud DashScope (Qwen Engine).
-- **Payments:** Mayar Webhook Integration (HMAC-SHA256 Verified).
-
-## 📦 Getting Started
-1. `npm install`
-2. Configure `.env.local` with your Firebase and Alibaba Cloud keys.
-3. `npm run dev`
+  <p align="center">
+    Platform pelacakan spiritual terpadu yang dirancang untuk membangun konsistensi ibadah selama bulan suci Ramadhan, diperkuat dengan <b>AI Insights</b> dan <b>Real-time Sync Ecosystem</b>.
+  </p>
+</div>
 
 ---
-*"Build for the Soul, Code for Eternity."* — **0xshalah**
+
+## 🚀 Fitur Utama
+
+- **🧠 AI Spiritual Companion:** Integrasi dengan Alibaba Cloud Qwen-Turbo LLM untuk memberikan *insight* personal berdasarkan pola ibadah harian pengguna.
+- **🔄 Dynamic Progress Weighting:** Kalkulasi real-time yang mempertimbangkan keseimbangan *Sholat Fardhu*, *Tilawah*, dan ibadah *Sunnah*.
+- **⚡ Vibe Engine (Zustand + Firebase):** Arsitektur sinkronisasi dua arah yang memastikan data ibadah tidak pernah hilang (*auto-save with debounce mechanism*).
+- **🕌 Geolocation-Aware Prayer Times:** Pemanggilan waktu sholat akurat secara dinamis menggunakan API Kemenag (Method 20) dengan *fallback protection*.
+- **🔔 Eternal Notification Engine:** Sistem pengingat waktu sholat berbasis Web Push (FCM) dan retensi histori interaktif.
+- **🛡️ Enterprise Security:** Validasi *Bearer Token*, Proteksi *Webhook*, dan Sistem Autentikasi terpusat berbasis peran (RBAC).
+- **👨‍🏫 Multi-Role Dashboard:** Portal Ustadz (Real-time Monitoring), Parent Observer, dan Student Dashboard.
+- **📊 Heatmap Konsistensi:** Visualisasi kalender ibadah 30 hari menggunakan `react-calendar-heatmap`.
+
+## 🛠️ Arsitektur Teknologi
+
+Sistem dibangun menggunakan pendekatan **App Router** modern dengan pemisahan *client-side logic* dan *serverless API*.
+
+```mermaid
+graph TD;
+    Client[Next.js Client - React 18] -->|Zustand State| UI;
+    Client -->|Debounced Sync| Firestore[Firebase Firestore];
+    Client -->|Geolocation| Aladhan[Aladhan API];
+    Client -->|Auth| FirebaseAuth[Firebase Auth];
+    
+    API_Insight[Next.js Server API /api/insight] -->|Auth Bearer Check| LLM[Alibaba Cloud Qwen AI];
+    Firestore --> API_Insight;
+    
+    CloudFunctions[Firebase Cloud Functions] -->|onUserCreate| Firestore;
+    CloudFunctions -->|Zero-Trust RBAC| Firestore;
+```
+
+## 📦 Instalasi & Penggunaan
+
+### 1. Prasyarat Sistem
+
+* Node.js versi 18.17.0 atau lebih tinggi.
+* Akun Firebase (Authentication, Firestore, Cloud Messaging).
+* API Key Alibaba Cloud (untuk AI Insights).
+
+### 2. Kloning Repositori
+
+```bash
+git clone https://github.com/0xshalah/Ramadhan-VibeTracker-V2.git
+cd Ramadhan-VibeTracker-V2
+```
+
+### 3. Konfigurasi Variabel Lingkungan
+
+Salin file `.env.local.example` menjadi `.env.local` dan isi parameter keamanan Anda:
+
+```env
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_VAPID_KEY=your_vapid_key_for_fcm
+
+# AI / Backend Keys
+ALIBABA_CLOUD_API_KEY=your_qwen_api_key
+
+# Mayar Webhook
+MAYAR_WEBHOOK_SECRET=your_webhook_secret
+
+# Firebase Admin (Server-side)
+FIREBASE_ADMIN_PROJECT_ID=your_project_id
+FIREBASE_ADMIN_CLIENT_EMAIL=your_client_email
+FIREBASE_ADMIN_PRIVATE_KEY=your_private_key
+```
+
+### 4. Menjalankan Server Pengembangan
+
+```bash
+npm install
+npm run dev
+```
+
+Aplikasi akan berjalan pada `http://localhost:3000`.
+
+### 5. Deploy Cloud Functions (Optional)
+
+```bash
+cd functions
+npm install
+firebase deploy --only functions
+```
+
+## 🧪 Validasi & Pengujian
+
+Sistem ini mematuhi standar *Vibe Coding* yang divalidasi secara otomatis menggunakan infrastruktur **TestSprite MCP**.
+
+Cakupan pengujian (lihat `/testsprite_tests`):
+
+- [x] End-to-End *Sadaqah Webhook Lifecycle*.
+- [x] *Stress Test* Sinkronisasi UI (Tilawah Tracker).
+- [x] Deteksi Anomali Zona Waktu (Penanganan *Anti-UTC Sabotage*).
+
+## 🛣️ Peta Jalan (Roadmap)
+
+- [x] **Fase 1:** *Core Tracking*, *AI Insights*, *FCM Notifications*.
+- [x] **Fase 2:** Enterprise Security & Frontend Decoupling.
+- [ ] **Fase 3:** Migrasi *Codebase* ke **TypeScript** & implementasi Zod Validation.
+- [ ] **Fase 4:** Implementasi *Leaderboard* instansi menggunakan *Cloud Functions Aggregation*.
+- [ ] **Fase 5:** Ekspansi ke ekosistem *Mobile Offline-First* menggunakan **Flutter**.
+
+## 🛡️ Standar Keamanan
+
+- **Zero-Trust Backend:** Logika RBAC & Donation Resolver dieksekusi di Firebase Cloud Functions (`onUserCreate`), bukan di klien.
+- **API Guard:** Endpoint AI (`/api/insight`) dilindungi dengan validasi header `Authorization` Bearer Token.
+- **Webhook Integrity:** HMAC SHA-256 signature validation dengan `timingSafeEqual` di endpoint Mayar.
+- **Race Condition Prevention:** Debounced state synchronization pada penambahan XP.
+
+---
+
+<div align="center">
+  <p><b>Build for the Soul, Code for Eternity.</b> 🌙</p>
+</div>
