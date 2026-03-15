@@ -29,8 +29,9 @@ export async function POST(request: Request) {
         name: `Sadaqah Ramadhan - Rp ${Number(amount).toLocaleString('id-ID')}`,
         amount: Number(amount),
         description: `Daily Charity for ${email}`,
-        customer_name: name || "Anonymous Student",
-        customer_email: email,
+        customerName: name || "Anonymous Student",
+        email: email,
+        mobile: "081111111111", // [MAYAR HOTFIX] Required by some Mayar accounts
         // Redirect user back to dashboard after payment
         redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success`,
         // Metadata for Mayar dashboard tracking
