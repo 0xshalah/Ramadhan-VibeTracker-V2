@@ -17,24 +17,29 @@ export async function POST(request: Request) {
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    // 2. Headless API Payload Construction
-    // FIX: Aligned field names with Mayar's validation requirements ('email' and 'mobile')
+    // 2. Generate a Unique Identifier to prevent 409 Conflict
+    // We add a short unique ID (timestamp + random) to ensure Mayar sees this as a new request
+    const uniqueSuffix = Date.now().toString().slice(-6) + Math.random().toString(36).substring(2, 5).toUpperCase();
+
+    // 3. Headless API Payload Construction
     const mayarPayload = {
-      name: `Ramadan Charity - Rp ${Number(amount).toLocaleString('en-US')}`, // Product Name
+      // FIX: Added unique suffix to the name to avoid "already exist" error
+      name: `Ramadan Charity - Rp ${Number(amount).toLocaleString('en-US')} (${uniqueSuffix})`, 
       amount: Math.floor(Number(amount)),
-      description: `Sadaqah contribution from ${name || email}`,
+      description: `Sadaqah contribution from ${name || email} - Order ID: ${uniqueSuffix}`,
       customer_name: (name && name !== "Anonymous") ? name : "Blessed Donor",
-      email: email, // FIX: Changed from customer_email to email
-      mobile: mobile || "081234567890", // FIX: Changed from customer_mobile to mobile
+      email: email, 
+      mobile: mobile || "081234567890", 
       redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success`,
       metadata: {
         app: "VibeTracker-V2",
         type: "Sadaqah",
+        orderId: uniqueSuffix, // Trackable ID
         platform: "Web-Enterprise"
       }
     };
 
-    // 3. Mayar API Invocation
+    // 4. Mayar API Invocation
     const mayarResponse = await fetch('https://api.mayar.id/hl/v1/payment/create', {
       method: 'POST',
       headers: {
@@ -46,16 +51,16 @@ export async function POST(request: Request) {
 
     const data = await mayarResponse.json();
 
-    // 4. Enhanced Error Handling
+    // 5. Enhanced Error Handling
     if (!mayarResponse.ok) {
       console.error("[MAYAR REJECTION]", JSON.stringify(data, null, 2));
       return NextResponse.json({ 
-        error: data?.message || 'Payment gateway rejected the request',
+        error: data?.messages || data?.error || 'Payment gateway rejected the request',
         details: data 
       }, { status: mayarResponse.status });
     }
 
-    // 5. URL Extraction
+    // 6. URL Extraction
     const paymentUrl = data?.data?.link || data?.link || data?.url;
     if (!paymentUrl) {
       throw new Error('Payment link generation failed');
