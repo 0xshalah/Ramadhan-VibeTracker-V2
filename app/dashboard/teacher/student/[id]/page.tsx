@@ -7,6 +7,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth, getUserProfile, getUserWeeklyProgress } from '@/lib/firebase';
 import type { UserProfile } from '@/lib/schemas';
 import type { DailyProgress } from '@/lib/schemas';
+import { toast } from 'sonner';
 
 type StudentData = UserProfile & { uid: string };
 type WeeklyEntry = DailyProgress & { dateId: string };
@@ -56,6 +57,22 @@ export default function StudentAnalyticsPage() {
 
     return () => unsub();
   }, [studentId]);
+
+  const handleIntervene = () => {
+    if (student?.email) {
+      window.location.href = `mailto:${student.email}?subject=VibeTracker%20Intervention&body=Assalamu%27alaikum%20${student.displayName},%0D%0A%0D%0ASaya%20melihat%20perkembangan%20ibadahmu%20akhir-akhir%20ini...`;
+      toast.success('Email draft opened.');
+    } else {
+      toast.info('Pesan intervensi telah dikirim ke notifikasi siswa (Simulasi).');
+    }
+  };
+
+  const handleAssignTask = () => {
+    const task = window.prompt("Masukkan instruksi tugas khusus untuk siswa ini:");
+    if (task && task.trim() !== "") {
+      toast.success(`Tugas '${task}' berhasil dikirim ke student! (Simulasi)`);
+    }
+  };
 
   // Calculate XP
   const totalXP = student?.totalXP ?? (student?.dailyXP ? Object.values(student.dailyXP).reduce((a, b) => a + (b || 0), 0) : 0);
@@ -184,10 +201,16 @@ export default function StudentAnalyticsPage() {
 
         {/* Teacher Action Board */}
         <div className="flex gap-4 pt-4">
-          <button className="flex-1 bg-slate-800 hover:bg-slate-700 font-bold py-4 rounded-2xl transition-all flex justify-center items-center gap-2 active:scale-95">
+          <button 
+            onClick={handleIntervene}
+            className="flex-1 bg-slate-800 hover:bg-slate-700 font-bold py-4 rounded-2xl transition-all flex justify-center items-center gap-2 active:scale-95 cursor-pointer"
+          >
             <span className="material-symbols-outlined text-slate-400">chat</span> Intervene
           </button>
-          <button className="flex-1 bg-emerald-600 hover:bg-emerald-500 font-bold py-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 flex justify-center items-center gap-2 text-white active:scale-95">
+          <button 
+            onClick={handleAssignTask}
+            className="flex-1 bg-emerald-600 hover:bg-emerald-500 font-bold py-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 flex justify-center items-center gap-2 text-white active:scale-95 cursor-pointer"
+          >
             <span className="material-symbols-outlined">assignment_add</span> Assign Task
           </button>
         </div>

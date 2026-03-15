@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, User } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, deleteDoc, writeBatch, addDoc, serverTimestamp, orderBy, limit, onSnapshot, updateDoc, Unsubscribe, DocumentData } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, User, updateProfile, deleteUser } from "firebase/auth";
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, deleteDoc, writeBatch, addDoc, serverTimestamp, orderBy, limit, onSnapshot, updateDoc, Unsubscribe, DocumentData, increment } from "firebase/firestore";
 import { getMessaging, Messaging } from "firebase/messaging";
 import { DailyProgressSchema, UserProfileSchema, type DailyProgress, type UserProfile, type AppNotification } from "./schemas";
 
@@ -127,6 +127,52 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
   } catch (error) {
     // console.error("Error fetching user profile:", error);error
     return null;
+  }
+};
+
+export const syncSadaqahImpact = async (uid: string, amount: number) => {
+  try {
+    await updateDoc(doc(db, 'users', uid), {
+      impactSadaqah: increment(amount)
+    });
+    return true;
+  } catch (error) {
+    console.error("Failed to sync sadaqah impact:", error);
+    return false;
+  }
+};
+
+export const updateUserAvatar = async (user: User, photoURL: string) => {
+  try {
+    // 1. Update Firebase Auth Profile
+    await updateProfile(user, { photoURL });
+    
+    // 2. Update Firestore User Document
+    await updateDoc(doc(db, 'users', user.uid), { photoURL });
+    
+    return true;
+  } catch (error) {
+    console.error("Failed to update avatar:", error);
+    return false;
+  }
+};
+
+export const deleteUserAccount = async (user: User) => {
+  try {
+    const uid = user.uid;
+    // 1. (Optional for Hackathon) Delete Subcollections if needed
+    // In a real app, you'd trigger a Cloud Function. Here we prioritize the main doc.
+    
+    // 2. Delete Firestore User Document
+    await deleteDoc(doc(db, 'users', uid));
+    
+    // 3. Delete Firebase Auth Record
+    await deleteUser(user);
+    
+    return true;
+  } catch (error) {
+    console.error("Failed to delete account:", error);
+    return false;
   }
 };
 

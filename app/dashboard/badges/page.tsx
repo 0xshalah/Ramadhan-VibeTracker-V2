@@ -1,15 +1,18 @@
 "use client";
 
 import Link from 'next/link';
+import { useVibeStore } from '@/store/useVibeStore';
 
 export default function BadgesPage() {
+  const { totalXP, streak, verifiedSadaqah } = useVibeStore();
+
   const badges = [
-    { icon: 'military_tech', name: 'First Prayer', desc: 'Complete your first daily prayer check-in', unlocked: true, color: 'from-amber-500 to-yellow-500' },
-    { icon: 'local_fire_department', name: '7-Day Streak', desc: 'Maintain a 7-day consecutive worship streak', unlocked: false, color: 'from-orange-500 to-red-500' },
-    { icon: 'auto_stories', name: 'Quran Explorer', desc: 'Read 10+ pages of Tilawah in a single day', unlocked: false, color: 'from-emerald-500 to-teal-500' },
-    { icon: 'volunteer_activism', name: 'Generous Soul', desc: 'Complete your first verified Sadaqah donation', unlocked: false, color: 'from-pink-500 to-rose-500' },
-    { icon: 'emoji_events', name: 'Top 10 Climber', desc: 'Reach the Top 10 on the Global Leaderboard', unlocked: false, color: 'from-indigo-500 to-purple-500' },
-    { icon: 'nights_stay', name: 'Night Owl', desc: 'Log Tahajjud prayer for 3 consecutive nights', unlocked: false, color: 'from-slate-600 to-slate-800' },
+    { icon: 'military_tech', name: 'First Prayer', desc: 'Complete your first daily prayer check-in', unlocked: totalXP >= 50, color: 'from-amber-500 to-yellow-500' },
+    { icon: 'local_fire_department', name: '7-Day Streak', desc: 'Maintain a 7-day consecutive worship streak', unlocked: streak >= 7, color: 'from-orange-500 to-red-500' },
+    { icon: 'auto_stories', name: 'Quran Explorer', desc: 'Earn 500+ XP from daily tilawah and prayers', unlocked: totalXP >= 500, color: 'from-emerald-500 to-teal-500' },
+    { icon: 'volunteer_activism', name: 'Generous Soul', desc: 'Complete your first verified Sadaqah donation via Mayar', unlocked: verifiedSadaqah || totalXP > 2000 /* Fallback demo condition */, color: 'from-pink-500 to-rose-500' },
+    { icon: 'emoji_events', name: 'Vibe Master', desc: 'Reach 1,500 Total XP points', unlocked: totalXP >= 1500, color: 'from-indigo-500 to-purple-500' },
+    { icon: 'nights_stay', name: 'Night Owl', desc: 'Maintain a 14-day streak', unlocked: streak >= 14, color: 'from-slate-600 to-slate-800' },
   ];
 
   return (
@@ -39,13 +42,6 @@ export default function BadgesPage() {
             )}
           </div>
         ))}
-      </div>
-
-      <div className="mt-12 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 rounded-full text-indigo-400 text-xs font-bold">
-          <span className="material-symbols-outlined text-[16px]">construction</span>
-          Dynamic badge unlocking coming in Phase 2
-        </div>
       </div>
     </div>
   );

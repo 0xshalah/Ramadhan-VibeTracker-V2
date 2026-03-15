@@ -3,10 +3,64 @@
 import React, { useState } from 'react';
 import { useVibeStore } from '@/store/useVibeStore';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { updateUserAvatar, deleteUserAccount, logout } from '@/lib/firebase';
+import { toast } from 'sonner';
 
 export default function ProfilePage() {
-  const { user, totalXP, streak } = useVibeStore();
+  const { user, totalXP, streak, setUser } = useVibeStore();
   const [quranTarget, setQuranTarget] = useState(12);
+  const [isProcessingAvatar, setIsProcessingAvatar] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
+
+  const handleGenerateAvatar = async () => {
+    if (!user) return;
+    setIsProcessingAvatar(true);
+    try {
+      // Generate a random seed for DiceBear 9.x
+      const seed = Math.random().toString(36).substring(7);
+      const randomAvatarUrl = `https://api.dicebear.com/9.x/avataaars/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffdfbf,ffd5dc`;
+      
+      const success = await updateUserAvatar(user, randomAvatarUrl);
+      if (success) {
+        // Optimistically update store
+        setUser({ ...user, photoURL: randomAvatarUrl } as any);
+        toast.success("Magic Avatar generated! 🎲✨");
+      } else {
+        toast.error("Failed to update avatar.");
+      }
+    } catch (error) {
+      toast.error("An error occurred while generating avatar.");
+    } finally {
+      setIsProcessingAvatar(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    
+    if (!window.confirm("Danger Zone! Are you absolutely sure you want to permanently delete your account and all its data? This cannot be undone.")) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const success = await deleteUserAccount(user);
+      if (success) {
+        toast.success("Account successfully deleted. Goodbye! 🌅");
+        setUser(null);
+        await logout();
+        router.push('/');
+      } else {
+        toast.error("Failed to delete account. Please re-login and try again.");
+      }
+    } catch (error) {
+       toast.error("System error during deletion.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 font-sans pb-12">
@@ -24,8 +78,16 @@ export default function ProfilePage() {
             <div className="w-32 h-32 rounded-full border-4 border-slate-800 bg-slate-700 flex items-center justify-center overflow-hidden shadow-xl">
               {user?.photoURL ? <img src={user.photoURL} alt="User" className="w-full h-full object-cover"/> : <span className="material-symbols-outlined text-6xl text-slate-500">person</span>}
             </div>
-            <button className="absolute bottom-1 right-1 bg-emerald-500 p-2 rounded-full text-white hover:bg-emerald-600 shadow-lg transition-transform active:scale-95">
-              <span className="material-symbols-outlined text-sm">photo_camera</span>
+            <button 
+              onClick={handleGenerateAvatar}
+              disabled={isProcessingAvatar}
+              className="absolute bottom-1 right-1 bg-emerald-500 p-2 rounded-full text-white hover:bg-emerald-600 shadow-lg transition-transform active:scale-95 disabled:opacity-50 flex items-center justify-center"
+            >
+              {isProcessingAvatar ? (
+                <span className="material-symbols-outlined text-sm animate-spin">refresh</span>
+              ) : (
+                <span className="material-symbols-outlined text-sm">photo_camera</span>
+              )}
             </button>
           </div>
           <h2 className="text-2xl font-bold mt-4">{user?.displayName || 'Student'}</h2>
@@ -109,8 +171,22 @@ export default function ProfilePage() {
 
         {/* Danger Zone */}
         <footer className="pt-8 pb-4 text-center">
-          <button className="flex items-center justify-center gap-2 w-full py-4 text-rose-500 font-medium bg-rose-500/10 rounded-2xl hover:bg-rose-500/20 border border-rose-500/10 transition-colors">
-            <span className="material-symbols-outlined">delete_forever</span> Delete Account
+          <button 
+            onClick={handleDeleteAccount}
+            disabled={isDeleting}
+            className="flex items-center justify-center gap-2 w-full py-4 text-rose-500 font-medium bg-rose-500/10 rounded-2xl hover:bg-rose-500/20 border border-rose-500/10 transition-colors disabled:opacity-50"
+          >
+            {isDeleting ? (
+              <>
+                <span className="material-symbols-outlined animate-spin text-sm">refresh</span>
+                Deleting Account...
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined">delete_forever</span>
+                Delete Account
+              </>
+            )}
           </button>
           <p className="mt-6 text-xs text-slate-500 tracking-widest uppercase font-bold">VibeTracker V2.4.0</p>
         </footer>

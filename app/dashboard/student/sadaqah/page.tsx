@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useVibeStore } from '@/store/useVibeStore';
 import Sidebar from '../components/Sidebar';
 import { ErrorBoundary } from 'react-error-boundary';
+import { getUserProfile, syncSadaqahImpact } from '@/lib/firebase';
 import { toast } from 'sonner';
 
 // --- ErrorBoundary Fallback Component ---
@@ -50,17 +51,49 @@ function SadaqahContent() {
   const [selectedAmount, setSelectedAmount] = useState<number>(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [totalImpact, setTotalImpact] = useState<number>(0);
+
+  // 0. Load existing impact from Firestore
+  useEffect(() => {
+    const fetchImpact = async () => {
+      if (user?.uid) {
+        const profile = await getUserProfile(user.uid);
+        if (profile?.impactSadaqah) {
+          setTotalImpact(profile.impactSadaqah);
+        }
+      }
+    };
+    fetchImpact();
+  }, [user]);
 
   // 1. Deteksi Status dari URL (redirect dari Mayar)
   useEffect(() => {
-    const status = searchParams.get('status');
-    if (status === 'success') {
-      setShowSuccess(true);
-      toast.success('Donation successful!');
-      // Bersihkan URL agar tidak trigger lagi saat refresh
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, [searchParams]);
+    const processSuccess = async () => {
+      const status = searchParams.get('status');
+      if (status === 'success' && user?.uid) {
+        setShowSuccess(true);
+        toast.success('Donation successful!');
+        
+        // Cek apakah ada nominal yang ditunda di localstorage
+        const pendingAmountStr = localStorage.getItem('vibe_pending_sadaqah');
+        if (pendingAmountStr) {
+          const amountText = parseInt(pendingAmountStr, 10);
+          if (!isNaN(amountText)) {
+            // Update Firestore impactSadaqah
+            const success = await syncSadaqahImpact(user.uid, amountText);
+            if (success) {
+              setTotalImpact(prev => prev + amountText);
+              localStorage.removeItem('vibe_pending_sadaqah');
+            }
+          }
+        }
+        
+        // Bersihkan URL agar tidak trigger lagi saat refresh
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    };
+    processSuccess();
+  }, [searchParams, user]);
 
   const tiers = [
     { label: "Share a Meal", amount: 25000, icon: "🍲" },
@@ -72,6 +105,9 @@ function SadaqahContent() {
     if (!selectedAmount || !user) return;
     setIsProcessing(true);
     
+    // Simpan amount ke localstorage untuk di process setelah success redirect
+    localStorage.setItem('vibe_pending_sadaqah', selectedAmount.toString());
+
     try {
       const response = await fetch('/api/checkout/mayar', {
         method: 'POST',
@@ -90,6 +126,7 @@ function SadaqahContent() {
     } catch (error: any) {
       toast.error(error.message || 'Payment system unavailable');
       setIsProcessing(false);
+      localStorage.removeItem('vibe_pending_sadaqah');
     }
   };
 
