@@ -2,15 +2,27 @@
 import React, { useState } from 'react';
 import { MessageSquare, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
+import type { InsightPayload } from '@/lib/schemas';
 
-export default function AIChatPanel({ progressData }) {
+interface AIChatPanelProps {
+  progressData: InsightPayload;
+}
+
+interface ChatMessage {
+  role: 'ai' | 'user';
+  content: string;
+}
+
+export default function AIChatPanel({ progressData }: AIChatPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([{ role: 'ai', content: 'Assalamu\'alaikum. Ada yang ingin direfleksikan dari ibadahmu hari ini?' }]);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { role: 'ai', content: 'Assalamu\'alaikum. Ada yang ingin direfleksikan dari ibadahmu hari ini?' }
+  ]);
   const [input, setInput] = useState('');
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    const newMsgs = [...messages, { role: 'user', content: input }];
+    const newMsgs: ChatMessage[] = [...messages, { role: 'user', content: input }];
     setMessages(newMsgs);
     setInput('');
 
@@ -30,15 +42,15 @@ export default function AIChatPanel({ progressData }) {
   return (
     <>
       {/* Tombol Pemicu di Sudut Kanan Bawah */}
-      <button onClick={() => setIsOpen(true)} className="fixed bottom-8 right-8 bg-emerald-600 p-4 rounded-full shadow-emerald-500/50 shadow-lg hover:scale-110 transition-transform z-40">
+      <button onClick={() => setIsOpen(true)} className="fixed bottom-8 right-8 bg-emerald-600 p-4 rounded-full shadow-emerald-500/50 shadow-lg hover:scale-110 transition-transform z-40 cursor-pointer">
         <MessageSquare className="text-white" />
       </button>
 
-      {/* Slide-out Panel ala Shadcn Sheet */}
+      {/* Slide-out Panel */}
       <div className={`fixed top-0 right-0 h-full w-96 bg-slate-900 border-l border-slate-800 transform transition-transform duration-300 z-50 flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 backdrop-blur-md">
           <h3 className="font-bold text-white">Spiritual Companion</h3>
-          <button onClick={() => setIsOpen(false)}><X className="text-slate-400 hover:text-white" /></button>
+          <button onClick={() => setIsOpen(false)} className="cursor-pointer"><X className="text-slate-400 hover:text-white" /></button>
         </div>
         
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -57,7 +69,7 @@ export default function AIChatPanel({ progressData }) {
             className="flex-1 bg-slate-800 text-white rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500" 
             placeholder="Curhat soal ibadah..." 
           />
-          <button onClick={sendMessage} className="bg-emerald-600 p-2 rounded-xl text-white hover:bg-emerald-500">
+          <button onClick={sendMessage} className="bg-emerald-600 p-2 rounded-xl text-white hover:bg-emerald-500 cursor-pointer">
             <Send size={20} />
           </button>
         </div>

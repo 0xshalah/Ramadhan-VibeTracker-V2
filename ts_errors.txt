@@ -1,0 +1,30 @@
+app/dashboard/student/components/AIChatPanel.tsx(5,37): error TS2307: Cannot find module '@/lib/schemas' or its corresponding type declarations.
+app/dashboard/student/components/Header.tsx(3,30): error TS2307: Cannot find module '@/store/useVibeStore' or its corresponding type declarations.
+app/dashboard/student/components/JourneyCanvas.tsx(47,76): error TS2322: Type '{ children: Element[]; nodes: Node<DayNodeData>[]; edges: Edge[]; nodeTypes: { dayNode: ({ data }: NodeProps<Node<DayNodeData>>) => Element; }; fitView: true; theme: string; }' is not assignable to type 'IntrinsicAttributes & ReactFlowProps<Node<DayNodeData>, Edge> & RefAttributes<HTMLDivElement>'.
+  Property 'theme' does not exist on type 'IntrinsicAttributes & ReactFlowProps<Node<DayNodeData>, Edge> & RefAttributes<HTMLDivElement>'.
+app/dashboard/student/components/PrayerGrid.tsx(2,36): error TS2307: Cannot find module '@/lib/schemas' or its corresponding type declarations.
+app/dashboard/student/components/PrayerGrid.tsx(52,13): error TS2322: Type 'string | number | symbol' is not assignable to type 'Key'.
+  Type 'symbol' is not assignable to type 'Key'.
+app/dashboard/student/components/Sidebar.tsx(3,30): error TS2307: Cannot find module '@/store/useVibeStore' or its corresponding type declarations.
+app/dashboard/student/components/StreakWidget.tsx(3,33): error TS2307: Cannot find module '@/lib/firebase' or its corresponding type declarations.
+app/dashboard/student/components/StreakWidget.tsx(4,36): error TS2307: Cannot find module '@/lib/schemas' or its corresponding type declarations.
+app/dashboard/student/components/SunnahActivities.tsx(2,36): error TS2307: Cannot find module '@/lib/schemas' or its corresponding type declarations.
+app/dashboard/student/components/SunnahActivities.tsx(28,15): error TS2322: Type 'string | number | symbol' is not assignable to type 'Key'.
+  Type 'symbol' is not assignable to type 'Key'.
+app/dashboard/student/page.tsx(17,30): error TS2307: Cannot find module '@/store/useVibeStore' or its corresponding type declarations.
+app/dashboard/student/page.tsx(22,198): error TS2307: Cannot find module '@/lib/firebase' or its corresponding type declarations.
+app/dashboard/student/page.tsx(26,36): error TS2307: Cannot find module '@/lib/schemas' or its corresponding type declarations.
+lib/schemas.ts(24,32): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(def: { subuh: boolean; dzuhur: boolean; ashar: boolean; maghrib: boolean; isya: boolean; }): ZodDefault<ZodObject<{ subuh: ZodDefault<ZodBoolean>; dzuhur: ZodDefault<ZodBoolean>; ashar: ZodDefault<...>; maghrib: ZodDefault<...>; isya: ZodDefault<...>; }, $strip>>', gave the following error.
+    Argument of type '{}' is not assignable to parameter of type '{ subuh: boolean; dzuhur: boolean; ashar: boolean; maghrib: boolean; isya: boolean; }'.
+      Type '{}' is missing the following properties from type '{ subuh: boolean; dzuhur: boolean; ashar: boolean; maghrib: boolean; isya: boolean; }': subuh, dzuhur, ashar, maghrib, isya
+  Overload 2 of 2, '(def: () => { subuh: boolean; dzuhur: boolean; ashar: boolean; maghrib: boolean; isya: boolean; }): ZodDefault<ZodObject<{ subuh: ZodDefault<ZodBoolean>; dzuhur: ZodDefault<ZodBoolean>; ashar: ZodDefault<...>; maghrib: ZodDefault<...>; isya: ZodDefault<...>; }, $strip>>', gave the following error.
+    Argument of type '{}' is not assignable to parameter of type '() => { subuh: boolean; dzuhur: boolean; ashar: boolean; maghrib: boolean; isya: boolean; }'.
+      Type '{}' provides no match for the signature '(): { subuh: boolean; dzuhur: boolean; ashar: boolean; maghrib: boolean; isya: boolean; }'.
+lib/schemas.ts(25,32): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(def: { tarawih: boolean; sahur: boolean; sadaqah: boolean; }): ZodDefault<ZodObject<{ tarawih: ZodDefault<ZodBoolean>; sahur: ZodDefault<ZodBoolean>; sadaqah: ZodDefault<...>; }, $strip>>', gave the following error.
+    Argument of type '{}' is not assignable to parameter of type '{ tarawih: boolean; sahur: boolean; sadaqah: boolean; }'.
+      Type '{}' is missing the following properties from type '{ tarawih: boolean; sahur: boolean; sadaqah: boolean; }': tarawih, sahur, sadaqah
+  Overload 2 of 2, '(def: () => { tarawih: boolean; sahur: boolean; sadaqah: boolean; }): ZodDefault<ZodObject<{ tarawih: ZodDefault<ZodBoolean>; sahur: ZodDefault<ZodBoolean>; sadaqah: ZodDefault<...>; }, $strip>>', gave the following error.
+    Argument of type '{}' is not assignable to parameter of type '() => { tarawih: boolean; sahur: boolean; sadaqah: boolean; }'.
+      Type '{}' provides no match for the signature '(): { tarawih: boolean; sahur: boolean; sadaqah: boolean; }'.

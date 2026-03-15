@@ -1,8 +1,15 @@
 import React, { useMemo, useEffect, useRef } from 'react';
 import anime from 'animejs';
 import { getLocalTodayId } from '@/lib/firebase';
+import type { DailyProgress } from '@/lib/schemas';
 
-export default function StreakWidget({ history }) {
+type HistoryDay = DailyProgress & { dateId: string };
+
+interface StreakWidgetProps {
+  history: HistoryDay[];
+}
+
+export default function StreakWidget({ history }: StreakWidgetProps) {
   // Calculate current consecutive streak from history
   const streakCount = useMemo(() => {
     let count = 0;
@@ -26,7 +33,7 @@ export default function StreakWidget({ history }) {
   }, [history]);
 
   const weekDays = useMemo(() => {
-    return history.map((day, i) => {
+    return history.map((day) => {
        // [FIX] Midnight Offset Override: Paksa ke jam 12 siang agar tidak bergeser hari
        const dateObj = day?.dateId ? new Date(`${day.dateId}T12:00:00`) : new Date();
        const hasActivity = day && (day.tilawah > 0 || (day.sholat && Object.values(day.sholat).some(v => v)));
@@ -39,7 +46,7 @@ export default function StreakWidget({ history }) {
   }, [history]);
 
   // [ANIME.JS] Fire pulse animation for streak > 3
-  const fireRef = useRef(null);
+  const fireRef = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     if (streakCount >= 3 && fireRef.current) {
       anime({

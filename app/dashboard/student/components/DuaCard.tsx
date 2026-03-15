@@ -1,5 +1,18 @@
 import React, { useMemo } from 'react';
 
+// Define the shape of prayerTimes from Aladhan API
+interface PrayerTimes {
+  Fajr: string;
+  Dhuhr: string;
+  Asr: string;
+  Maghrib: string;
+  Isha: string;
+}
+
+interface DuaCardProps {
+  prayerTimes: PrayerTimes | null;
+}
+
 const DUA_COLLECTION = [
   {
     arabic: "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا وَرِزْقًا طَيِّبًا وَعَمَلًا مُتَقَبَّلًا",
@@ -23,12 +36,12 @@ const DUA_COLLECTION = [
   }
 ];
 
-export default function DuaCard({ prayerTimes }) {
+export default function DuaCard({ prayerTimes }: DuaCardProps) {
   const duaOfDay = useMemo(() => {
-    if (!prayerTimes) return DUA_COLLECTION[1]; // Fallback to general dua
+    if (!prayerTimes) return DUA_COLLECTION[1];
 
     const now = new Date();
-    const parseTime = (timeStr) => {
+    const parseTime = (timeStr: string) => {
       const [h, m] = timeStr.split(':');
       const d = new Date();
       d.setHours(parseInt(h, 10), parseInt(m, 10), 0, 0);
@@ -40,7 +53,6 @@ export default function DuaCard({ prayerTimes }) {
     const maghrib = parseTime(prayerTimes.Maghrib);
     const isha = parseTime(prayerTimes.Isha);
 
-    // Rotasi dinamis berbasis temporal jam sholat
     if (now >= fajr && now < dhuhr) {
       return DUA_COLLECTION[0]; // Pagi: Ilmu, Rezeki, Amal
     } else if (now >= dhuhr && now < maghrib) {

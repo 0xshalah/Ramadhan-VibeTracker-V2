@@ -2,8 +2,15 @@ import React from 'react';
 import Link from 'next/link';
 import { useVibeStore } from '@/store/useVibeStore';
 
-export default function Sidebar({ user, onLogout }) {
+interface SidebarProps {
+  onLogout: () => void;
+}
+
+export default function Sidebar({ onLogout }: SidebarProps) {
+  // Eliminasi Prop Drilling: Subscribe langsung ke store
   const totalXP = useVibeStore((state) => state.totalXP);
+  const user = useVibeStore((state) => state.user);
+
   return (
     <aside className="w-72 bg-white dark:bg-slate-900 border-r border-sage-200 dark:border-slate-800 flex-col hidden lg:flex">
       <div className="p-8 flex items-center gap-3">
@@ -41,7 +48,7 @@ export default function Sidebar({ user, onLogout }) {
               {totalXP || 0} Vibe Points
             </div>
           </div>
-          <button onClick={onLogout} title="Log Out" className="w-8 h-8 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 flex items-center justify-center transition-colors">
+          <button onClick={onLogout} title="Log Out" className="w-8 h-8 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 flex items-center justify-center transition-colors cursor-pointer">
              <span className="material-symbols-outlined text-[18px]">logout</span>
           </button>
         </div>

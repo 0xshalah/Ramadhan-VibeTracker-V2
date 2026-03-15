@@ -1,6 +1,21 @@
 import React, { useState, useEffect } from 'react';
 
-export default function NextEvent({ prayerTimes, showToast, onOpenSchedule }) {
+// Define the shape of prayerTimes from Aladhan API
+interface PrayerTimes {
+  Fajr: string;
+  Dhuhr: string;
+  Asr: string;
+  Maghrib: string;
+  Isha: string;
+}
+
+interface NextEventProps {
+  prayerTimes: PrayerTimes | null;
+  showToast: (msg: string) => void;
+  onOpenSchedule: () => void;
+}
+
+export default function NextEvent({ prayerTimes, showToast, onOpenSchedule }: NextEventProps) {
   const [timeRemaining, setTimeRemaining] = useState({ value: '--', unit: 'Min' });
   const [nextEventName, setNextEventName] = useState('Calculating...');
 
@@ -40,7 +55,7 @@ export default function NextEvent({ prayerTimes, showToast, onOpenSchedule }) {
 
       setNextEventName(next.name);
 
-      const diffMs = next.dateObj - now;
+      const diffMs = next.dateObj.getTime() - now.getTime();
       const diffMins = Math.floor(diffMs / 60000);
 
       if (diffMins >= 60) {
@@ -48,7 +63,7 @@ export default function NextEvent({ prayerTimes, showToast, onOpenSchedule }) {
         const mins = diffMins % 60;
         setTimeRemaining({ value: `${hrs}h ${mins}m`, unit: 'Left' });
       } else {
-        setTimeRemaining({ value: diffMins, unit: 'Min' });
+        setTimeRemaining({ value: diffMins.toString(), unit: 'Min' });
       }
     };
 

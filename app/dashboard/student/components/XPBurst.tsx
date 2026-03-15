@@ -2,8 +2,13 @@
 import React, { useEffect, useRef } from 'react';
 import anime from 'animejs';
 
-export default function XPBurst({ points, trigger }) {
-  const containerRef = useRef(null);
+interface XPBurstProps {
+  points: number;
+  trigger: number;
+}
+
+export default function XPBurst({ points, trigger }: XPBurstProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (points > 0 && containerRef.current) {

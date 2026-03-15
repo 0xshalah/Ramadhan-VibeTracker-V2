@@ -1,6 +1,13 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 
-export default function Modal({ isOpen, onClose, title, children }) {
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: ReactNode;
+}
+
+export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -13,7 +20,7 @@ export default function Modal({ isOpen, onClose, title, children }) {
           <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">{title}</h3>
           <button 
             onClick={onClose}
-            className="w-10 h-10 rounded-full hover:bg-sage-50 dark:hover:bg-slate-800 flex items-center justify-center transition-colors"
+            className="w-10 h-10 rounded-full hover:bg-sage-50 dark:hover:bg-slate-800 flex items-center justify-center transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined">close</span>
           </button>

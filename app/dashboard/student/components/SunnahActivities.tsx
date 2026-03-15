@@ -1,12 +1,18 @@
 import React from 'react';
+import type { DailyProgress } from '@/lib/schemas';
 
-const sunnahItems = [
+interface SunnahActivitiesProps {
+  sunnah: DailyProgress['sunnah'];
+  onToggle: (key: keyof DailyProgress['sunnah']) => void;
+}
+
+const sunnahItems: Array<{ key: keyof DailyProgress['sunnah']; label: string; icon: string }> = [
   { key: "tarawih", label: "Shalat Tarawih", icon: "nightlight_round" },
   { key: "sahur", label: "Sahur Healthy Meal", icon: "set_meal" },
   { key: "sadaqah", label: "Daily Sadaqah", icon: "volunteer_activism" },
 ];
 
-export default function SunnahActivities({ sunnah, onToggle }) {
+export default function SunnahActivities({ sunnah, onToggle }: SunnahActivitiesProps) {
   return (
     <section className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-sage-100 dark:border-slate-800 shadow-sm">
       <h3 className="text-lg font-bold mb-5 flex items-center gap-2">
@@ -19,7 +25,7 @@ export default function SunnahActivities({ sunnah, onToggle }) {
           const isActive = sunnah[item.key];
           return (
             <div
-              key={item.key}
+              key={String(item.key)}
               className="flex items-center justify-between p-3 rounded-xl hover:bg-sage-50 dark:hover:bg-slate-800 transition-colors"
             >
               <div className="flex items-center gap-3">
@@ -36,7 +42,6 @@ export default function SunnahActivities({ sunnah, onToggle }) {
                   isActive ? "bg-primary" : "bg-sage-200 dark:bg-slate-700"
                 } ${item.key === 'sadaqah' ? 'cursor-not-allowed' : ''}`}
               >
-                {/* [FIX] Tailwind Utility Classes for toggle animation instead of inline styles */}
                 <div
                   className={`sunnah-knob absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all duration-300 ease-in-out ${
                     isActive ? "translate-x-[22px]" : "translate-x-[2px]"

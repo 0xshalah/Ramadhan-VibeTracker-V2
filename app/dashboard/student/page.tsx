@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import PrayerGrid from './components/PrayerGrid';
@@ -18,10 +19,21 @@ import { toast } from 'sonner';
 import { Sparkles } from 'lucide-react';
 import { usePrayerTimes } from './hooks/usePrayerTimes';
 import { useVibeSync } from './hooks/useVibeSync';
-import { auth, db, loginWithGoogle, getUserProgress, getUserProfile, updateUserProgress, getUserWeeklyProgress, getLocalTodayId, logout, messaging, saveNotificationToken, saveNotification, getUserNotifications } from '@/lib/firebase';
+import { auth, db, loginWithGoogle, getUserProgress, getUserProfile, getUserWeeklyProgress, getLocalTodayId, logout, messaging, saveNotificationToken, saveNotification, getUserNotifications } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, query, limit, onSnapshot, where } from 'firebase/firestore';
+import { collection, query, limit, onSnapshot } from 'firebase/firestore';
 import { getToken, onMessage } from 'firebase/messaging';
+import type { DailyProgress } from '@/lib/schemas';
+
+// --- ErrorBoundary Fallback Component ---
+function WidgetFallback() {
+  return (
+    <div className="p-4 bg-red-50/10 border border-red-500/50 rounded-2xl text-center w-full h-full min-h-[120px] flex flex-col justify-center items-center">
+      <span className="material-symbols-outlined text-red-500">warning</span>
+      <p className="text-xs text-slate-500 mt-2">Widget gagal dimuat.</p>
+    </div>
+  );
+}
 
 export default function StudentDashboard() {
   // DB, AUTH & ZUSTAND STORE
@@ -30,7 +42,6 @@ export default function StudentDashboard() {
   const verifiedSadaqah = useVibeStore((state) => state.verifiedSadaqah);
   const setSadaqah = useVibeStore((state) => state.setSadaqah);
   const setTotalXP = useVibeStore((state) => state.setTotalXP);
-  const totalXP = useVibeStore((state) => state.totalXP);
   
   const [loadingContext, setLoadingContext] = useState(true);
 
@@ -38,23 +49,23 @@ export default function StudentDashboard() {
   const [tilawah, setTilawah] = useState(0);
   const [targetTilawah, setTargetTilawah] = useState(20);
   
-  const [sholat, setSholat] = useState({
+  const [sholat, setSholat] = useState<DailyProgress['sholat']>({
     subuh: false, dzuhur: false, ashar: false, maghrib: false, isya: false
   });
 
-  const [sunnah, setSunnah] = useState({
+  const [sunnah, setSunnah] = useState<DailyProgress['sunnah']>({
     tarawih: false, sahur: false, sadaqah: false
   });
 
   const { prayerTimes, hijriDate, hijriDayInt } = usePrayerTimes();
   
-  const [streakHistory, setStreakHistory] = useState([]);
+  const [streakHistory, setStreakHistory] = useState<Array<DailyProgress & { dateId: string }>>([]);
 
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [notifPermission, setNotifPermission] = useState('default');
   
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<Array<{id: string|number, title: string, body: string, time: string}>>([]);
 
   useEffect(() => {
     if ('Notification' in window) setNotifPermission(Notification.permission);
@@ -70,13 +81,13 @@ export default function StudentDashboard() {
   // AUTH OBSERVER & DB FETCHING
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
+      // Need to cast standard Firebase user to our extended store user type if needed
+      setUser(currentUser as any);
       if (currentUser) {
         const todayId = getLocalTodayId();
         const cloudData = await getUserProgress(currentUser.uid, todayId);
         if (cloudData) {
           if (cloudData.tilawah !== undefined) setTilawah(cloudData.tilawah);
-          if (cloudData.targetTilawah !== undefined) setTargetTilawah(cloudData.targetTilawah);
           if (cloudData.sholat) setSholat(cloudData.sholat);
           if (cloudData.sunnah) setSunnah(cloudData.sunnah);
         }
@@ -86,38 +97,33 @@ export default function StudentDashboard() {
         if (profile) {
           if (profile.targetTilawah) setTargetTilawah(profile.targetTilawah);
           
-          // [FIX] XP Aggregation: Sum all dailyXP values from profile
           if (profile.dailyXP) {
-            const totalAccumulated = Object.values(profile.dailyXP).reduce((a, b) => a + b, 0);
-            setTotalXP(totalAccumulated);
+            const totalAccumulated = Object.values(profile.dailyXP).reduce((a, b) => (a as number) + (b as number), 0);
+            setTotalXP(totalAccumulated as number);
           }
         }
         
         // Fetch streak history
         const weeklyData = await getUserWeeklyProgress(currentUser.uid);
         if (weeklyData) {
-          setStreakHistory(weeklyData); // Keep original order, StreakWidget will handle reversed check
+          setStreakHistory(weeklyData); 
         }
         
-        // [NEW] Fetch Eternal Notifications
+        // Fetch Eternal Notifications
         const history = await getUserNotifications(currentUser.uid);
-        setNotifications(history);
+        setNotifications(history as any); // Type cast until Notifications have strict interfaces on fetch
         
-        // Resolve initial load only after all await calls finish
         isInitialLoad.current = false;
       }
       setLoadingContext(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [setUser, setTotalXP]);
 
-  // Handled by useVibeSync custom hook
-
-  // [SECURITY FIX] REAL-TIME SADAQAH VERIFIER (24-Hour Time-Bound)
+  // REAL-TIME SADAQAH VERIFIER
   useEffect(() => {
     if (user) {
       const sadaqahRef = collection(db, 'users', user.uid, 'sadaqah');
-      // Jangan gunakan where dateId, ambil donasi terbaru saja
       const q = query(sadaqahRef, limit(5)); 
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -131,7 +137,6 @@ export default function StudentDashboard() {
           const data = doc.data();
           if (data.status !== 'SUCCESS') return false;
           
-          // Cek apakah donasi dilakukan dalam 24 jam terakhir (86400000 ms)
           const donationTime = data.claimedAt ? new Date(data.claimedAt).getTime() : 
                               (data.timestamp?.toDate ? data.timestamp.toDate().getTime() : 0);
                               
@@ -142,14 +147,13 @@ export default function StudentDashboard() {
       });
       return () => unsubscribe();
     }
-  }, [user]);
+  }, [user, setSadaqah]);
 
-  // [DECREE 10] WEB PUSH & FCM INITIALIZATION
+  // WEB PUSH & FCM INITIALIZATION
   useEffect(() => {
     if (user && typeof window !== 'undefined' && messaging) {
       const initMessaging = async () => {
         try {
-          // [DECREE 10] Explicit Service Worker Registration
           if ('serviceWorker' in navigator) {
             const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
             console.log('[FCM] SW registered:', registration.scope);
@@ -163,31 +167,31 @@ export default function StudentDashboard() {
       const unsubscribe = onMessage(messaging, async (payload) => {
         console.log('[FCM] Foreground message received:', payload);
         const newNotif = {
-          id: Date.now(),
+          id: Date.now().toString(),
           title: payload.notification?.title || 'System Update',
           body: payload.notification?.body || '',
-          time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+          time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+          isRead: false
         };
         
-        // Simpan ke Keabadian Firestore
-        if (user) await saveNotification(user.uid, newNotif);
+        if (user) await saveNotification(user.uid, newNotif as any);
         
         setNotifications(prev => [newNotif, ...prev]);
-        showToast(`📢 ${newNotif.title}`);
+        toast(`📢 ${newNotif.title}`);
       });
       return () => unsubscribe();
     }
   }, [user]);
 
-  // [SECURITY FIX] LOCAL PRAYER REMINDERS (Memory Leak Patched)
+  // LOCAL PRAYER REMINDERS
   useEffect(() => {
     if (!prayerTimes || !user) return;
 
-    const timeouts = [];
+    const timeouts: NodeJS.Timeout[] = [];
     const now = new Date();
 
     Object.entries(prayerTimes).forEach(([name, time]) => {
-      if (['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(name)) {
+      if (['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(name) && typeof time === 'string') {
         const [hours, minutes] = time.split(':');
         const prayerDate = new Date();
         prayerDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
@@ -207,10 +211,10 @@ export default function StudentDashboard() {
       }
     });
 
-    return () => timeouts.forEach(clearTimeout); // [FIX] Prevent Memory Leak
+    return () => timeouts.forEach(clearTimeout);
   }, [prayerTimes, user]);
 
-  // [DECREE 3] THE MIDNIGHT GHOST KILLER
+  // THE MIDNIGHT GHOST KILLER
   useEffect(() => {
     if (!user) return;
     const initialDateId = getLocalTodayId();
@@ -223,7 +227,7 @@ export default function StudentDashboard() {
     return () => clearInterval(interval);
   }, [user]);
 
-  // [DECREE 5] Modal Body Scroll Lock
+  // Modal Body Scroll Lock
   useEffect(() => {
     if (isScheduleOpen || isNotifOpen) {
       document.body.style.overflow = 'hidden';
@@ -234,28 +238,23 @@ export default function StudentDashboard() {
   }, [isScheduleOpen, isNotifOpen]);
 
 
-
-  // THE LOGIC ENGINE: Pemisahan Core & Bonus Sunnah
-  const safeTarget = Math.max(1, targetTilawah); // [DECREE 1] Anti-Zero Division
+  // THE LOGIC ENGINE
+  const safeTarget = Math.max(1, targetTilawah); 
   const tilawahPct = Math.min(Math.round((tilawah / safeTarget) * 100), 100);
   
   const prayersDone = Object.values(sholat).filter(v => v).length;
   const sholatPct = (prayersDone / 5) * 100;
   
-  // Core Progress (Max 100%)
   const corePct = Math.min(Math.round((sholatPct * 0.5) + (tilawahPct * 0.5)), 100);
   
-  // Hitung jumlah sunnah yang dikerjakan (0 s/d 3)
   const sunnahDoneCount = (sunnah.tarawih ? 1 : 0) + (sunnah.sahur ? 1 : 0) + (verifiedSadaqah ? 1 : 0);
-  // Berikan 5% bonus XP per ibadah sunnah yang dijalankan
   const sunnahBonusXP = sunnahDoneCount * 5;
 
-  // HANDLERS
-  const handlePrayerToggle = (key) => setSholat(prev => ({ ...prev, [key]: !prev[key] }));
-  const handleSunnahToggle = (key) => setSunnah(prev => ({ ...prev, [key]: !prev[key] }));
+  const handlePrayerToggle = (key: keyof DailyProgress['sholat']) => setSholat(prev => ({ ...prev, [key]: !prev[key] }));
+  const handleSunnahToggle = (key: keyof DailyProgress['sunnah']) => setSunnah(prev => ({ ...prev, [key]: !prev[key] }));
   const handleTilawahInc = () => setTilawah(prev => prev + 1);
   const handleTilawahDec = () => setTilawah(prev => Math.max(0, prev - 1));
-  const handleUpdateTarget = (val) => setTargetTilawah(val);
+  const handleUpdateTarget = (val: number) => setTargetTilawah(val);
 
   const enableNotifications = async () => {
     try {
@@ -263,19 +262,15 @@ export default function StudentDashboard() {
       setNotifPermission(perm);
       if (perm === 'granted' && messaging) {
         const token = await getToken(messaging, { vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY });
-        if (token) await saveNotificationToken(user.uid, token);
-        showToast("Notifikasi pengingat sholat diaktifkan! ✨");
+        if (token && user) await saveNotificationToken(user.uid, token);
+        toast("Notifikasi pengingat sholat diaktifkan! ✨");
       }
     } catch (err) {
       console.error(err);
     }
   };
 
-  const showToast = (msg) => {
-    toast(msg);
-  };
-
-  // [SONNER] Premium Sadaqah Feedback
+  // Premium Sadaqah Feedback
   useEffect(() => {
     if (verifiedSadaqah && !isInitialLoad.current) {
       toast.success('Sadaqah Verified!', {
@@ -286,7 +281,7 @@ export default function StudentDashboard() {
     }
   }, [verifiedSadaqah]);
 
-  // LOGIN SCREEN (AUTH GUARD)
+  // LOGIN SCREEN
   if (loadingContext) return <div className="h-screen w-screen flex items-center justify-center bg-background-light dark:bg-background-dark text-slate-500 font-bold">Loading spiritual journey...</div>;
 
   if (!user) {
@@ -298,7 +293,7 @@ export default function StudentDashboard() {
            </div>
            <h1 className="text-2xl font-black mb-2 text-slate-800 dark:text-slate-100">Ramadhan VibeTracker</h1>
            <p className="text-sm text-sage-500 mb-8">Sign in to track your spiritual journey and synchronize your progress securely.</p>
-           <button onClick={loginWithGoogle} className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-3 transition-colors active:scale-95 border border-slate-200 dark:border-slate-700">
+           <button onClick={loginWithGoogle} className="cursor-pointer w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-3 transition-colors active:scale-95 border border-slate-200 dark:border-slate-700">
               <span className="material-symbols-outlined">login</span>
               Continue with Google
            </button>
@@ -313,26 +308,20 @@ export default function StudentDashboard() {
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       
       <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased" style={{ fontFamily: 'Lexend, sans-serif' }}>
-        <Sidebar user={user} totalXP={totalXP} onLogout={logout} />
+        <ErrorBoundary FallbackComponent={WidgetFallback}>
+          <Sidebar onLogout={logout} />
+        </ErrorBoundary>
         
         <main className="flex-1 overflow-y-auto scroll-smooth relative">
-          {/* NOTIFICATION BANNER */}
           {notifPermission === 'default' && (
             <div className="bg-indigo-600 text-white text-xs px-6 py-3 flex justify-between items-center shadow-md">
               <span>Aktifkan pengingat waktu sholat lokal?</span>
-              <button onClick={enableNotifications} className="bg-white text-indigo-600 px-4 py-1.5 rounded-full font-bold hover:bg-slate-100 transition-colors">
+              <button onClick={enableNotifications} className="cursor-pointer bg-white text-indigo-600 px-4 py-1.5 rounded-full font-bold hover:bg-slate-100 transition-colors">
                 Aktifkan
               </button>
             </div>
           )}
 
-          {/* TOASTS & INDICATORS */}
-          {toastMessage && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-4 py-2 rounded-full shadow-lg z-50 animate-bounce">
-              {toastMessage}
-            </div>
-          )}
-          
           <div className="absolute top-4 right-8 z-50 flex items-center gap-2">
              {syncStatus === 'saving' && (
                 <div className="flex items-center gap-1.5 bg-slate-800/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wider uppercase animate-fade-in-down">
@@ -346,49 +335,65 @@ export default function StudentDashboard() {
              )}
           </div>
 
-          <Header corePct={corePct} sunnahBonusXP={sunnahBonusXP} hijriDate={hijriDate} user={user} showToast={showToast} onOpenNotif={() => setIsNotifOpen(true)} />
+          <ErrorBoundary FallbackComponent={WidgetFallback}>
+            <Header corePct={corePct} sunnahBonusXP={sunnahBonusXP} hijriDate={hijriDate || ''} onOpenNotif={() => setIsNotifOpen(true)} />
+          </ErrorBoundary>
           
           <div className="px-8 pb-12 grid grid-cols-1 md:grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-8 space-y-6">
               
-              {/* RAMADHAN ROADMAP */}
-              <JourneyCanvas currentDay={hijriDayInt} totalDays={30} />
+              <ErrorBoundary FallbackComponent={WidgetFallback}>
+                <JourneyCanvas currentDay={hijriDayInt || 1} totalDays={30} />
+              </ErrorBoundary>
 
-              <PrayerGrid sholat={sholat} onToggle={handlePrayerToggle} dynamicTimes={prayerTimes} />
+              <ErrorBoundary FallbackComponent={WidgetFallback}>
+                <PrayerGrid sholat={sholat} onToggle={handlePrayerToggle} dynamicTimes={prayerTimes} />
+              </ErrorBoundary>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <SunnahActivities sunnah={{...sunnah, sadaqah: verifiedSadaqah}} onToggle={handleSunnahToggle} />
-                <TilawahCounter 
-                  tilawah={tilawah} 
-                  targetTilawah={targetTilawah}
-                  tilawahPct={tilawahPct} 
-                  onIncrement={handleTilawahInc} 
-                  onDecrement={handleTilawahDec} 
-                  onUpdateTarget={handleUpdateTarget}
-                />
+                <ErrorBoundary FallbackComponent={WidgetFallback}>
+                  <SunnahActivities sunnah={{...sunnah, sadaqah: verifiedSadaqah}} onToggle={handleSunnahToggle} />
+                </ErrorBoundary>
+                <ErrorBoundary FallbackComponent={WidgetFallback}>
+                  <TilawahCounter 
+                    tilawah={tilawah} 
+                    targetTilawah={targetTilawah}
+                    tilawahPct={tilawahPct} 
+                    onIncrement={handleTilawahInc} 
+                    onDecrement={handleTilawahDec} 
+                    onUpdateTarget={handleUpdateTarget}
+                  />
+                </ErrorBoundary>
               </div>
             </div>
 
             <div className="col-span-12 lg:col-span-4 space-y-6">
-              <StreakWidget history={streakHistory} />
+              <ErrorBoundary FallbackComponent={WidgetFallback}>
+                <StreakWidget history={streakHistory} />
+              </ErrorBoundary>
               
-              {/* XP BURST ANIMATION */}
               {sunnahBonusXP > 0 && <XPBurst points={sunnahBonusXP} trigger={xpBurstTrigger} />}
 
-              <DuaCard prayerTimes={prayerTimes} />
-              <NextEvent prayerTimes={prayerTimes} showToast={showToast} onOpenSchedule={() => setIsScheduleOpen(true)} />
+              <ErrorBoundary FallbackComponent={WidgetFallback}>
+                <DuaCard prayerTimes={prayerTimes} />
+              </ErrorBoundary>
+              <ErrorBoundary FallbackComponent={WidgetFallback}>
+                <NextEvent prayerTimes={prayerTimes} showToast={toast as any} onOpenSchedule={() => setIsScheduleOpen(true)} />
+              </ErrorBoundary>
             </div>
           </div>
         </main>
       </div>
 
-      <AIChatPanel progressData={{ 
-        tilawah, targetTilawah, 
-        sholatPct: Math.round((prayersDone / 5) * 100), 
-        sunnahCount: sunnahDoneCount 
-      }} />
+      <ErrorBoundary FallbackComponent={WidgetFallback}>
+        <AIChatPanel progressData={{ 
+          tilawah, targetTilawah, 
+          sholatPct: Math.round((prayersDone / 5) * 100), 
+          sunnahCount: sunnahDoneCount,
+          streak: streakHistory.length || 0 // Proxy streak for Insight Payload logic
+        }} />
+      </ErrorBoundary>
 
-      {/* ACTUAL MODALS */}
       <Modal 
         isOpen={isScheduleOpen} 
         onClose={() => setIsScheduleOpen(false)} 
@@ -398,7 +403,7 @@ export default function StudentDashboard() {
            {prayerTimes ? Object.entries(prayerTimes).filter(([k]) => ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(k)).map(([name, time]) => (
               <div key={name} className="flex justify-between items-center p-4 bg-sage-50 dark:bg-slate-800 rounded-2xl hover:scale-[1.02] transition-transform">
                  <span className="font-bold text-slate-700 dark:text-slate-300">{name}</span>
-                 <span className="text-primary font-black text-lg">{time}</span>
+                 <span className="text-primary font-black text-lg">{time as string}</span>
               </div>
            )) : <p className="text-center text-sage-500">Loading schedule...</p>}
         </div>
