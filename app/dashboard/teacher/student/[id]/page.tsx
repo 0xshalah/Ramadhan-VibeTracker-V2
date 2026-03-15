@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { getUserProfile, getUserWeeklyProgress } from '@/lib/firebase';
+import { useRouter, useParams } from 'next/navigation';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth, getUserProfile, getUserWeeklyProgress } from '@/lib/firebase';
 import type { UserProfile } from '@/lib/schemas';
 import type { DailyProgress } from '@/lib/schemas';
 
@@ -19,6 +20,8 @@ export default function StudentAnalyticsPage() {
   const [student, setStudent] = useState<StudentData | null>(null);
   const [weeklyData, setWeeklyData] = useState<WeeklyEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewerRole, setViewerRole] = useState<string>('teacher');
+  const router = useRouter();
 
   useEffect(() => {
     if (!studentId) return;
@@ -42,6 +45,16 @@ export default function StudentAnalyticsPage() {
     };
     
     fetchData();
+
+    // Determine if the viewer is an Admin so the Back button routes correctly
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      if (u) {
+        const profile = await getUserProfile(u.uid);
+        if (profile?.role === 'admin') setViewerRole('admin');
+      }
+    });
+
+    return () => unsub();
   }, [studentId]);
 
   // Calculate XP
@@ -90,7 +103,7 @@ export default function StudentAnalyticsPage() {
       `}} />
       
       <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-4 py-4 flex items-center justify-between">
-        <Link href="/dashboard/teacher" className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400">
+        <Link href={viewerRole === 'admin' ? '/dashboard/admin' : '/dashboard/teacher'} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400">
           <span className="material-symbols-outlined">arrow_back_ios</span>
         </Link>
         <h1 className="font-bold text-lg tracking-tight">Student Analytics</h1>
