@@ -31,6 +31,8 @@ export async function POST(request: Request) {
         description: `Daily Charity for ${email}`,
         customerName: name || "Anonymous Student",
         email: email,
+        customer_name: name || "Anonymous Student", // Fallback for some Mayar accounts
+        customer_email: email,                      // Fallback for some Mayar accounts
         mobile: "081111111111", // [MAYAR HOTFIX] Required by some Mayar accounts
         // Redirect user back to dashboard after payment
         redirect_url: `${baseUrl}/dashboard/student/sadaqah?status=success`,
