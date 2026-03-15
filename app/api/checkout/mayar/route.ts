@@ -17,16 +17,16 @@ export async function POST(request: Request) {
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    // 2. Generate a Unique Identifier to prevent 409 Conflict
-    // We add a short unique ID (timestamp + random) to ensure Mayar sees this as a new request
-    const uniqueSuffix = Date.now().toString().slice(-6) + Math.random().toString(36).substring(2, 5).toUpperCase();
+    // 2. Generate a Unique Identifier (The Anti-409 Fix)
+    // This forces Mayar to treat every checkout click as a brand new payment request.
+    const uniqueOrderId = `ORD-${Date.now().toString().slice(-5)}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
     // 3. Headless API Payload Construction
     const mayarPayload = {
-      // FIX: Added unique suffix to the name to avoid "already exist" error
-      name: `Ramadan Charity - Rp ${Number(amount).toLocaleString('en-US')} (${uniqueSuffix})`, 
+      // THE FIX: Appending the uniqueOrderId to the 'name' field
+      name: `Ramadan Charity - Rp ${Number(amount).toLocaleString('en-US')} [${uniqueOrderId}]`, 
       amount: Math.floor(Number(amount)),
-      description: `Sadaqah contribution from ${name || email} - Order ID: ${uniqueSuffix}`,
+      description: `Sadaqah contribution from ${name || email}. ID: ${uniqueOrderId}`,
       customer_name: (name && name !== "Anonymous") ? name : "Blessed Donor",
       email: email, 
       mobile: mobile || "081234567890", 
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       metadata: {
         app: "VibeTracker-V2",
         type: "Sadaqah",
-        orderId: uniqueSuffix, // Trackable ID
+        orderId: uniqueOrderId,
         platform: "Web-Enterprise"
       }
     };
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     if (!mayarResponse.ok) {
       console.error("[MAYAR REJECTION]", JSON.stringify(data, null, 2));
       return NextResponse.json({ 
-        error: data?.messages || data?.error || 'Payment gateway rejected the request',
+        error: data?.messages || data?.message || data?.error || 'Payment gateway rejected the request',
         details: data 
       }, { status: mayarResponse.status });
     }
