@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
-export const usePrayerTimes = () => {
+export const usePrayerTimes = (fallbackLat = null, fallbackLng = null) => {
   const [prayerTimes, setPrayerTimes] = useState(null);
   const [hijriDate, setHijriDate] = useState('Loading...');
   const [hijriDayInt, setHijriDayInt] = useState(1);
@@ -53,17 +53,21 @@ export const usePrayerTimes = () => {
           (error) => {
             // [FIX] Jangan diam saja, beritahu UI
             // console.warn("GPS Denied.", error);warn
-            getFromAPI(1.0456, 104.0305, true); // Fallback Batam
-            toast("⚠️ GPS Ditolak. Menggunakan zona waktu Batam. Mohon izinkan lokasi.");
+            const finalLat = fallbackLat !== null ? fallbackLat : 1.0456;
+            const finalLng = fallbackLng !== null ? fallbackLng : 104.0305;
+            getFromAPI(finalLat, finalLng, true); // Fallback Profile/Batam
+            toast(`⚠️ GPS Ditolak. Menggunakan zona waktu ${fallbackLat !== null ? 'Profil' : 'Batam (Default)'}. Mohon izinkan lokasi.`);
           }
         );
       } else {
         // console.warn("Geolocation is not supported by this browser. Fallback to default.");warn
-        getFromAPI();
+        const finalLat = fallbackLat !== null ? fallbackLat : 1.0456;
+        const finalLng = fallbackLng !== null ? fallbackLng : 104.0305;
+        getFromAPI(finalLat, finalLng, true);
       }
     }
     fetchPrayerTimes();
-  }, []);
+  }, [fallbackLat, fallbackLng]);
 
   return { prayerTimes, hijriDate, hijriDayInt };
 };

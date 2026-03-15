@@ -27,7 +27,7 @@ export async function POST(request: Request) {
         name: `Sadaqah Ramadhan - ${amount}`,
         amount: Number(amount),
         description: "VibeTracker Daily Charity & Impact Subscription",
-        customer_name: name || "Hamba Allah",
+        customer_name: name || "Anonymous User",
         customer_email: email,
       })
     });

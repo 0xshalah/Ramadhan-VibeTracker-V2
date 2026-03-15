@@ -71,7 +71,7 @@ export default function StudentAnalyticsPage() {
   }).reverse(); // oldest first
 
   const weeklyAvg = weeklyData.length > 0
-    ? (weeklyData.reduce((a, e) => a + (e.tilawah || 0), 0) / weeklyData.length).toFixed(1)
+    ? (weeklyData.reduce((a, e) => a + (e.tilawah || 0), 0) / (weeklyData.length || 1)).toFixed(1)
     : '0';
 
   // Calculate prayer consistency from weekly data

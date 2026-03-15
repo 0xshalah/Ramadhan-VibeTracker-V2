@@ -28,7 +28,7 @@ export default function ProfilePage() {
               <span className="material-symbols-outlined text-sm">photo_camera</span>
             </button>
           </div>
-          <h2 className="text-2xl font-bold mt-4">{user?.displayName || 'Hamba Allah'}</h2>
+          <h2 className="text-2xl font-bold mt-4">{user?.displayName || 'Student'}</h2>
           <p className="text-slate-400 text-sm">{user?.email || 'email@notfound.com'}</p>
         </section>
 

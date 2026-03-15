@@ -46,6 +46,8 @@ export const UserProfileSchema = z.object({
   totalXP: z.number().nonnegative().optional(),
   streak: z.number().nonnegative().optional(),
   lastActivity: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
   lastLogin: z.any().optional(), // Accepts Firestore Timestamp or ISO string
   createdAt: z.any().optional(), // Accepts Firestore Timestamp or ISO string
 }).passthrough(); // Allow unknown fields without crashing Zod parser

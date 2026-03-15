@@ -57,7 +57,10 @@ export default function StudentDashboard() {
     tarawih: false, sahur: false, sadaqah: false
   });
 
-  const { prayerTimes, hijriDate, hijriDayInt } = usePrayerTimes();
+  const [profileLat, setProfileLat] = useState<number | null>(null);
+  const [profileLng, setProfileLng] = useState<number | null>(null);
+
+  const { prayerTimes, hijriDate, hijriDayInt } = usePrayerTimes(profileLat, profileLng);
   
   const [streakHistory, setStreakHistory] = useState<Array<DailyProgress & { dateId: string }>>([]);
 
@@ -96,6 +99,8 @@ export default function StudentDashboard() {
         const profile = await getUserProfile(currentUser.uid);
         if (profile) {
           if (profile.targetTilawah) setTargetTilawah(profile.targetTilawah);
+          if (profile.latitude) setProfileLat(profile.latitude);
+          if (profile.longitude) setProfileLng(profile.longitude);
           
           if (profile.dailyXP) {
             const totalAccumulated = Object.values(profile.dailyXP).reduce((a, b) => (a as number) + (b as number), 0);
