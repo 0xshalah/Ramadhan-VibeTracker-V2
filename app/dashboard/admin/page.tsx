@@ -349,7 +349,8 @@ function AdminDashboardContent() {
         </h2>
       </div>
       <p className="text-sm text-indigo-200/80 max-w-xl">
-        This system is autonomously tested by the <a href="https://www.testsprite.com/" target="_blank" rel="noopener noreferrer" className="font-bold underline decoration-indigo-500/50 hover:decoration-indigo-500">TestSprite AI agent</a>. RBAC integrity, Firebase Custom Claims security, and Donation Webhook resilience are guaranteed by continuous CI/CD validation.
+        This production-grade environment is autonomously audited by the <a href="https://www.testsprite.com/" target="_blank" rel="noopener noreferrer" className="font-bold underline decoration-indigo-500/50 hover:decoration-indigo-500 text-white">TestSprite AI Security Engine</a>. 
+        Zero-Trust RBAC, Payment Webhooks, and Cloud Logic are verified 24/7.
       </p>
     </div>
 
