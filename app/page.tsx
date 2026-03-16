@@ -139,7 +139,7 @@ export default function LandingPage() {
         {/* TestSprite Badge */}
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider mb-8">
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-          AI-Tested with TestSprite
+          AI-Tested with <a href="https://www.testsprite.com/" target="_blank" rel="noopener noreferrer" className="hover:underline">TestSprite</a>
         </div>
 
         <h2 className="text-5xl md:text-7xl font-black tracking-tight leading-tight max-w-4xl mb-6">
@@ -152,7 +152,7 @@ export default function LandingPage() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
           </span>
-          Security Audit & CI/CD Powered by <span className="text-indigo-600 font-black group-hover:underline">TestSprite</span>
+          Security Audit & CI/CD Powered by <a href="https://www.testsprite.com/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 font-black hover:underline transition-colors">TestSprite</a>
         </div>
 
 
