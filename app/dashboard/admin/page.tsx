@@ -344,10 +344,12 @@ function AdminDashboardContent() {
         <div className="w-8 h-8 rounded-lg bg-indigo-500 text-white flex items-center justify-center font-black text-xs">
           TS
         </div>
-        <h2 className="text-xl font-bold text-white">TestSprite SecOps Monitor</h2>
+        <h2 className="text-xl font-bold text-white">
+          <a href="https://www.testsprite.com/" target="_blank" rel="noopener noreferrer" className="hover:underline">TestSprite</a> SecOps Monitor
+        </h2>
       </div>
       <p className="text-sm text-indigo-200/80 max-w-xl">
-        This system is autonomously tested by the TestSprite AI agent. RBAC integrity, Firebase Custom Claims security, and Donation Webhook resilience are guaranteed by continuous CI/CD validation.
+        This system is autonomously tested by the <a href="https://www.testsprite.com/" target="_blank" rel="noopener noreferrer" className="font-bold underline decoration-indigo-500/50 hover:decoration-indigo-500">TestSprite AI agent</a>. RBAC integrity, Firebase Custom Claims security, and Donation Webhook resilience are guaranteed by continuous CI/CD validation.
       </p>
     </div>
 
