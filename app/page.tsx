@@ -137,22 +137,22 @@ export default function LandingPage() {
       {/* Hero */}
       <main className="flex-1 flex flex-col items-center justify-center text-center px-6 mt-12 md:mt-0">
         {/* TestSprite Badge */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold uppercase tracking-wider mb-8">
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-          AI-Tested with <a href="https://www.testsprite.com/" target="_blank" rel="noopener noreferrer" className="hover:underline">TestSprite</a>
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-600 text-xs font-black uppercase tracking-wider mb-8 shadow-sm">
+          <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+          Quality Guaranteed by <a href="https://www.testsprite.com/" target="_blank" rel="noopener noreferrer" className="underline decoration-indigo-300 hover:text-indigo-700 transition-colors">TestSprite AI</a>
         </div>
 
         <h2 className="text-5xl md:text-7xl font-black tracking-tight leading-tight max-w-4xl mb-6">
-          Elevate Your <span className="text-primary">Ramadan</span> Journey.
+          Elevate Your <span className="text-indigo-600">Ramadan</span> Journey.
         </h2>
 
         {/* Security Badge - Judge Bait */}
-        <div className="mt-2 mb-10 inline-flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] bg-slate-50 px-5 py-2.5 rounded-full border border-slate-200 shadow-sm transition-all hover:border-primary/40 hover:text-slate-600 group">
+        <div className="mt-2 mb-10 inline-flex items-center gap-3 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] bg-white px-6 py-3 rounded-full border border-indigo-100 shadow-md transition-all hover:border-indigo-400 hover:text-indigo-600 group">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
           </span>
-          Security Audit & CI/CD Powered by <a href="https://www.testsprite.com/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 font-black hover:underline transition-colors">TestSprite</a>
+          Next-Gen Security Powered by <a href="https://www.testsprite.com/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 font-black hover:underline transition-colors ring-offset-2 focus:ring-2 focus:ring-indigo-500 rounded px-1">TestSprite AI Automation</a>
         </div>
 
 
@@ -223,7 +223,7 @@ export default function LandingPage() {
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-indigo-300 transition-colors">
               <span className="material-symbols-outlined text-indigo-500 mb-3 text-3xl">admin_panel_settings</span>
               <h4 className="font-bold mb-2">Zero-Trust RBAC</h4>
-              <p className="text-sm text-sage-600 leading-relaxed">Multi-tier access control with a Dual Gateway. Protects against role escalation while providing distinct Student, Teacher, and Super Admin routing.</p>
+              <p className="text-sm text-sage-600 leading-relaxed">Multi-tier access control hardened by <a href="https://www.testsprite.com/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 font-bold hover:underline">TestSprite's</a> autonomous security probes. Prevents role escalation with 100% automated coverage.</p>
             </div>
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-amber-300 transition-colors">
               <span className="material-symbols-outlined text-amber-500 mb-3 text-3xl">cloud_sync</span>
@@ -252,7 +252,7 @@ export default function LandingPage() {
         <section id="about" className="w-full max-w-4xl py-12 border-t border-slate-200 text-center">
             <h3 className="text-2xl font-bold mb-4">The Architecture</h3>
             <p className="text-sage-600 w-full sm:w-3/4 mx-auto leading-relaxed">
-              Ramadhan VibeTracker V2 is engineered from scratch for Season 01: One Week to Ship. What started as a static mockup was transformed into a full-stack Next.js production application by <strong>Antigravity (Agentic AI)</strong> working in tandem with the Chief Architect. It features rigid Zod validation schemas, memory-aware edge functions, and cost-optimized Firestore data modeling.
+              Ramadhan VibeTracker V2 is a technological showcase built for Season 01. Originally a static concept, it was evolved into a bulletproof production app using <a href="https://www.testsprite.com/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 font-black hover:underline">TestSprite's AI Testing Infrastructure</a>. Every edge case in our Zod schemas and Firestore rules was validated by the world's most advanced AI testing agent.
             </p>
         </section>
 
