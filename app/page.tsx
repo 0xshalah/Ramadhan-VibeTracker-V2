@@ -260,8 +260,12 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="py-8 text-center text-sm text-sage-500 border-t border-slate-200/50 mt-12 bg-white">
-        <p>
+        <p className="mb-2">
           © 2026 Ramadhan VibeTracker. Built for Season 01: One Week to Ship.
+        </p>
+        <p className="flex items-center justify-center gap-1.5 font-bold text-indigo-600">
+          <span className="material-symbols-outlined text-[16px]">verified</span>
+          Secured and Validated by <a href="https://www.testsprite.com/" target="_blank" rel="noopener noreferrer" className="hover:underline">TestSprite AI</a>
         </p>
       </footer>
 
