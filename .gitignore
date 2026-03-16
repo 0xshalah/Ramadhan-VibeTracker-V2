@@ -42,4 +42,3 @@ next-env.d.ts
 *.pem
 *service-account*
 *serviceAccount*
-*firebase-admin*
